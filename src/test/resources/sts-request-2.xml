@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" 
+    xmlns:wsa="http://www.w3.org/2005/08/addressing" 
+    xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" 
+    xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512" 
+    xmlns:wst14="http://docs.oasis-open.org/ws-sx/ws-trust/200802">
+    <soapenv:Header>
+        <wsa:Action>http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue</wsa:Action>
+        <wsa:MessageID>urn:uuid:52dc78f6-d8e7-4585-9d36-9f96d17d2daa</wsa:MessageID>
+    </soapenv:Header>
+    <soapenv:Body>
+        <wst:RequestSecurityToken Context="urn:uuid:bb2fa05f-dc3b-4691-ae2f-9d4e732b02aa">
+            <wst:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</wst:TokenType>
+            <wst:RequestType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue</wst:RequestType>
+            <wst14:ActAs>
+                <saml:Assertion IssueInstant="2020-04-01T12:14:03Z" Version="2.0" id="IDCard">
+                    <saml:Issuer>TEST1-NSP-STS</saml:Issuer>
+                    <saml:Subject>
+                        <saml:NameID Format="medcom:other">SubjectDN={CN=Lars Larsen + SERIALNUMBER=CVR:20921897-RID:52723247, O=TRIFORK A/S // CVR:20921897, C=DK},IssuerDN={CN=TRUST2408 Systemtest XXII CA, O=TRUST2408, C=DK},CertSerial={1537885084}</saml:NameID>
+                        <saml:SubjectConfirmation>
+                            <saml:ConfirmationMethod>urn:oasis:names:tc:SAML:2.0:cm:holder-of-key</saml:ConfirmationMethod>
+                            <saml:SubjectConfirmationData>
+                                <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+                                    <ds:KeyName>OCESSignature</ds:KeyName>
+                                </ds:KeyInfo>
+                            </saml:SubjectConfirmationData>
+                        </saml:SubjectConfirmation>
+                    </saml:Subject>
+                    <saml:Conditions NotBefore="2020-04-01T12:14:03Z" NotOnOrAfter="2020-04-02T12:14:03Z"/>
+                    <saml:AttributeStatement id="IDCardData">
+                        <saml:Attribute Name="sosi:IDCardID">
+                            <saml:AttributeValue>dJUGIkhe+UYIPAoaAomgkA==</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="sosi:IDCardVersion">
+                            <saml:AttributeValue>1.0.1</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="sosi:IDCardType">
+                            <saml:AttributeValue>user</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="sosi:AuthenticationLevel">
+                            <saml:AttributeValue>4</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="sosi:OCESCertHash">
+                            <saml:AttributeValue>fWnwGlZ+b73DMkNIb2I7rzx5YJ8=</saml:AttributeValue>
+                        </saml:Attribute>
+                    </saml:AttributeStatement>
+                    <saml:AttributeStatement id="UserLog">
+                        <saml:Attribute Name="medcom:UserCivilRegistrationNumber">
+                            <saml:AttributeValue>0501792275</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserGivenName">
+                            <saml:AttributeValue>Lars</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserSurName">
+                            <saml:AttributeValue>Larsen</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserEmailAddress">
+                            <saml:AttributeValue>min.email@adatatest.com</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserRole">
+                            <saml:AttributeValue>7170</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserAuthorizationCode">
+                            <saml:AttributeValue>J0184</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:UserOccupation">
+                            <saml:AttributeValue>Overtester</saml:AttributeValue>
+                        </saml:Attribute>
+                    </saml:AttributeStatement>
+                    <saml:AttributeStatement id="SystemLog">
+                        <saml:Attribute Name="medcom:ITSystemName">
+                            <saml:AttributeValue>SOSITEST</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:CareProviderID" NameFormat="medcom:cvrnumber">
+                            <saml:AttributeValue>20921897</saml:AttributeValue>
+                        </saml:Attribute>
+                        <saml:Attribute Name="medcom:CareProviderName">
+                            <saml:AttributeValue>TRIFORK A/S</saml:AttributeValue>
+                        </saml:Attribute>
+                    </saml:AttributeStatement>
+                    <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" id="OCESSignature">
+                        <ds:SignedInfo>
+                            <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                            <ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                            <ds:Reference URI="#IDCard">
+                                <ds:Transforms>
+                                    <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                                    <ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+                                </ds:Transforms>
+                                <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                                <ds:DigestValue>mHwSTZPj4gLQsBOBR+qT9gO4RPw=</ds:DigestValue>
+                            </ds:Reference>
+                        </ds:SignedInfo>
+                        <ds:SignatureValue>hNR40uZE7OD3ldSnn+kC0CXi4FXh1Yvft+V4oTVQ9ELy18NvbhelWsl7+29reUrW95xzYzyQX+jew9ZBn0C66m/WKoCJRvZm78tlKWgKsmxxwsFnQzZE838jE/1JO4vVK+P3OYtic0W2mrZSRByVN9lZ1sel1bSPwsSPN6knQdDfYmuWC7wwsMi1IwhceUemPcKdmZ9Qv2VLgdADsEagl9yTfnjNjwWYdMACEwRiAhI3pV9YswoCyjs9T4v4P6ACKdq6ViMdQDE9FDW8sClUueHYmw0KgGClPevZ156Bkt5GPmbHGaNdhXJltkNf9YDKmVvPXcsld4lCd4aE6h2VQw==</ds:SignatureValue>
+                        <ds:KeyInfo>
+                            <ds:X509Data>
+                                <ds:X509Certificate>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</ds:X509Certificate>
+                            </ds:X509Data>
+                        </ds:KeyInfo>
+                    </ds:Signature>
+                </saml:Assertion>
+            </wst14:ActAs>
+            <wsp:AppliesTo>
+                <wsa:EndpointReference>
+                    <wsa:Address>https://saml.test1.fmk.netic.dk/fmk/</wsa:Address>
+                </wsa:EndpointReference>
+            </wsp:AppliesTo>
+        </wst:RequestSecurityToken>
+    </soapenv:Body>
+</soapenv:Envelope>
