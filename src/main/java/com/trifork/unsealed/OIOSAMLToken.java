@@ -2,7 +2,7 @@ package com.trifork.unsealed;
 
 import java.util.Date;
 
-public class SAMLToken {
+public class OIOSAMLToken {
     String COMMON_NAME = "urn:oid:2.5.4.3";
     String CPR_NUMBER = "dk:gov:saml:attribute:CprNumberIdentifier";
     String CVR_NUMBER = "dk:gov:saml:attribute:CvrNumberIdentifier";

@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class IdCardBuilder {
 
@@ -18,7 +21,7 @@ public class IdCardBuilder {
     public final InputStream keystoreFromInputStream;
     public final KeyStore keystore;
     public final String keystoreType;
-    public final String keystorePassword;
+    public final char[] keystorePassword;
     public final String email;
     public final String role;
     public final String occupation;
@@ -30,7 +33,7 @@ public class IdCardBuilder {
     }
 
     private IdCardBuilder(NSPEnv env, String cpr, String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, String keystorePassword,
+            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
             String email, String role, String occupation, String authorizationCode, String systemName) {
 
         this.env = env;
@@ -55,61 +58,62 @@ public class IdCardBuilder {
     }
 
     public IdCardBuilder env(NSPEnv env) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder cpr(String cpr) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder keystoreFromClassPath(String keystoreFromClassPath) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder keystorePath(String keystorePath) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
-    public IdCardBuilder keystorePassword(String keystorePassword) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+    public IdCardBuilder keystorePassword(char[] keystorePassword) {
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder email(String email) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder role(String role) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder occupation(String occupation) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder authorizationCode(String authorizationCode) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
     public IdCardBuilder systemName(String systemName) {
-        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore,
-                keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
+        return new IdCardBuilder(env, cpr, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
-    public IdCard build() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+    public IdCard build() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+            UnrecoverableKeyException {
         InputStream keystoreIs;
         String keystoreTp = keystoreType;
 
@@ -133,15 +137,21 @@ public class IdCardBuilder {
             }
 
             ks = KeyStore.getInstance(keystoreTp);
-            ks.load(keystoreIs, keystorePassword.toCharArray());
+            ks.load(keystoreIs, keystorePassword);
         }
 
-        IdCard idCard = new IdCard(env, cpr, ks, email, role, occupation, authorizationCode, systemName);
+        X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+
+        Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
+
+
+        IdCard idCard = new IdCard(env, cpr, certificate, privateKey, email, role, occupation,
+                authorizationCode, systemName);
 
         return idCard;
     }
 
-    private static String guessKeystoreType(String path) {
+    static String guessKeystoreType(String path) {
         return path.endsWith(".jks") ? "JKS" : "PKCS12";
     }
 }
