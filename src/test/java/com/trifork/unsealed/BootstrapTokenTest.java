@@ -1,5 +1,9 @@
 package com.trifork.unsealed;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +55,10 @@ public class BootstrapTokenTest extends AbstractTest {
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
 
+        assertNotNull(idwsToken.assertion);
+        assertEquals("https://fmk", idwsToken.audience);
+        assertTrue(idwsToken.created.isBefore(Instant.now()));
+        assertTrue(idwsToken.expires.isAfter(idwsToken.created.plusSeconds(5)));
     }
 
     @Test

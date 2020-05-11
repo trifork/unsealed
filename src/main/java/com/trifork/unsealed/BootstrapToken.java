@@ -19,6 +19,7 @@ import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,6 +29,10 @@ public class BootstrapToken {
     private static final Logger logger = Logger.getLogger(BootstrapToken.class.getName());
 
     static final String DEFAULT_BST_TO_ID_ENDPOINT = "/sts/services/Bst2Idws";
+
+    private static final String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
+            + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
+            + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse";
 
     private NSPEnv env;
 
@@ -44,9 +49,9 @@ public class BootstrapToken {
         this.xml = xml;
     }
 
-    public IdentityToken exchangeToIdentityToken(String audience, String cpr)
-            throws IOException, InterruptedException, ParserConfigurationException, SAXException,
-            NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException {
+    public IdentityToken exchangeToIdentityToken(String audience, String cpr) throws IOException, InterruptedException,
+            ParserConfigurationException, SAXException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            MarshalException, XMLSignatureException, XPathExpressionException {
 
         DocumentBuilder docBuilder = IdCard.getDocBuilder();
         Element bootstrapToken = docBuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
@@ -67,7 +72,30 @@ public class BootstrapToken {
 
         logger.log(FINE, "Response: " + response);
 
-        return null;
+        Document responseDoc = docBuilder.parse(new ByteArrayInputStream(response.getBytes(StandardCharsets.UTF_8)));
+
+        XPathContext xpath = new XPathContext(responseDoc);
+
+        Element requestSecurityTokenResponse = xpath.findElement(REQUEST_SECURITY_TOKEN_RESPONSE_XPATH);
+
+        Element assertion = xpath.findElement(requestSecurityTokenResponse,
+                NsPrefixes.wst13.name() + ":RequestedSecurityToken/" + NsPrefixes.saml.name() + ":Assertion");
+
+        // Element audience = xpath.findElement(requestSecurityTokenResponse,
+        // NsPrefixes.wsp.name() + ":AppliesTo/" + NsPrefixes.wsa.name() +
+        // ":EndpointReference/" + NsPrefixes.wsa.name() + ":Address/");
+
+        String created = xpath.getText(requestSecurityTokenResponse,
+                NsPrefixes.wst13.name() + ":Lifetime/" + NsPrefixes.wsu.name() + ":Created");
+
+        Instant createdInstant = Instant.parse(created);
+
+        String expires = xpath.getText(requestSecurityTokenResponse,
+                NsPrefixes.wst13.name() + ":Lifetime/" + NsPrefixes.wsu.name() + ":Expires");
+
+        Instant expiresInstant = Instant.parse(expires);
+
+        return new IdentityTokenBuilder().assertion(assertion).audience(audience).created(createdInstant).expires(expiresInstant).build();
     }
 
     private Element createBootstrapToIdentityTokenRequest(Element bootstrapToken, String audience, String cpr)

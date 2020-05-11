@@ -15,18 +15,18 @@ import java.security.cert.X509Certificate;
 public class IdCardBuilder {
 
     private NSPEnv env;
-    public final String cpr;
-    public final String keystoreFromClassPath;
-    public final String keystoreFromFilePath;
-    public final InputStream keystoreFromInputStream;
-    public final KeyStore keystore;
-    public final String keystoreType;
-    public final char[] keystorePassword;
-    public final String email;
-    public final String role;
-    public final String occupation;
-    public final String authorizationCode;
-    public final String systemName;
+    private String cpr;
+    private String keystoreFromClassPath;
+    private String keystoreFromFilePath;
+    private InputStream keystoreFromInputStream;
+    private KeyStore keystore;
+    private String keystoreType;
+    private char[] keystorePassword;
+    private String email;
+    private String role;
+    private String occupation;
+    private String authorizationCode;
+    private String systemName;
 
     public IdCardBuilder() {
         this(null, null, null, null, null, null, null, null, null, null, null, null, null);
