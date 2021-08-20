@@ -29,21 +29,21 @@
         <repository>
             <id>trifork.releases</id>
             <name>Trifork Releases</name>
-            <url>http://ci.fmk.netic.dk/nexus/content/repositories/releases/</url>
+            <url>https://ci.fmk.netic.dk/nexus/content/repositories/releases/</url>
             <layout>default</layout>
         </repository>
         <snapshotRepository>
             <id>trifork.snapshots</id>
             <name>Trifork Snapshots</name>
-            <url>http://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
+            <url>https://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
             <layout>default</layout>
         </snapshotRepository>
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:trifork/websecurity.git</connection>
-        <url>scm:git:git@git@github.com:trifork/websecurity.git</url>
-        <developerConnection>scm:git:git@github.com:trifork/websecurity.git</developerConnection>
+        <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
+        <url>scm:git:git@github.com:trifork/unsealed.git</url>
+        <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
         <tag>websecurity-1.22</tag>
     </scm>
 
