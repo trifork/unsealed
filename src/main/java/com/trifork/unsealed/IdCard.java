@@ -1,6 +1,8 @@
 package com.trifork.unsealed;
 
 import static com.trifork.unsealed.XmlUtil.appendChild;
+import static com.trifork.unsealed.XmlUtil.getTextChild;
+import static com.trifork.unsealed.XmlUtil.getChild;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
@@ -10,6 +12,7 @@ import java.security.Key;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -241,6 +244,33 @@ public abstract class IdCard {
             attr.setAttribute("NameFormat", nameFormat);
         }
         appendChild(attr, NsPrefixes.saml, "AttributeValue", value);
+    }
+
+    public String getIssuer() {
+        return getTextChild(signedIdCard, NsPrefixes.saml, "Issuer");
+    }
+
+    public String getSubjectName() {
+        return getTextChild(getChild(signedIdCard, NsPrefixes.saml, "Subject"), NsPrefixes.saml, "NameID");
+    }
+
+    public Element serialize2DOMDocument(Document doc) {
+        if(!signedIdCard.getOwnerDocument().equals(doc)) {
+            // Import the IDCard DOM element into the new document
+            return (Element)doc.importNode(signedIdCard, true);
+        }
+
+        return signedIdCard;
+    }
+
+    public LocalDateTime getNotBefore() {
+        Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
+        return LocalDateTime.parse(cond.getAttribute("NotBefore"), formatter);
+    }
+
+    public LocalDateTime getNotOnOrAfter() {
+        Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
+        return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), formatter);
     }
 
 }

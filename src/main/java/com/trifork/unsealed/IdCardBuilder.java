@@ -113,7 +113,7 @@ public class IdCardBuilder {
                 keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
-    public IdCard buildUserIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
+    public UserIdCard buildUserIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException {
 
         String keystoreTp = keystoreType;
@@ -129,13 +129,13 @@ public class IdCardBuilder {
 
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
-        IdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation, authorizationCode,
+        UserIdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation, authorizationCode,
                 systemName);
 
         return idCard;
     }
 
-    public IdCard buildSystemIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
+    public SystemIdCard buildSystemIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException {
 
         String keystoreTp = keystoreType;
@@ -151,7 +151,7 @@ public class IdCardBuilder {
 
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
-        IdCard idCard = new SystemIdCard(env, certificate, privateKey, systemName);
+        SystemIdCard idCard = new SystemIdCard(env, certificate, privateKey, systemName);
 
         return idCard;
     }

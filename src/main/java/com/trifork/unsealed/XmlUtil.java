@@ -13,6 +13,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class XmlUtil {
 	private static final String XML_ENCODING = "UTF-8";
@@ -133,6 +134,30 @@ public class XmlUtil {
 		child.setTextContent(textValue);
 		parent.appendChild(child);
 		return child;
+	}
+
+	public static String getTextChild(Element parent, NsPrefixes nsPrefix, String name) {
+		NodeList childNodes = parent.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node item = childNodes.item(0);
+			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName())) {
+				return item.getTextContent();
+			}
+		}
+
+		return null;
+	}
+
+	public static Element getChild(Element parent, NsPrefixes nsPrefix, String name) {
+		NodeList childNodes = parent.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node item = childNodes.item(i);
+			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName())) {
+				return (Element) item;
+			}
+		}
+
+		return null;
 	}
 
 	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value) {
