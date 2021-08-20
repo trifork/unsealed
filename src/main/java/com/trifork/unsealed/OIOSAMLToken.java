@@ -259,8 +259,6 @@ public class OIOSAMLToken {
     /**
      * Invoke this method to verify the validity of the <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and {@link #getNotOnOrAfter()} values.<br>
      *
-     * @throws dk.sosi.seal.model.ModelException
-     *             Thrown if the <code>AbstractOIOSamlToken</code> is invalid.
      */
     public void validateTimestamp() {
         // validateTimestamp(0);
@@ -271,8 +269,6 @@ public class OIOSAMLToken {
      *
      * @param allowedDriftInSeconds the amount of clock drift to allow in milliseconds
      *
-     * @throws dk.sosi.seal.model.ModelException
-     *             Thrown if the <code>AbstractOIOSamlToken</code> is invalid.
      */
     public void validateTimestamp(long allowedDriftInSeconds) {
         // if (allowedDriftInSeconds < 0) throw new IllegalArgumentException("'allowedDriftInSeconds' must not be negative!");
