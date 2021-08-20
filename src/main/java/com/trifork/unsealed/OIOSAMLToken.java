@@ -50,7 +50,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>dk:gov:saml:attribute:CprNumberIdentifier</code> value from the DOM.<br />
+     * Extract the <code>dk:gov:saml:attribute:CprNumberIdentifier</code> value from the DOM.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
@@ -67,7 +67,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> value from the DOM.<br />
+     * Extract the <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> value from the DOM.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
@@ -84,7 +84,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email value from the DOM.<br />
+     * Extract the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email value from the DOM.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
@@ -105,7 +105,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>saml:Conditions#NotBefore</code> value from the DOM.<br />
+     * Extract the <code>saml:Conditions#NotBefore</code> value from the DOM.<br>
      *
      * <pre>
      *   &lt;saml:Conditions NotBefore="2011-07-23T15:32:12Z" ... &gt;
@@ -123,7 +123,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>saml:Conditions#NotOnOrAfter</code> value from the DOM.<br />
+     * Extract the <code>saml:Conditions#NotOnOrAfter</code> value from the DOM.<br>
      *
      * <pre>
      *   &lt;saml:Conditions ... NotOnOrAfter="2011-07-23T15:37:12Z" &gt;
@@ -140,7 +140,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>urn:oid:2.5.4.10</code>/organizationName value from the token.<br />
+     * Extract the <code>urn:oid:2.5.4.10</code>/organizationName value from the token.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="urn:oid:2.5.4.10"
@@ -157,7 +157,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>urn:oid:2.5.4.4</code>/surName value from the token.<br />
+     * Extract the <code>urn:oid:2.5.4.4</code>/surName value from the token.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="urn:oid:2.5.4.4"
@@ -178,7 +178,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>dk:gov:saml:attribute:AssuranceLevel</code> value from the token.<br />
+     * Extract the <code>dk:gov:saml:attribute:AssuranceLevel</code> value from the token.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="dk:gov:saml:attribute:AssuranceLevel"&gt;
@@ -198,7 +198,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>dk:gov:saml:attribute:SpecVer</code> value from the DOM.<br />
+     * Extract the <code>dk:gov:saml:attribute:SpecVer</code> value from the DOM.<br>
      *
      * <pre>
      *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="dk:gov:saml:attribute:SpecVer"&gt;
@@ -218,7 +218,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>saml:AudienceRestriction</code> value from the DOM.<br />
+     * Extract the <code>saml:AudienceRestriction</code> value from the DOM.<br>
      *
      * <pre>
      *   &lt;saml:Conditions ... &gt;
@@ -238,7 +238,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Extract the <code>AuthnInstant</code> value from the DOM, that is the time the user originally authenticated herself.<br />
+     * Extract the <code>AuthnInstant</code> value from the DOM, that is the time the user originally authenticated herself.<br>
      *
      * <pre>
      *       &lt;saml:AuthnStatement AuthnInstant="2011-07-23T11:42:52Z"&gt;
@@ -256,7 +256,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Invoke this method to verify the validity of the <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and {@link #getNotOnOrAfter()} values.<br />
+     * Invoke this method to verify the validity of the <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and {@link #getNotOnOrAfter()} values.<br>
      *
      * @throws dk.sosi.seal.model.ModelException
      *             Thrown if the <code>AbstractOIOSamlToken</code> is invalid.
@@ -266,7 +266,7 @@ public class OIOSAMLToken {
     }
 
     /**
-     * Invoke this method to verify the validity of the <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and {@link #getNotOnOrAfter()} values.<br />
+     * Invoke this method to verify the validity of the <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and {@link #getNotOnOrAfter()} values.<br>
      *
      * @param allowedDriftInSeconds the amount of clock drift to allow in milliseconds
      *
