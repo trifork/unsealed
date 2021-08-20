@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,75 +26,33 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class IdCard {
+public abstract class IdCard {
     private static final Logger logger = Logger.getLogger(IdCard.class.getName());
 
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
-    // public static final String NsPrefixes.ds = "http://www.w3.org/2000/09/xmldsig#";
-    // public static final String SOAPENV_NS = "http://schemas.xmlsoap.org/soap/envelope/";
-    // public static final String NsPrefixes.saml = "urn:oasis:names:tc:SAML:2.0:assertion";
-    // public static final String NsPrefixes.wsa10 = "http://www.w3.org/2005/08/addressing";
-    // public static final String NsPrefixes.wsse = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
-    // public static final String NsPrefixes.wst = "http://schemas.xmlsoap.org/ws/2005/02/trust";
-    // public static final String NsPrefixes.wst13 = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
-    // public static final String WST_1_4_SCHEMA = "http://docs.oasis-open.org/ws-sx/ws-trust/200802";
-    // public static final String NsPrefixes.wsu = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
-    // public static final String NsPrefixes.wsp = "http://schemas.xmlsoap.org/ws/2004/09/policy";
-    // public static final String AUTH_NS = "http://docs.oasis-open.org/wsfed/authorization/200706";
-    private static final Pattern mocesSubjectRegex = Pattern
-            .compile("CN=([^\\+ ]+) ([^\\+]+) \\+ SERIALNUMBER=CVR:(\\d+)-RID:(\\d+), O=([^,]+), C=(\\w\\w)");
 
     static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
             .withZone(ZoneId.of("UTC"));
 
     private NSPEnv env;
-    private String cpr;
-    private String firstName;
-    private String lastName;
-    private String cvr;
-    private String organisation;
+    protected String cvr;
+    protected String organisation;
     private X509Certificate certificate;
     private Key privateKey;
-    private String email;
-    private String role;
-    private String occupation;
-    private String authorizationCode;
     private String systemName;
 
     private Element signedIdCard;
 
 
-    protected IdCard(NSPEnv env, String cpr, X509Certificate certificate, Key privateKey, String email, String role,
-            String occupation, String authorizationCode, String systemName) {
+    protected IdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
         this.env = env;
-        this.cpr = cpr;
         this.certificate = certificate;
         this.privateKey = privateKey;
-        this.email = email;
-        this.role = role;
-        this.occupation = occupation;
-        this.authorizationCode = authorizationCode;
         this.systemName = systemName;
     }
 
-    private void extractKeystoreOwnerInfo(X509Certificate cert) {
-        String subject = cert.getSubjectDN().getName();
-        Matcher matcher = mocesSubjectRegex.matcher(subject);
-        if (matcher.matches()) {
-            firstName = matcher.group(1);
-            lastName = matcher.group(2);
-            cvr = matcher.group(3);
-            // rid = matcher.group(4);
-            organisation = matcher.group(5);
-
-            int idx = organisation.indexOf(" // CVR:");
-            if (idx != -1) {
-                organisation = organisation.substring(0, idx);
-            }
-        }
-
-    }
+    protected abstract void extractKeystoreOwnerInfo(X509Certificate cert);
 
     public void sign() throws Exception {
 
@@ -227,10 +183,10 @@ public class IdCard {
         assertion.setAttribute("id", "IDCard");
         assertion.setIdAttribute("id", true);
 
-        appendChild(assertion, NsPrefixes.saml, "Issuer", firstName + " " + lastName);
+        appendChild(assertion, NsPrefixes.saml, "Issuer", "The SOSI library");
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
-        Element nameId = appendChild(subject, NsPrefixes.saml, "NameID", cpr);
-        nameId.setAttribute("Format", "medcom:cprnumber");
+
+        addSubjectAttributes(subject);
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
         appendChild(subjectConfirmation, NsPrefixes.saml, "ConfirmationMethod", "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
@@ -251,37 +207,9 @@ public class IdCard {
 
         addSamlAttribute(idCardData, "sosi:IDCardVersion", "1.0.1");
 
-        addSamlAttribute(idCardData, "sosi:IDCardType", "user");
-
-        addSamlAttribute(idCardData, "sosi:AuthenticationLevel", "4");
-
         addSamlAttribute(idCardData, "sosi:OCESCertHash", SignatureUtil.getDigestOfCertificate(certificate));
 
-        Element userLog = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        userLog.setAttribute("id", "UserLog");
-        // userLog.setIdAttribute("id", true);
-
-        addSamlAttribute(userLog, "medcom:UserCivilRegistrationNumber", cpr);
-
-        addSamlAttribute(userLog, "medcom:UserGivenName", firstName);
-
-        addSamlAttribute(userLog, "medcom:UserSurName", lastName);
-
-        if (email != null) {
-            addSamlAttribute(userLog, "medcom:UserEmailAddress", email);
-        }
-
-        if (role != null) {
-            addSamlAttribute(userLog, "medcom:UserRole", role);
-        }
-
-        if (occupation != null) {
-            addSamlAttribute(userLog, "medcom:UserOccupation", occupation);
-        }
-
-        if (authorizationCode != null) {
-            addSamlAttribute(userLog, "medcom:AuthorizationCode", authorizationCode);
-        }
+        addTypeSpecificAttributes(idCardData, assertion);
 
         Element systemLog = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         systemLog.setAttribute("id", "SystemLog");
@@ -298,7 +226,11 @@ public class IdCard {
         return assertion;
     }
 
-    private void addSamlAttribute(Element parent, String name, String value) {
+    protected abstract void addSubjectAttributes(Element assertion);
+
+    protected abstract void addTypeSpecificAttributes(Element idCardData, Element assertion);
+
+    protected void addSamlAttribute(Element parent, String name, String value) {
         addSamlAttribute(parent, name, value, null);
     }
 

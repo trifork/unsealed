@@ -2,6 +2,7 @@ package com.trifork.unsealed;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
@@ -112,43 +113,72 @@ public class IdCardBuilder {
                 keystore, keystoreType, keystorePassword, email, role, occupation, authorizationCode, systemName);
     }
 
-    public IdCard build() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            UnrecoverableKeyException {
-        InputStream keystoreIs;
+    public IdCard buildUserIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
+            CertificateException, UnrecoverableKeyException {
+
         String keystoreTp = keystoreType;
 
         KeyStore ks;
         if (keystore != null) {
             ks = keystore;
         } else {
-            if (keystoreFromInputStream != null) {
-                keystoreIs = keystoreFromInputStream;
-                if (keystoreType == null) {
-                    throw new IllegalStateException("KeystoreType must be specified with keystoreFromInputStream");
-                }
-            } else if (keystoreFromClassPath != null) {
-                keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
-                keystoreTp = guessKeystoreType(keystoreFromClassPath);
-            } else if (keystoreFromFilePath != null) {
-                keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
-                keystoreTp = guessKeystoreType(keystoreFromClassPath);
-            } else {
-                throw new IllegalStateException("No keystoreificate specified");
-            }
-
-            ks = KeyStore.getInstance(keystoreTp);
-            ks.load(keystoreIs, keystorePassword);
+            ks = loadKeystore(keystoreTp, keystoreFromFilePath);
         }
 
         X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
-
-        IdCard idCard = new IdCard(env, cpr, certificate, privateKey, email, role, occupation,
-                authorizationCode, systemName);
+        IdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation, authorizationCode,
+                systemName);
 
         return idCard;
+    }
+
+    public IdCard buildSystemIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
+            CertificateException, UnrecoverableKeyException {
+
+        String keystoreTp = keystoreType;
+
+        KeyStore ks;
+        if (keystore != null) {
+            ks = keystore;
+        } else {
+            ks = loadKeystore(keystoreTp, keystoreFromFilePath);
+        }
+
+        X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+
+        Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
+
+        IdCard idCard = new SystemIdCard(env, certificate, privateKey, systemName);
+
+        return idCard;
+    }
+
+    private KeyStore loadKeystore(String keystoreTp, String keystoreFromFilePath) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        InputStream keystoreIs;
+        KeyStore ks;
+
+        if (keystoreFromInputStream != null) {
+            keystoreIs = keystoreFromInputStream;
+            if (keystoreType == null) {
+                throw new IllegalStateException("KeystoreType must be specified with keystoreFromInputStream");
+            }
+        } else if (keystoreFromClassPath != null) {
+            keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
+            keystoreTp = guessKeystoreType(keystoreFromClassPath);
+        } else if (keystoreFromFilePath != null) {
+            keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
+            keystoreTp = guessKeystoreType(keystoreFromClassPath);
+        } else {
+            throw new IllegalStateException("No keystoreificate specified");
+        }
+
+        ks = KeyStore.getInstance(keystoreTp);
+        ks.load(keystoreIs, keystorePassword);
+
+        return ks;
     }
 
     static String guessKeystoreType(String path) {

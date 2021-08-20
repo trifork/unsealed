@@ -8,14 +8,21 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignIdCard() throws Exception {
         IdCardBuilder builder = new IdCardBuilder();
-        IdCard idCard = builder.env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("LarsLarsen.p12").keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role").occupation("occupation").authorizationCode("authid").systemName("systemname").build();
+        IdCard idCard = builder.env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("LarsLarsen.p12").keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role").occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+        idCard.sign();
+    }
+
+    @Test
+    void canSignSystemIdCard() throws Exception {
+        IdCardBuilder builder = new IdCardBuilder();
+        IdCard idCard = builder.env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("TRIFORK AS - FMK-online.jks").keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
         idCard.sign();
     }
 
     @Test
     void canExchangeIdCardToOIOSAMLToken() throws Exception {
         IdCardBuilder builder = new IdCardBuilder();
-        IdCard idCard = builder.env(NSPTestEnv.TEST1_DNSP).keystoreFromClassPath("LarsLarsen.p12").keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role").occupation("occupation").systemName("systemname").build();
+        IdCard idCard = builder.env(NSPTestEnv.TEST1_DNSP).keystoreFromClassPath("LarsLarsen.p12").keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role").occupation("occupation").systemName("systemname").buildUserIdCard();
         idCard.sign();
 
         idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");

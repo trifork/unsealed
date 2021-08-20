@@ -91,7 +91,7 @@ public class BootstrapTokenTest extends AbstractTest {
             os.write(data, 0, nRead);
         }
 
-        return os.toString(StandardCharsets.UTF_8);
+        return os.toString(StandardCharsets.UTF_8.name());
     }
 
 }
