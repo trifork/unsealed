@@ -246,6 +246,7 @@ public class OIOSAMLToken {
      *              &lt;saml:AuthnContextClassRef&gt;urn:oasis:names:tc:SAML:2.0:ac:classes:X509&lt;/saml:AuthnContextClassRef&gt;
      *          &lt;/saml:AuthnContext&gt;
      *       &lt;/saml:AuthnStatement&gt;
+     * </pre>
      *
      * @return The value of the <code>AuthnInstant</code> attribute.
      */
