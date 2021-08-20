@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class BootstrapTokenTest extends AbstractTest {
@@ -69,6 +70,7 @@ public class BootstrapTokenTest extends AbstractTest {
         System.out.println("response: " + response);
     }
 
+    @Disabled
     @Test
     void cannotExchangeObsoleteBootstrapTokenToIDWSToken() throws Exception {
 
