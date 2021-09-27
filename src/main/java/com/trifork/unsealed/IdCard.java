@@ -119,6 +119,10 @@ public abstract class IdCard {
         return null;
     }
 
+    public String asString(boolean pretty, boolean includeXMLHeader) {
+        return XmlUtil.node2String(signedIdCard, pretty, includeXMLHeader);
+    }
+
     static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
         // Neither DocumentBuilderFactory nor DocumentBuilder are guarenteed to be
         // thread safe
