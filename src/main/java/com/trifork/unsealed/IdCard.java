@@ -86,9 +86,6 @@ public abstract class IdCard {
 
         doc.appendChild(requestBody);
 
-        // Without this, canonicalisation/digest calculation is incorrect
-        doc.normalizeDocument();
-
         SignatureUtil.sign(idcard, null, new String[] { "#IDCard" }, "OCESSignature", certificate, privateKey, true);
 
         logger.log(FINE, "Request body: " + XmlUtil.node2String(requestBody, true, false));

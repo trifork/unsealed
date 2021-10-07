@@ -47,6 +47,9 @@ public class SignatureUtil {
             throw new IllegalArgumentException("rootElement cannot be null");
         }
 
+        // Without this, canonicalisation/digest calculation is incorrect
+        rootElement.getOwnerDocument().normalizeDocument();
+
         List<Transform> transforms = new ArrayList<>();
         if (enveloped) {
             transforms.add(xmlSignatureFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));

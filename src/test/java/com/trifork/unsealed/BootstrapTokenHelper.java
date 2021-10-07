@@ -58,8 +58,6 @@ public class BootstrapTokenHelper {
         String referenceUri = "#" + assertionId;
         String signatureId = null;
 
-        doc.normalizeDocument();
-
         SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert, idpPrivateKey, true);
 
         return XmlUtil.node2String(assertion, false, false);

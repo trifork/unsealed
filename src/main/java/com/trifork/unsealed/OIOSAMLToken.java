@@ -88,7 +88,6 @@ public class OIOSAMLToken {
         Element request = createSAMLTokenToIdCardRequest(samlToken);
 
         Document doc = request.getOwnerDocument();
-        doc.normalizeDocument();
 
         SignatureUtil.sign(doc.getElementById("security"), null,
                 new String[] { "#messageID", "#action", "#ts", "#body" }, null, certificate, privateKey, false);
