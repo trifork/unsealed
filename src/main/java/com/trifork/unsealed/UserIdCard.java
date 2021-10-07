@@ -32,6 +32,11 @@ public class UserIdCard extends IdCard {
         this.email = email;
     }
 
+    protected UserIdCard(NSPEnv env, Element signedIdCard) {
+        super(env, null, null, null);
+        this.signedIdCard = signedIdCard;
+    }
+
     @Override
     protected void extractKeystoreOwnerInfo(X509Certificate cert) {
         String subject = cert.getSubjectDN().getName();
@@ -58,34 +63,34 @@ public class UserIdCard extends IdCard {
 
     @Override
     protected void addTypeSpecificAttributes(Element idCardData, Element assertion) {
-        addSamlAttribute(idCardData, "sosi:IDCardType", "user");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardType", "user");
 
-        addSamlAttribute(idCardData, "sosi:AuthenticationLevel", "4");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:AuthenticationLevel", "4");
 
         Element userLog = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         userLog.setAttribute("id", "UserLog");
         // userLog.setIdAttribute("id", true);
 
-        addSamlAttribute(userLog, "medcom:UserCivilRegistrationNumber", cpr);
+        SamlUtil.addSamlAttribute(userLog, "medcom:UserCivilRegistrationNumber", cpr);
 
-        addSamlAttribute(userLog, "medcom:UserGivenName", firstName);
+        SamlUtil.addSamlAttribute(userLog, "medcom:UserGivenName", firstName);
 
-        addSamlAttribute(userLog, "medcom:UserSurName", lastName);
+        SamlUtil.addSamlAttribute(userLog, "medcom:UserSurName", lastName);
 
         if (email != null) {
-            addSamlAttribute(userLog, "medcom:UserEmailAddress", email);
+            SamlUtil.addSamlAttribute(userLog, "medcom:UserEmailAddress", email);
         }
 
         if (role != null) {
-            addSamlAttribute(userLog, "medcom:UserRole", role);
+            SamlUtil.addSamlAttribute(userLog, "medcom:UserRole", role);
         }
 
         if (occupation != null) {
-            addSamlAttribute(userLog, "medcom:UserOccupation", occupation);
+            SamlUtil.addSamlAttribute(userLog, "medcom:UserOccupation", occupation);
         }
 
         if (authorizationCode != null) {
-            addSamlAttribute(userLog, "medcom:AuthorizationCode", authorizationCode);
+            SamlUtil.addSamlAttribute(userLog, "medcom:AuthorizationCode", authorizationCode);
         }
     }
 

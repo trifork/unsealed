@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-
-import javax.management.InstanceNotFoundException;
 
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -60,12 +57,7 @@ public class IDCardTest extends AbstractTest {
                 .occupation("occupation").systemName("systemname").buildUserIdCard();
         idCard.sign();
 
-        idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
+        OIOSAMLToken samlToken = idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
+        assertNotNull(samlToken);
     }
-
-    @Test
-    void canExchangeOIOSAMLTokenToIdCard() throws Exception {
-        // TODO
-    }
-
 }

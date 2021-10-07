@@ -43,6 +43,10 @@ public class SignatureUtil {
         // Create a Reference to the enveloped document (in this case we are
         // signing the whole document, so a URI of "" signifies that) and
         // also specify the SHA256 digest algorithm and the ENVELOPED Transform.
+        if (rootElement == null) {
+            throw new IllegalArgumentException("rootElement cannot be null");
+        }
+
         List<Transform> transforms = new ArrayList<>();
         if (enveloped) {
             transforms.add(xmlSignatureFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));

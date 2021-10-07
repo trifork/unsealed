@@ -38,9 +38,9 @@ public class SystemIdCard extends IdCard {
 
     @Override
     protected void addTypeSpecificAttributes(Element idCardData, Element assertion) {
-        addSamlAttribute(idCardData, "sosi:IDCardType", "system");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardType", "system");
 
-        addSamlAttribute(idCardData, "sosi:AuthenticationLevel", "3");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:AuthenticationLevel", "3");
     }
     
 }

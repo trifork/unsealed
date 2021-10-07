@@ -1,5 +1,7 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.KeystoreUtil.guessKeystoreType;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +14,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class BootstrapTokenBuilder {
+public class BootstrapTokenBuilder extends AbstractSigningBuilder {
     private NSPEnv env;
     private String xml;
     private String keystoreFromClassPath;
@@ -84,10 +86,10 @@ public class BootstrapTokenBuilder {
                 }
             } else if (keystoreFromClassPath != null) {
                 keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
-                keystoreTp = IdCardBuilder.guessKeystoreType(keystoreFromClassPath);
+                keystoreTp = guessKeystoreType(keystoreFromClassPath);
             } else if (keystoreFromFilePath != null) {
                 keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
-                keystoreTp = IdCardBuilder.guessKeystoreType(keystoreFromClassPath);
+                keystoreTp = guessKeystoreType(keystoreFromClassPath);
             } else {
                 throw new IllegalStateException("No keystore specified");
             }

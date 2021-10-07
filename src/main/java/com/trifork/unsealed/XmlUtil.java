@@ -1,8 +1,16 @@
 package com.trifork.unsealed;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -87,10 +95,58 @@ public class XmlUtil {
 		SOSI_NAMESPACES.put(NS_XSD, XSD_SCHEMA);
 	}
 
-	public static String node2String(Node node, boolean pretty, boolean includeXMLHeader) {
+	public static final DateTimeFormatter ISO_WITH_MILLIS_FORMATTER = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("UTC"));
 
+	public static final DateTimeFormatter ISO_WITHOUT_MILLIS_FORMATTER = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
+
+	public static Supplier<InputStream> node2InputStream(Node node, boolean pretty, boolean includeXMLHeader) {
+
+		return new Supplier<InputStream>() {
+
+			@Override
+			public InputStream get() {
+				ByteArrayOutputStream bas = new ByteArrayOutputStream();
+				try {
+					TransformerFactory factory = TransformerFactory.newInstance();
+					Transformer transformer = factory.newTransformer();
+
+					transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+					transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+					transformer.setOutputProperty(OutputKeys.INDENT, (pretty) ? "yes" : "no");
+					transformer.setOutputProperty(OutputKeys.ENCODING, XML_ENCODING);
+					transformer.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "4");
+
+					transformer.transform(new DOMSource(node), new StreamResult(bas));
+
+					return new ByteArrayInputStream(bas.toByteArray());
+
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new RuntimeException("Unable to pretty print xml", e);
+				}
+			}
+		};
+	}
+
+	public static String node2String(Node node, boolean pretty, boolean includeXMLHeader)
+			throws UnsupportedEncodingException {
 		ByteArrayOutputStream bas = new ByteArrayOutputStream();
-		try {
+
+		node2OutputStream(node, pretty, includeXMLHeader, bas);
+
+		String str = bas.toString(XML_ENCODING);
+		if (includeXMLHeader) {
+			str = "<?xml version=\"1.0\" encoding=\"" + XML_ENCODING + "\" ?>" + ((pretty) ? "\n" + str : str);
+		}
+		return str;
+	}
+
+	public static void node2OutputStream(Node node, boolean pretty, boolean includeXMLHeader, OutputStream os) {
+
+		try (os) {
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer();
 
@@ -100,13 +156,8 @@ public class XmlUtil {
 			transformer.setOutputProperty(OutputKeys.ENCODING, XML_ENCODING);
 			transformer.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "4");
 
-			transformer.transform(new DOMSource(node), new StreamResult(bas));
+			transformer.transform(new DOMSource(node), new StreamResult(os));
 
-			String str = bas.toString(XML_ENCODING);
-			if (includeXMLHeader) {
-				str = "<?xml version=\"1.0\" encoding=\"" + XML_ENCODING + "\" ?>" + ((pretty) ? "\n" + str : str);
-			}
-			return str;
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
@@ -136,6 +187,17 @@ public class XmlUtil {
 		return child;
 	}
 
+	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value) {
+		elm.setAttributeNS(NsPrefixes.wsu.namespaceUri, ns.name() + ":" + name, value);
+	}
+
+	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value, boolean isId) {
+		setAttribute(elm, ns, name, value);
+		if (isId) {
+			elm.setIdAttributeNS(NsPrefixes.wsu.namespaceUri, name, true);
+		}
+	}
+
 	public static String getTextChild(Element parent, NsPrefixes nsPrefix, String name) {
 		NodeList childNodes = parent.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
@@ -160,15 +222,24 @@ public class XmlUtil {
 		return null;
 	}
 
-	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value) {
-		elm.setAttributeNS(NsPrefixes.wsu.namespaceUri, ns.name() + ":" + name, value);
-	}
-
-	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value, boolean isId) {
-		setAttribute(elm, ns, name, value);
-		if (isId) {
-			elm.setIdAttributeNS(NsPrefixes.wsu.namespaceUri, name, true);
+    public static Element getChild(Element parent, NsPrefixes nsPrefix, String name, Predicate<Element> predicate) {
+		NodeList childNodes = parent.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node item = childNodes.item(i);
+			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName()) && predicate.test((Element)item)) {
+				return (Element) item;
+			}
 		}
-	}
+
+		return null;
+    }
+
+
+	public static void declareNamespaces(Element element, NsPrefixes... prefixes) {
+        for (NsPrefixes prefix : prefixes) {
+            element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix.name(), prefix.namespaceUri);
+        }
+    }
+
 
 }

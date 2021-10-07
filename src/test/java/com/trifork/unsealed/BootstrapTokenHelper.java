@@ -1,5 +1,6 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.SamlUtil.addSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 
 import java.security.Key;
@@ -29,7 +30,7 @@ public class BootstrapTokenHelper {
 
         Element assertion = appendChild(doc, NsPrefixes.saml, "Assertion");
 
-        assertion.setAttribute("IssueInstant", IdCard.formatter.format(now));
+        assertion.setAttribute("IssueInstant", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now));
         assertion.setAttribute("Version", "2.0");
         // String assertionId = "_" + UUID.randomUUID().toString();
         String assertionId = "bst";
@@ -45,10 +46,10 @@ public class BootstrapTokenHelper {
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
         subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
         Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml, "SubjectConfirmationData");
-        subjectConfirmationData.setAttribute("NotOnOrAfter", IdCard.formatter.format(now.plusSeconds(3600)));
+        subjectConfirmationData.setAttribute("NotOnOrAfter", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
         subjectConfirmationData.setAttribute("Recipient", "https://sosi");
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
-        conditions.setAttribute("NotOnOrAfter", IdCard.formatter.format(now.plusSeconds(3600)));
+        conditions.setAttribute("NotOnOrAfter", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
         appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml, "Audience", "https://bootstrap.sts.nemlog-in.dk/");
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         Element assurranceLevelAttr = addSamlAttribute(attributeStatement, "Attribute", "3", "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
@@ -64,16 +65,6 @@ public class BootstrapTokenHelper {
         return XmlUtil.node2String(assertion, false, false);
     }
 
-    private static Element addSamlAttribute(Element parent, String name, String value, String nameFormat) {
-        Element attr = appendChild(parent, NsPrefixes.saml, "Attribute");
-        attr.setAttribute("Name", name);
-        if (nameFormat != null) {
-            attr.setAttribute("NameFormat", nameFormat);
-        }
-        appendChild(attr, NsPrefixes.saml, "AttributeValue", value);
-
-        return attr;
-    }
 
 
 

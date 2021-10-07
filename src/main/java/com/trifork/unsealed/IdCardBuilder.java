@@ -1,8 +1,9 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.KeystoreUtil.guessKeystoreType;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
@@ -13,7 +14,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class IdCardBuilder {
+public class IdCardBuilder extends AbstractSigningBuilder {
 
     private NSPEnv env;
     private String cpr;
@@ -172,7 +173,7 @@ public class IdCardBuilder {
             keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
             keystoreTp = guessKeystoreType(keystoreFromClassPath);
         } else {
-            throw new IllegalStateException("No keystoreificate specified");
+            throw new IllegalStateException("No keystore specified");
         }
 
         ks = KeyStore.getInstance(keystoreTp);
@@ -181,7 +182,4 @@ public class IdCardBuilder {
         return ks;
     }
 
-    static String guessKeystoreType(String path) {
-        return path.endsWith(".jks") ? "JKS" : "PKCS12";
-    }
 }

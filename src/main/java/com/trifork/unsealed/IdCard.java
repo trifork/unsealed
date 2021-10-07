@@ -1,20 +1,20 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER;
 import static com.trifork.unsealed.XmlUtil.appendChild;
-import static com.trifork.unsealed.XmlUtil.getTextChild;
 import static com.trifork.unsealed.XmlUtil.getChild;
+import static com.trifork.unsealed.XmlUtil.getTextChild;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -24,10 +24,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public abstract class IdCard {
     private static final Logger logger = Logger.getLogger(IdCard.class.getName());
@@ -35,8 +37,9 @@ public abstract class IdCard {
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
 
-    static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-            .withZone(ZoneId.of("UTC"));
+    private static final String IDCARD_TO_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
+    + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
+    + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse/" + NsPrefixes.wst13.name() + ":RequestedSecurityToken";
 
     private NSPEnv env;
     protected String cvr;
@@ -45,14 +48,22 @@ public abstract class IdCard {
     private Key privateKey;
     private String systemName;
 
-    private Element signedIdCard;
+    protected Element signedIdCard;
 
+    private Element assertion;
+
+    private Element encryptedAssertion;
 
     protected IdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
         this.env = env;
         this.certificate = certificate;
         this.privateKey = privateKey;
         this.systemName = systemName;
+    }
+
+    IdCard(NSPEnv env, Element signedIdCard) {
+        this.env = env;
+        this.signedIdCard = signedIdCard;
     }
 
     protected abstract void extractKeystoreOwnerInfo(X509Certificate cert);
@@ -101,8 +112,8 @@ public abstract class IdCard {
 
     }
 
-    public OIOSAMLToken exchangeToOIOSAMLToken(String audience)
-            throws ParserConfigurationException, IOException, InterruptedException {
+    public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,
+            InterruptedException, SAXException, XPathExpressionException {
         if (signedIdCard == null) {
             throw new IllegalStateException("IdCard must be signed before it can be exchanged");
         }
@@ -116,10 +127,24 @@ public abstract class IdCard {
 
         logger.log(FINE, "Response: " + response);
 
-        return null;
+        DocumentBuilder docBuilder = getDocBuilder();
+
+        Document responseDoc = docBuilder.parse(new ByteArrayInputStream(response.getBytes((StandardCharsets.UTF_8))));
+
+        XPathContext xpath = new XPathContext(responseDoc);
+
+        Element requestedSecurityToken = xpath.findElement(IDCARD_TO_TOKEN_RESPONSE_XPATH);
+
+        assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "saml:EncryptedAssertion");
+        if (assertion != null) {
+            return new OIOSAMLToken(env, null, null, assertion, false, null);
+        }
+        
+        encryptedAssertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "EncryptedAssertion");
+        return new OIOSAMLToken(env, null, null, encryptedAssertion, true, null);
     }
 
-    public String asString(boolean pretty, boolean includeXMLHeader) {
+    public String asString(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {
         return XmlUtil.node2String(signedIdCard, pretty, includeXMLHeader);
     }
 
@@ -139,13 +164,14 @@ public abstract class IdCard {
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
         Element security = appendChild(soapHeader, NsPrefixes.wsse, "Security");
         Element timestamp = appendChild(security, NsPrefixes.wsu, "Timestamp");
-        appendChild(timestamp, NsPrefixes.wsu, "Created", formatter.format(Instant.now()));
+        appendChild(timestamp, NsPrefixes.wsu, "Created", ISO_WITHOUT_MILLIS_FORMATTER.format(Instant.now()));
 
         Element soapBody = appendChild(envelope, NsPrefixes.soap, "Body");
         Element requestSecurityToken = appendChild(soapBody, NsPrefixes.wst, "RequestSecurityToken");
         requestSecurityToken.setAttribute("Context", "www.sosi.dk");
         appendChild(requestSecurityToken, NsPrefixes.wst, "TokenType", "urn:oasis:names:tc:SAML:2.0:assertion:");
-        appendChild(requestSecurityToken, NsPrefixes.wst, "RequestType", "http://schemas.xmlsoap.org/ws/2005/02/trust/Issue");
+        appendChild(requestSecurityToken, NsPrefixes.wst, "RequestType",
+                "http://schemas.xmlsoap.org/ws/2005/02/trust/Issue");
         Element claims = appendChild(requestSecurityToken, NsPrefixes.wst, "Claims");
         claims.appendChild(idcard);
 
@@ -158,7 +184,8 @@ public abstract class IdCard {
         Element envelope = doc.createElementNS(NsPrefixes.soap.namespaceUri, "Envelope");
 
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
-        appendChild(soapHeader, NsPrefixes.wsa10, "Action", "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
+        appendChild(soapHeader, NsPrefixes.wsa10, "Action",
+                "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
         String msgId = "urn:uuid:" + UUID.randomUUID().toString();
         appendChild(soapHeader, NsPrefixes.wsa10, "MessageID", msgId);
 
@@ -185,7 +212,7 @@ public abstract class IdCard {
 
         Element assertion = doc.createElementNS(NsPrefixes.saml.namespaceUri, "Assertion");
 
-        assertion.setAttribute("IssueInstant", formatter.format(now));
+        assertion.setAttribute("IssueInstant", ISO_WITHOUT_MILLIS_FORMATTER.format(now));
         assertion.setAttribute("Version", "2.0");
         assertion.setAttribute("id", "IDCard");
         assertion.setIdAttribute("id", true);
@@ -196,25 +223,27 @@ public abstract class IdCard {
         addSubjectAttributes(subject);
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
-        appendChild(subjectConfirmation, NsPrefixes.saml, "ConfirmationMethod", "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
+        appendChild(subjectConfirmation, NsPrefixes.saml, "ConfirmationMethod",
+                "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
 
-        Element keyInfo = appendChild(appendChild(subjectConfirmation, NsPrefixes.saml, "SubjectConfirmationData"), NsPrefixes.ds,
-                "KeyInfo");
+        Element keyInfo = appendChild(appendChild(subjectConfirmation, NsPrefixes.saml, "SubjectConfirmationData"),
+                NsPrefixes.ds, "KeyInfo");
 
         appendChild(keyInfo, NsPrefixes.ds, "KeyName", "OCESSignature");
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
         Instant validFrom = now.minusMillis(1000);
-        conditions.setAttribute("NotBefore", formatter.format(validFrom));
-        conditions.setAttribute("NotOnOrAfter", formatter.format(validFrom.plus(24, ChronoUnit.HOURS)));
+        conditions.setAttribute("NotBefore", ISO_WITHOUT_MILLIS_FORMATTER.format(validFrom));
+        conditions.setAttribute("NotOnOrAfter",
+                ISO_WITHOUT_MILLIS_FORMATTER.format(validFrom.plus(24, ChronoUnit.HOURS)));
 
         Element idCardData = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         idCardData.setAttribute("id", "IDCardData");
 
-        addSamlAttribute(idCardData, "sosi:IDCardID", UUID.randomUUID().toString());
+        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardID", UUID.randomUUID().toString());
 
-        addSamlAttribute(idCardData, "sosi:IDCardVersion", "1.0.1");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardVersion", "1.0.1");
 
-        addSamlAttribute(idCardData, "sosi:OCESCertHash", SignatureUtil.getDigestOfCertificate(certificate));
+        SamlUtil.addSamlAttribute(idCardData, "sosi:OCESCertHash", SignatureUtil.getDigestOfCertificate(certificate));
 
         addTypeSpecificAttributes(idCardData, assertion);
 
@@ -223,12 +252,12 @@ public abstract class IdCard {
         // systemLog.setIdAttribute("id", true);
 
         if (systemName != null) {
-            addSamlAttribute(systemLog, "medcom:ITSystemName", systemName);
+            SamlUtil.addSamlAttribute(systemLog, "medcom:ITSystemName", systemName);
         }
 
-        addSamlAttribute(systemLog, "medcom:CareProviderID", cvr, "medcom:cvrnumber");
+        SamlUtil.addSamlAttribute(systemLog, "medcom:CareProviderID", cvr, "medcom:cvrnumber");
 
-        addSamlAttribute(systemLog, "medcom:CareProviderName", organisation);
+        SamlUtil.addSamlAttribute(systemLog, "medcom:CareProviderName", organisation);
 
         return assertion;
     }
@@ -236,19 +265,6 @@ public abstract class IdCard {
     protected abstract void addSubjectAttributes(Element assertion);
 
     protected abstract void addTypeSpecificAttributes(Element idCardData, Element assertion);
-
-    protected void addSamlAttribute(Element parent, String name, String value) {
-        addSamlAttribute(parent, name, value, null);
-    }
-
-    private void addSamlAttribute(Element parent, String name, String value, String nameFormat) {
-        Element attr = appendChild(parent, NsPrefixes.saml, "Attribute");
-        attr.setAttribute("Name", name);
-        if (nameFormat != null) {
-            attr.setAttribute("NameFormat", nameFormat);
-        }
-        appendChild(attr, NsPrefixes.saml, "AttributeValue", value);
-    }
 
     public String getIssuer() {
         return getTextChild(signedIdCard, NsPrefixes.saml, "Issuer");
@@ -259,9 +275,9 @@ public abstract class IdCard {
     }
 
     public Element serialize2DOMDocument(Document doc) {
-        if(!signedIdCard.getOwnerDocument().equals(doc)) {
+        if (!signedIdCard.getOwnerDocument().equals(doc)) {
             // Import the IDCard DOM element into the new document
-            return (Element)doc.importNode(signedIdCard, true);
+            return (Element) doc.importNode(signedIdCard, true);
         }
 
         return signedIdCard;
@@ -269,12 +285,12 @@ public abstract class IdCard {
 
     public LocalDateTime getNotBefore() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
-        return LocalDateTime.parse(cond.getAttribute("NotBefore"), formatter);
+        return LocalDateTime.parse(cond.getAttribute("NotBefore"), ISO_WITHOUT_MILLIS_FORMATTER);
     }
 
     public LocalDateTime getNotOnOrAfter() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
-        return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), formatter);
+        return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), ISO_WITHOUT_MILLIS_FORMATTER);
     }
 
 }

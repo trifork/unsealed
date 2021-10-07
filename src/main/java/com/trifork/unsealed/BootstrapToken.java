@@ -1,6 +1,7 @@
 package com.trifork.unsealed;
 
 import static com.trifork.unsealed.XmlUtil.appendChild;
+import static com.trifork.unsealed.XmlUtil.declareNamespaces;
 import static com.trifork.unsealed.XmlUtil.setAttribute;
 import static java.util.logging.Level.FINE;
 
@@ -113,26 +114,23 @@ public class BootstrapToken {
 
         Element action = appendChild(soapHeader, NsPrefixes.wsa10, "Action",
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
-
         setAttribute(action, NsPrefixes.wsu, "Id", "action", true);
 
         String msgId = "urn:uuid:" + UUID.randomUUID().toString();
         Element messageID = appendChild(soapHeader, NsPrefixes.wsa10, "MessageID", msgId);
-
         setAttribute(messageID, NsPrefixes.wsu, "Id", "messageID", true);
 
         Element security = appendChild(soapHeader, NsPrefixes.wsse, "Security");
         setAttribute(security, NsPrefixes.wsu, "Id", "security", true);
-
         security.setAttribute("mustUnderstand", "1");
 
         Element timestamp = appendChild(security, NsPrefixes.wsu, "Timestamp");
         setAttribute(timestamp, NsPrefixes.wsu, "Id", "ts", true);
-
-        appendChild(timestamp, NsPrefixes.wsu, "Created", IdCard.formatter.format(Instant.now()));
+        appendChild(timestamp, NsPrefixes.wsu, "Created", XmlUtil.ISO_WITH_MILLIS_FORMATTER.format(Instant.now()));
 
         Element soapBody = appendChild(envelope, NsPrefixes.soap, "Body");
         setAttribute(soapBody, NsPrefixes.wsu, "Id", "body", true);
+
         Element requestSecurityToken = appendChild(soapBody, NsPrefixes.wst13, "RequestSecurityToken");
         requestSecurityToken.setAttribute("Context", "urn:uuid:" + UUID.randomUUID().toString());
         appendChild(requestSecurityToken, NsPrefixes.wst13, "TokenType",
@@ -141,7 +139,6 @@ public class BootstrapToken {
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue");
 
         Element actAs = appendChild(requestSecurityToken, NsPrefixes.wst14, "ActAs");
-
         actAs.appendChild(doc.importNode(bootstrapToken, true));
 
         appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa10,
@@ -156,9 +153,4 @@ public class BootstrapToken {
         return envelope;
     }
 
-    private void declareNamespaces(Element element, NsPrefixes... prefixes) {
-        for (NsPrefixes prefix : prefixes) {
-            element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix.name(), prefix.namespaceUri);
-        }
-    }
 }
