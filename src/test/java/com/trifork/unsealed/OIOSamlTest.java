@@ -51,7 +51,7 @@ public class OIOSamlTest extends AbstractTest {
                 "C=DK,O=TRIFORK A/S // CVR:20921897,CN=Lars Larsen,Serial=CVR:20921897-RID:52723247");
 
         SAMLTokenBuilder samlTokenBuilder = new SAMLTokenBuilder();
-        OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP).keystoreFromClassPath("TRIFORK AS - FMK-online.jks")
+        OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();
 
         IdCard exchangedIdCard = samlToken.exchangeToIdCard();

@@ -76,6 +76,8 @@ public class SAMLTokenBuilder extends AbstractSigningBuilder {
         KeyStore ks = loadKeystore(keystoreType, keystoreFromFilePath);
         X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 
+        certificate.checkValidity();
+
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
         return new OIOSAMLToken(env, privateKey, certificate, assertion, assertion != null && "EncryptedAssertion".equals(assertion.getTagName()), xml);

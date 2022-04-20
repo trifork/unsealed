@@ -1,14 +1,14 @@
 package com.trifork.unsealed;
 
 public enum NSPTestEnv implements NSPEnv {
-    TEST1_CNSP("http://test1-cnsp.ekstern-test.nspop.dk:8080"),
-    TEST1_DNSP("http://test1.ekstern-test.nspop.dk:8080"),
-    TEST2_CNSP("http://test2-cnsp.ekstern-test.nspop.dk:8080"),
-    TEST2_DNSP("http://test2.ekstern-test.nspop.dk:8080"),
-    PRODTEST_CNSP("http://prodtest-cnsp.ekstern-test.nspop.dk:8080"),
-    PRODTEST_DNSP("http://prodtest.ekstern-test.nspop.dk:8080"),
-    UDD_CNSP("http://uddannelse-cnsp.ekstern-test.nspop.dk:8080"),
-    UDD_DNSP("http://uddannelse.ekstern-test.nspop.dk:8080");
+    TEST1_CNSP("https://test1-cnsp.ekstern-test.nspop.dk:8443"),
+    TEST1_DNSP("https://test1.ekstern-test.nspop.dk:8443"),
+    TEST2_CNSP("https://test2-cnsp.ekstern-test.nspop.dk:8443"),
+    TEST2_DNSP("https://test2.ekstern-test.nspop.dk:8443"),
+    PRODTEST_CNSP("https://prodtest-cnsp.ekstern-test.nspop.dk:8443"),
+    PRODTEST_DNSP("https://prodtest.ekstern-test.nspop.dk:8443"),
+    UDD_CNSP("https://uddannelse-cnsp.ekstern-test.nspop.dk:8443"),
+    UDD_DNSP("https://uddannelse.ekstern-test.nspop.dk:8443");
 
     private String stsBaseUrl;
 

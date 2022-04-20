@@ -16,6 +16,7 @@ import org.w3c.dom.Element;
 public class BootstrapTokenHelper {
 
 	static final Logger log = Logger.getLogger(BootstrapTokenHelper.class.getName());
+    private static final String WELLKNOWN_STS_TEST_ISSUER = "TEST trusted IdP";
 
     static String createBootstrapToken(X509Certificate idpCert, Key idpPrivateKey, String subjectName)
             throws Exception {
@@ -37,7 +38,7 @@ public class BootstrapTokenHelper {
         assertion.setAttribute("ID", assertionId);
         assertion.setIdAttribute("ID", true);
 
-        appendChild(assertion, NsPrefixes.saml, "Issuer", "https://saml.nemlog-in.dk");
+        appendChild(assertion, NsPrefixes.saml, "Issuer", WELLKNOWN_STS_TEST_ISSUER);
 
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
         Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", subjectName);
@@ -50,7 +51,7 @@ public class BootstrapTokenHelper {
         subjectConfirmationData.setAttribute("Recipient", "https://sosi");
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
         conditions.setAttribute("NotOnOrAfter", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml, "Audience", "https://bootstrap.sts.nemlog-in.dk/");
+        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml, "Audience", "https://bootstrap.sts.nspop.dk/");
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         Element assurranceLevelAttr = addSamlAttribute(attributeStatement, "Attribute", "3", "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         assurranceLevelAttr.setAttribute("FriendlyName", "AssuranceLevel");

@@ -26,14 +26,11 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @BeforeEach
     void setup0() throws Exception {
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "1");
         KeyStore idpKeyStore = KeyStore.getInstance("PKCS12");
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "2");
         idpKeyStore.load(BootstrapTokenHelper.class.getResourceAsStream("/TestTrustedIdpForBootstrapToken.p12"),
                 "Test1234".toCharArray());
 
         AbstractTest.setup();
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "3");
 
         idpCert = (X509Certificate) idpKeyStore.getCertificate(idpKeyStore.aliases().nextElement());
         idpPrivateKey = idpKeyStore.getKey(idpKeyStore.aliases().nextElement(), "Test1234".toCharArray());
@@ -43,15 +40,11 @@ public class BootstrapTokenTest extends AbstractTest {
     @Test
     void canExchangeBootstrapTokenToIDWSToken() throws Exception {
 
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "10");
-
         String xml = BootstrapTokenHelper.createBootstrapToken(idpCert, idpPrivateKey,
                 "C=DK,O=Ingen organisatorisk tilknytning,CN=Lars Larsen,Serial=PID:9208-2002-2-514358910503");
 
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "11");
-
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("TRIFORK AS - FMK-online.jks").keystorePassword("Test1234".toCharArray())
+                .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks").keystorePassword("Test1234".toCharArray())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
@@ -77,7 +70,7 @@ public class BootstrapTokenTest extends AbstractTest {
         String xml = readFromClasspath("/bootstrap-token.xml");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("TRIFORK AS - FMK-online.jks").keystorePassword("Test1234".toCharArray())
+                .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks").keystorePassword("Test1234".toCharArray())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");

@@ -128,6 +128,8 @@ public class IdCardBuilder extends AbstractSigningBuilder {
 
         X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 
+        certificate.checkValidity();
+
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
         UserIdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation, authorizationCode,
@@ -149,6 +151,8 @@ public class IdCardBuilder extends AbstractSigningBuilder {
         }
 
         X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+
+        certificate.checkValidity();
 
         Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
 
