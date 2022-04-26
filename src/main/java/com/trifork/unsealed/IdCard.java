@@ -103,10 +103,6 @@ public abstract class IdCard {
         XPath xpath = xpathFactory.newXPath();
         signedIdCard = (Element) xpath.evaluate("//*[@id='IDCard']", newDoc, XPathConstants.NODE);
         signedIdCard.setIdAttribute("id", true);
-
-        // signedIdCard = (Element) newDoc.getElementsByTagNameNS(NsPrefixes.saml,
-        // "Assertion").item(0);
-
     }
 
     public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,
@@ -181,10 +177,10 @@ public abstract class IdCard {
         Element envelope = doc.createElementNS(NsPrefixes.soap.namespaceUri, "Envelope");
 
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
-        appendChild(soapHeader, NsPrefixes.wsa10, "Action",
+        appendChild(soapHeader, NsPrefixes.wsa, "Action",
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
         String msgId = "urn:uuid:" + UUID.randomUUID().toString();
-        appendChild(soapHeader, NsPrefixes.wsa10, "MessageID", msgId);
+        appendChild(soapHeader, NsPrefixes.wsa, "MessageID", msgId);
 
         Element soapBody = appendChild(envelope, NsPrefixes.soap, "Body");
 
@@ -199,8 +195,8 @@ public abstract class IdCard {
         actAs.appendChild(idcard);
 
         Element appliesTo = appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo");
-        Element endpointRef = appendChild(appliesTo, NsPrefixes.wsa10, "EndpointReference");
-        appendChild(endpointRef, NsPrefixes.wsa10, "Address", audience);
+        Element endpointRef = appendChild(appliesTo, NsPrefixes.wsa, "EndpointReference");
+        appendChild(endpointRef, NsPrefixes.wsa, "Address", audience);
 
         return envelope;
     }

@@ -7,7 +7,6 @@ import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
@@ -73,6 +72,10 @@ public class OIOSAMLToken {
         this.certificate = certificate;
         this.assertion = assertion;
         this.xml = xml;
+    }
+
+    public OIOSAMLToken(Element assertion) {
+        this.assertion = assertion;
     }
 
     public IdCard exchangeToIdCard() throws ParserConfigurationException, IOException, InterruptedException,
@@ -410,17 +413,17 @@ public class OIOSAMLToken {
         // declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.ds, NsPrefixes.xsi,
         // NsPrefixes.wsse, NsPrefixes.wst,
         // NsPrefixes.wsa10, NsPrefixes.wsu, NsPrefixes.xsd);
-        declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.xsi, NsPrefixes.wsse, NsPrefixes.wst, NsPrefixes.wsa10,
+        declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.xsi, NsPrefixes.wsse, NsPrefixes.wst, NsPrefixes.wsa,
                 NsPrefixes.wsu, NsPrefixes.xsd);
 
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
 
-        Element action = appendChild(soapHeader, NsPrefixes.wsa10, "Action",
+        Element action = appendChild(soapHeader, NsPrefixes.wsa, "Action",
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
         setAttribute(action, NsPrefixes.wsu, "Id", "action", true);
 
         String msgId = "urn:uuid:" + UUID.randomUUID().toString();
-        Element messageID = appendChild(soapHeader, NsPrefixes.wsa10, "MessageID", msgId);
+        Element messageID = appendChild(soapHeader, NsPrefixes.wsa, "MessageID", msgId);
         setAttribute(messageID, NsPrefixes.wsu, "Id", "messageID", true);
 
         Element security = appendChild(soapHeader, NsPrefixes.wsse, "Security");
@@ -446,8 +449,8 @@ public class OIOSAMLToken {
 
         appendSenderVouchesAssertion(actAs);
 
-        appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa10,
-                "EndpointReference"), NsPrefixes.wsa10, "Address", "http://sosi.dk");
+        appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa,
+                "EndpointReference"), NsPrefixes.wsa, "Address", "http://sosi.dk");
 
         return envelope;
     }

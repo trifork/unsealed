@@ -41,7 +41,7 @@ public class XmlUtil {
 	public static final String WST_SCHEMA = "http://schemas.xmlsoap.org/ws/2005/02/trust";
 	public static final String WST_1_3_SCHEMA = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
 	public static final String WST_1_4_SCHEMA = "http://docs.oasis-open.org/ws-sx/ws-trust/200802";
-	public static final String WSA_SCHEMA = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
+	// public static final String WSA_SCHEMA = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
 	public static final String WSA_1_0_SCHEMA = "http://www.w3.org/2005/08/addressing";
 	public static final String WSP_SCHEMA = "http://schemas.xmlsoap.org/ws/2004/09/policy";
 	public static final String XMLNS_SCHEMA = "http://www.w3.org/2000/xmlns/";
@@ -89,7 +89,7 @@ public class XmlUtil {
 		SOSI_NAMESPACES.put(NS_MEDCOM, MEDCOM_SCHEMA);
 		SOSI_NAMESPACES.put(NS_WSSE, WSSE_SCHEMA);
 		SOSI_NAMESPACES.put(NS_WST, WST_SCHEMA);
-		SOSI_NAMESPACES.put(NS_WSA, WSA_SCHEMA);
+		// SOSI_NAMESPACES.put(NS_WSA, WSA_SCHEMA);
 		SOSI_NAMESPACES.put(NS_WSU, WSU_SCHEMA);
 		SOSI_NAMESPACES.put(NS_SOSI, SOSI_SCHEMA);
 		SOSI_NAMESPACES.put(NS_XSD, XSD_SCHEMA);

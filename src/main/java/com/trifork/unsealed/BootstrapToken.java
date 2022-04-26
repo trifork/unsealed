@@ -111,12 +111,12 @@ public class BootstrapToken {
 
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
 
-        Element action = appendChild(soapHeader, NsPrefixes.wsa10, "Action",
+        Element action = appendChild(soapHeader, NsPrefixes.wsa, "Action",
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
         setAttribute(action, NsPrefixes.wsu, "Id", "action", true);
 
         String msgId = "urn:uuid:" + UUID.randomUUID().toString();
-        Element messageID = appendChild(soapHeader, NsPrefixes.wsa10, "MessageID", msgId);
+        Element messageID = appendChild(soapHeader, NsPrefixes.wsa, "MessageID", msgId);
         setAttribute(messageID, NsPrefixes.wsu, "Id", "messageID", true);
 
         Element security = appendChild(soapHeader, NsPrefixes.wsse, "Security");
@@ -140,8 +140,8 @@ public class BootstrapToken {
         Element actAs = appendChild(requestSecurityToken, NsPrefixes.wst14, "ActAs");
         actAs.appendChild(doc.importNode(bootstrapToken, true));
 
-        appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa10,
-                "EndpointReference"), NsPrefixes.wsa10, "Address", audience);
+        appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa,
+                "EndpointReference"), NsPrefixes.wsa, "Address", audience);
 
         Element claims = appendChild(requestSecurityToken, NsPrefixes.wst13, "Claims");
         claims.setAttribute("Dialect", "http://docs.oasis-open.org/wsfed/authorization/200706/authclaims");
