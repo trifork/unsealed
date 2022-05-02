@@ -3,7 +3,6 @@ package com.trifork.unsealed;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 import static com.trifork.unsealed.XmlUtil.declareNamespaces;
 import static com.trifork.unsealed.XmlUtil.setAttribute;
-import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,8 +12,8 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
@@ -27,8 +26,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 public class BootstrapToken {
-    private static final Logger logger = Logger.getLogger(BootstrapToken.class.getName());
-
     static final String DEFAULT_BST_TO_ID_ENDPOINT = "/sts/services/Bst2Idws";
 
     private static final String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
@@ -65,13 +62,9 @@ public class BootstrapToken {
         SignatureUtil.sign(doc.getElementById("security"), null,
                 new String[] { "#messageID", "#action", "#ts", "#body" }, null, certificate, privateKey, false);
 
-        logger.log(FINE, "Request body: " + XmlUtil.node2String(request, true, false));
-
         Element response = WSHelper.post(request,
-                env.getStsBaseUrl() + DEFAULT_BST_TO_ID_ENDPOINT, "Issue");
-
-        logger.log(FINE, "Response: " + response);
-
+        env.getStsBaseUrl() + DEFAULT_BST_TO_ID_ENDPOINT, "Issue");
+                
         XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
         Element requestSecurityTokenResponse = xpath.findElement(REQUEST_SECURITY_TOKEN_RESPONSE_XPATH);
@@ -79,19 +72,15 @@ public class BootstrapToken {
         Element assertion = xpath.findElement(requestSecurityTokenResponse,
                 NsPrefixes.wst13.name() + ":RequestedSecurityToken/" + NsPrefixes.saml.name() + ":Assertion");
 
-        // Element audience = xpath.findElement(requestSecurityTokenResponse,
-        // NsPrefixes.wsp.name() + ":AppliesTo/" + NsPrefixes.wsa.name() +
-        // ":EndpointReference/" + NsPrefixes.wsa.name() + ":Address/");
-
         String created = xpath.getText(requestSecurityTokenResponse,
                 NsPrefixes.wst13.name() + ":Lifetime/" + NsPrefixes.wsu.name() + ":Created");
 
-        Instant createdInstant = Instant.parse(created);
+        ZonedDateTime createdInstant = ZonedDateTime.parse(created);
 
         String expires = xpath.getText(requestSecurityTokenResponse,
                 NsPrefixes.wst13.name() + ":Lifetime/" + NsPrefixes.wsu.name() + ":Expires");
 
-        Instant expiresInstant = Instant.parse(expires);
+        ZonedDateTime expiresInstant = ZonedDateTime.parse(expires);
 
         return new IdentityTokenBuilder().assertion(assertion).audience(audience).created(createdInstant).expires(expiresInstant).build();
     }

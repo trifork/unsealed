@@ -30,7 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class SAMLTokenIssuer extends AbstractSigningBuilder {
+public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
     private String keystoreFromClassPath;
     private String keystoreFromFilePath;
     private InputStream keystoreFromInputStream;
@@ -51,10 +51,10 @@ public class SAMLTokenIssuer extends AbstractSigningBuilder {
     private String email;
     private String organisationName;
 
-    public SAMLTokenIssuer() {
+    public OIOSAMLTokenIssuer() {
     }
 
-    private SAMLTokenIssuer(String keystoreFromClassPath, String keystoreFromFilePath,
+    private OIOSAMLTokenIssuer(String keystoreFromClassPath, String keystoreFromFilePath,
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
             String subjectName, String recipient,
             String audience, String issuer, String uid, String pidNumber, String cvrNumber,
@@ -81,136 +81,136 @@ public class SAMLTokenIssuer extends AbstractSigningBuilder {
         this.organisationName = organisationName;
     }
 
-    public SAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer keystorePath(String keystorePath) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer keystorePath(String keystorePath) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer keystorePassword(char[] keystorePassword) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer keystorePassword(char[] keystorePassword) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer subjectName(String subjectName) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer subjectName(String subjectName) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer recipient(String recipient) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer recipient(String recipient) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer audience(String audience) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer audience(String audience) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer issuer(String issuer) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer issuer(String issuer) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer uid(String uid) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer uid(String uid) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer pidNumber(String pidNumber) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer pidNumber(String pidNumber) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer cvrNumber(String cvrNumber) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer cvrNumber(String cvrNumber) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer ridNumber(String ridNumber) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer ridNumber(String ridNumber) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer cprNumber(String cprNumber) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer cprNumber(String cprNumber) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer surName(String surName) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer surName(String surName) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer commonName(String commonName) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer commonName(String commonName) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer email(String email) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer email(String email) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public SAMLTokenIssuer organisationName(String organisationName) {
-        return new SAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+    public OIOSAMLTokenIssuer organisationName(String organisationName) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
                 keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,

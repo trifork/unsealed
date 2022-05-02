@@ -4,7 +4,6 @@ import static com.trifork.unsealed.XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 import static com.trifork.unsealed.XmlUtil.getChild;
 import static com.trifork.unsealed.XmlUtil.getTextChild;
-import static java.util.logging.Level.FINE;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -15,7 +14,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,8 +26,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class IdCard {
-    private static final Logger logger = Logger.getLogger(IdCard.class.getName());
-
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
 
@@ -84,12 +80,8 @@ public abstract class IdCard {
 
         SignatureUtil.sign(idcard, null, new String[] { "#IDCard" }, "OCESSignature", certificate, privateKey, true);
 
-        logger.log(FINE, "Request body: " + XmlUtil.node2String(requestBody, true, false));
-
         Element response = WSHelper.post(docBuilder, requestBody,
                 env.getStsBaseUrl() + DEFAULT_SIGN_IDCARD_ENDPOINT, "Issue");
-
-        logger.log(FINE, "Response: " + response);
 
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
@@ -105,12 +97,8 @@ public abstract class IdCard {
 
         Element request = createIdCardToSAMLTokenRequest(signedIdCard.getOwnerDocument(), signedIdCard, audience);
 
-        logger.log(FINE, "Request body: " + XmlUtil.node2String(request, true, false));
-
         Element response = WSHelper.post(request,
                 env.getStsBaseUrl() + DEFAULT_IDCARD_TO_TOKEN_ENDPOINT, "Ibo");
-
-        logger.log(FINE, "Response: " + response);
 
         XPathContext xpath = new XPathContext(response.getOwnerDocument());
 

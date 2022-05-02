@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 
 public class OIOSamlTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
-    private SAMLTokenIssuer samlTokenIssuer;
+    private OIOSAMLTokenIssuer samlTokenIssuer;
 
     @BeforeEach
     void setup0() throws Exception {
         AbstractTest.setup();
 
-        samlTokenIssuer = new SAMLTokenIssuer().keystoreFromClassPath("TestTrustedIdpForBootstrapToken.p12")
+        samlTokenIssuer = new OIOSAMLTokenIssuer().keystoreFromClassPath("TestTrustedIdpForBootstrapToken.p12")
                 .keystorePassword("Test1234".toCharArray());
 
     }
@@ -55,7 +55,7 @@ public class OIOSamlTest extends AbstractTest {
 
         String assertion = XmlUtil.node2String(token.getAssertion(), false, false);
 
-        SAMLTokenBuilder samlTokenBuilder = new SAMLTokenBuilder();
+        OIOSAMLTokenBuilder samlTokenBuilder = new OIOSAMLTokenBuilder();
         OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP)
                 .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();

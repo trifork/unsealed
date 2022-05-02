@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class XmlUtil {
-	private static final String XML_ENCODING = "UTF-8";
+	private static final String XML_ENCODING = StandardCharsets.UTF_8.name();
 
 	public static final String SOAP_ENV = "http://schemas.xmlsoap.org/soap/envelope/";
 	public static final String SOSI_SCHEMA = "http://www.sosi.dk/sosi/2006/04/sosi-1.0.xsd";
@@ -134,13 +134,12 @@ public class XmlUtil {
 		};
 	}
 
-	public static String node2String(Node node, boolean pretty, boolean includeXMLHeader)
-			throws UnsupportedEncodingException {
+	public static String node2String(Node node, boolean pretty, boolean includeXMLHeader) {
 		ByteArrayOutputStream bas = new ByteArrayOutputStream();
 
 		node2OutputStream(node, pretty, includeXMLHeader, bas);
 
-		String str = bas.toString(XML_ENCODING);
+		String str = bas.toString(StandardCharsets.UTF_8);
 		if (includeXMLHeader) {
 			str = "<?xml version=\"1.0\" encoding=\"" + XML_ENCODING + "\" ?>" + ((pretty) ? "\n" + str : str);
 		}

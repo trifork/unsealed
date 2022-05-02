@@ -1,6 +1,6 @@
 package com.trifork.unsealed;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import org.w3c.dom.Element;
 
@@ -8,13 +8,13 @@ public class IdentityTokenBuilder {
 
     private Element assertion;
     private String audience;
-    private Instant created;
-    private Instant expires;
+    private ZonedDateTime created;
+    private ZonedDateTime expires;
 
     public IdentityTokenBuilder() {
     }
 
-    private IdentityTokenBuilder(Element assertion, String audience, Instant created, Instant expires) {
+    private IdentityTokenBuilder(Element assertion, String audience, ZonedDateTime created, ZonedDateTime expires) {
         this.assertion = assertion;
         this.audience = audience;
         this.created = created;
@@ -25,11 +25,11 @@ public class IdentityTokenBuilder {
         return new IdentityTokenBuilder(assertion, audience, created, expires);
     }
 
-    public IdentityTokenBuilder created(Instant created) {
+    public IdentityTokenBuilder created(ZonedDateTime created) {
         return new IdentityTokenBuilder(assertion, audience, created, expires);
     }
 
-    public IdentityTokenBuilder expires(Instant expires) {
+    public IdentityTokenBuilder expires(ZonedDateTime expires) {
         return new IdentityTokenBuilder(assertion, audience, created, expires);
     }
 

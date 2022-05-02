@@ -1,9 +1,9 @@
 package com.trifork.unsealed;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,15 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class BootstrapTokenTest extends AbstractTest {
 
@@ -37,7 +32,6 @@ public class BootstrapTokenTest extends AbstractTest {
 
         idpCert = (X509Certificate) idpKeyStore.getCertificate(idpKeyStore.aliases().nextElement());
         idpPrivateKey = idpKeyStore.getKey(idpKeyStore.aliases().nextElement(), "Test1234".toCharArray());
-        Logger.getLogger(AbstractTest.class.getName()).log(Level.FINE, "4");
     }
 
     @Test
@@ -54,7 +48,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         assertNotNull(idwsToken.assertion);
         assertEquals("https://fmk", idwsToken.audience);
-        assertTrue(idwsToken.created.isBefore(Instant.now()));
+        assertTrue(idwsToken.created.isBefore(ZonedDateTime.now()));
         assertTrue(idwsToken.expires.isAfter(idwsToken.created.plusSeconds(5)));
     }
 

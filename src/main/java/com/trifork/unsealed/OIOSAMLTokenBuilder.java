@@ -16,7 +16,7 @@ import java.security.cert.X509Certificate;
 
 import org.w3c.dom.Element;
 
-public class SAMLTokenBuilder extends AbstractSigningBuilder {
+public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
     private NSPEnv env;
     private String keystoreFromClassPath;
     private String keystoreFromFilePath;
@@ -27,10 +27,10 @@ public class SAMLTokenBuilder extends AbstractSigningBuilder {
     private Element assertion;
     private String xml;
 
-    public SAMLTokenBuilder() {
+    public OIOSAMLTokenBuilder() {
     }
 
-    private SAMLTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
+    private OIOSAMLTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
             Element assertion, String xml) {
         this.env = env;
@@ -43,32 +43,32 @@ public class SAMLTokenBuilder extends AbstractSigningBuilder {
         this.xml = xml;
     }
 
-    public SAMLTokenBuilder env(NSPEnv env) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder env(NSPEnv env) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder xml(String xml) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder xml(String xml) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder keystorePath(String keystorePath) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder keystorePath(String keystorePath) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder keystorePassword(char[] keystorePassword) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder keystorePassword(char[] keystorePassword) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
-    public SAMLTokenBuilder assertion(Element assertion) {
-        return new SAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
+    public OIOSAMLTokenBuilder assertion(Element assertion) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore, keystoreType, keystorePassword, assertion, xml);
     }
 
     OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {

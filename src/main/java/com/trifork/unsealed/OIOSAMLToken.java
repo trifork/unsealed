@@ -6,7 +6,6 @@ import static com.trifork.unsealed.XmlUtil.declareNamespaces;
 import static com.trifork.unsealed.XmlUtil.getChild;
 import static com.trifork.unsealed.XmlUtil.getTextChild;
 import static com.trifork.unsealed.XmlUtil.setAttribute;
-import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
@@ -31,7 +29,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 public class OIOSAMLToken {
-    private static final Logger logger = Logger.getLogger(OIOSAMLToken.class.getName());
     public static final String DEFAULT_TOKEN_TO_IDCARD_ENDPOINT = "/sts/services/OIOSaml2Sosi";
 
     static final String COMMON_NAME = "urn:oid:2.5.4.3";
@@ -100,12 +97,8 @@ public class OIOSAMLToken {
         SignatureUtil.sign(doc.getElementById("security"), null,
                 new String[] { "#messageID", "#action", "#ts", "#body" }, null, certificate, privateKey, false);
 
-        logger.log(FINE, "Request body: " + XmlUtil.node2String(request, false, false));
-
         Element response = WSHelper.post(request, env.getStsBaseUrl() + DEFAULT_TOKEN_TO_IDCARD_ENDPOINT,
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
-
-        logger.log(FINE, "Response: " + response);
 
         XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
@@ -364,10 +357,11 @@ public class OIOSAMLToken {
      * Invoke this method to verify the validity of the
      * <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and
      * {@link #getNotOnOrAfter()} values.<br>
+     * @throws ValidationException
      *
      */
-    public void validateTimestamp() {
-        // validateTimestamp(0);
+    public void validateTimes() throws ValidationException {
+        validateTimes(0);
     }
 
     /**
@@ -377,29 +371,19 @@ public class OIOSAMLToken {
      *
      * @param allowedDriftInSeconds the amount of clock drift to allow in
      *                              milliseconds
+     * @throws ValidationException
      *
      */
-    public void validateTimestamp(long allowedDriftInSeconds) {
-        // if (allowedDriftInSeconds < 0) throw new
-        // IllegalArgumentException("'allowedDriftInSeconds' must not be negative!");
-        // Date now = new Date();
-        // DateFormat format = XmlUtil.getDateFormat(true);
+    public void validateTimes(long allowedDriftInSeconds) throws ValidationException {
+        ZonedDateTime now = ZonedDateTime.now();
 
-        // if (new Date(now.getTime() + allowedDriftInSeconds *
-        // 1000).before(getNotBefore())) {
-        // throw new ModelException("OIOSAML token is not valid yet - now: " +
-        // format.format(now) +
-        // ". OIOSAML token validity start: " + format.format(getNotBefore()) + ".
-        // Allowed clock drift: " + allowedDriftInSeconds + " seconds");
-        // }
-        // if (!new Date(now.getTime() - allowedDriftInSeconds *
-        // 1000).before(getNotOnOrAfter())) {
-        // throw new ModelException("OIOSAML token no longer valid - now: " +
-        // format.format(now) +
-        // ". OIOSAML token validity end: " + format.format(getNotOnOrAfter()) + ".
-        // Allowed clock drift: " + allowedDriftInSeconds + " seconds");
-        // }
+        if (now.plusSeconds(allowedDriftInSeconds).isBefore(getNotBefore())) {
+            throw new ValidationException("Assertion is not yet valid (" + getNotBefore() + " < " + now + ")");
+        }
 
+        if (now.minusSeconds(allowedDriftInSeconds).isAfter(getNotOnOrAfter())) {
+            throw new ValidationException("Assertion is no longer valid (" + getNotBefore() + " > " + now + ")");
+        }
     }
 
     private Element createSAMLTokenToIdCardRequest(Element samlToken) throws ParserConfigurationException {
