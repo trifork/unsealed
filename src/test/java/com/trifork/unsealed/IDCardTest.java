@@ -33,7 +33,7 @@ public class IDCardTest extends AbstractTest {
         String subjectName = idCard.getSubjectName();
         assertNotNull(subjectName);
 
-        Document doc = IdCard.getDocBuilder().newDocument();
+        Document doc = XmlUtil.getDocBuilder().newDocument();
 
         Element copy = idCard.serialize2DOMDocument(doc);
         doc.appendChild(copy);

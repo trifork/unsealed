@@ -6,10 +6,8 @@ import static com.trifork.unsealed.XmlUtil.getChild;
 import static com.trifork.unsealed.XmlUtil.getTextChild;
 import static java.util.logging.Level.FINE;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -20,7 +18,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -29,7 +26,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 public abstract class IdCard {
     private static final Logger logger = Logger.getLogger(IdCard.class.getName());
@@ -74,7 +70,7 @@ public abstract class IdCard {
 
         System.setProperty("com.sun.org.apache.xml.internal.security.ignoreLineBreaks", "true");
 
-        DocumentBuilder docBuilder = getDocBuilder();
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
 
         Document doc = docBuilder.newDocument();
 
@@ -90,23 +86,19 @@ public abstract class IdCard {
 
         logger.log(FINE, "Request body: " + XmlUtil.node2String(requestBody, true, false));
 
-        // writeElementToFile(doc.getElementById("IDCard"), "idcard.xml");
-
-        String response = WSHelper.post(XmlUtil.node2String(requestBody, false, false),
+        Element response = WSHelper.post(docBuilder, requestBody,
                 env.getStsBaseUrl() + DEFAULT_SIGN_IDCARD_ENDPOINT, "Issue");
 
         logger.log(FINE, "Response: " + response);
 
-        Document newDoc = docBuilder.parse(new ByteArrayInputStream(response.getBytes((StandardCharsets.UTF_8))));
-
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
-        signedIdCard = (Element) xpath.evaluate("//*[@id='IDCard']", newDoc, XPathConstants.NODE);
+        signedIdCard = (Element) xpath.evaluate("//*[@id='IDCard']", response.getOwnerDocument(), XPathConstants.NODE);
         signedIdCard.setIdAttribute("id", true);
     }
 
     public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,
-            InterruptedException, SAXException, XPathExpressionException {
+            InterruptedException, STSInvocationException, XPathExpressionException {
         if (signedIdCard == null) {
             throw new IllegalStateException("IdCard must be signed before it can be exchanged");
         }
@@ -115,16 +107,12 @@ public abstract class IdCard {
 
         logger.log(FINE, "Request body: " + XmlUtil.node2String(request, true, false));
 
-        String response = WSHelper.post(XmlUtil.node2String(request, false, false),
+        Element response = WSHelper.post(request,
                 env.getStsBaseUrl() + DEFAULT_IDCARD_TO_TOKEN_ENDPOINT, "Ibo");
 
         logger.log(FINE, "Response: " + response);
 
-        DocumentBuilder docBuilder = getDocBuilder();
-
-        Document responseDoc = docBuilder.parse(new ByteArrayInputStream(response.getBytes((StandardCharsets.UTF_8))));
-
-        XPathContext xpath = new XPathContext(responseDoc);
+        XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
         Element requestedSecurityToken = xpath.findElement(IDCARD_TO_TOKEN_RESPONSE_XPATH);
 
@@ -139,14 +127,6 @@ public abstract class IdCard {
 
     public String asString(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {
         return XmlUtil.node2String(signedIdCard, pretty, includeXMLHeader);
-    }
-
-    static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
-        // Neither DocumentBuilderFactory nor DocumentBuilder are guarenteed to be
-        // thread safe
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        return dbf.newDocumentBuilder();
     }
 
     private Element createSignIdCardRequest(Document doc, Element idcard, Instant now)

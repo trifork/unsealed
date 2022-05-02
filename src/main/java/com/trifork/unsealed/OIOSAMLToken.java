@@ -3,9 +3,9 @@ package com.trifork.unsealed;
 import static com.trifork.unsealed.SamlUtil.getSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 import static com.trifork.unsealed.XmlUtil.declareNamespaces;
-import static com.trifork.unsealed.XmlUtil.setAttribute;
 import static com.trifork.unsealed.XmlUtil.getChild;
 import static com.trifork.unsealed.XmlUtil.getTextChild;
+import static com.trifork.unsealed.XmlUtil.setAttribute;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
@@ -16,10 +16,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -88,11 +85,11 @@ public class OIOSAMLToken {
 
     public IdCard exchangeToIdCard() throws ParserConfigurationException, IOException, InterruptedException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
-            SAXException, XPathExpressionException {
+            SAXException, XPathExpressionException, STSInvocationException {
 
         System.setProperty("com.sun.org.apache.xml.internal.security.ignoreLineBreaks", "true");
 
-        DocumentBuilder docBuilder = IdCard.getDocBuilder();
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
         Element samlToken = docBuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
                 .getDocumentElement();
 
@@ -105,16 +102,12 @@ public class OIOSAMLToken {
 
         logger.log(FINE, "Request body: " + XmlUtil.node2String(request, false, false));
 
-        String response = WSHelper.post(XmlUtil.node2String(request, false, false),
-                env.getStsBaseUrl() + DEFAULT_TOKEN_TO_IDCARD_ENDPOINT,
+        Element response = WSHelper.post(request, env.getStsBaseUrl() + DEFAULT_TOKEN_TO_IDCARD_ENDPOINT,
                 "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue");
 
         logger.log(FINE, "Response: " + response);
 
-        Element envelope = docBuilder.parse(new ByteArrayInputStream(response.getBytes(StandardCharsets.UTF_8)))
-                .getDocumentElement();
-
-        XPathContext xpath = new XPathContext(envelope.getOwnerDocument());
+        XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
         String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" 
                 + NsPrefixes.soap.name() + ":Envelope/"
@@ -411,7 +404,7 @@ public class OIOSAMLToken {
 
     private Element createSAMLTokenToIdCardRequest(Element samlToken) throws ParserConfigurationException {
 
-        DocumentBuilder docBuilder = IdCard.getDocBuilder();
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
         Document doc = docBuilder.newDocument();
 
         Element envelope = appendChild(doc, NsPrefixes.soap, "Envelope");

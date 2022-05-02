@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -205,7 +208,7 @@ public class XmlUtil {
 	public static String getTextChild(Element parent, NsPrefixes nsPrefix, String name) {
 		NodeList childNodes = parent.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
-			Node item = childNodes.item(0);
+			Node item = childNodes.item(i);
 			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName())) {
 				return item.getTextContent();
 			}
@@ -214,6 +217,17 @@ public class XmlUtil {
 		return null;
 	}
 
+	public static String getTextChild(Element parent, String name) {
+		NodeList childNodes = parent.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node item = childNodes.item(i);
+			if (name.equals(item.getLocalName())) {
+				return item.getTextContent();
+			}
+		}
+
+		return null;
+	}
 	public static Element getChild(Element parent, NsPrefixes nsPrefix, String name) {
 		NodeList childNodes = parent.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
@@ -243,6 +257,14 @@ public class XmlUtil {
         for (NsPrefixes prefix : prefixes) {
             element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix.name(), prefix.namespaceUri);
         }
+    }
+
+    static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
+        // Neither DocumentBuilderFactory nor DocumentBuilder are guarenteed to be
+        // thread safe
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        return dbf.newDocumentBuilder();
     }
 
 

@@ -3,6 +3,7 @@ package com.trifork.unsealed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class BootstrapTokenTest extends AbstractTest {
 
@@ -56,15 +59,6 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    void postFixedRequest() throws Exception {
-        String request = readFromClasspath("/exchange-bst-request-1.xml");
-        String response = WSHelper.post(request,
-                NSPTestEnv.TEST1_CNSP.getStsBaseUrl() + BootstrapToken.DEFAULT_BST_TO_ID_ENDPOINT, "Issue");
-        System.out.println("response: " + response);
-    }
-
-    @Disabled
-    @Test
     void cannotExchangeObsoleteBootstrapTokenToIDWSToken() throws Exception {
 
         String xml = readFromClasspath("/bootstrap-token.xml");
@@ -73,7 +67,9 @@ public class BootstrapTokenTest extends AbstractTest {
                 .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks").keystorePassword("Test1234".toCharArray())
                 .fromXml(xml).build();
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
+        assertThrows(STSInvocationException.class, () -> {
+            bst.exchangeToIdentityToken("https://fmk", "0501792275");
+        });
 
     }
 

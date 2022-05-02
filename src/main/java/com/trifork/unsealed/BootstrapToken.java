@@ -51,10 +51,10 @@ public class BootstrapToken {
     }
 
     public IdentityToken exchangeToIdentityToken(String audience, String cpr) throws IOException, InterruptedException,
-            ParserConfigurationException, SAXException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-            MarshalException, XMLSignatureException, XPathExpressionException {
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            MarshalException, XMLSignatureException, XPathExpressionException, STSInvocationException, ParserConfigurationException, SAXException {
 
-        DocumentBuilder docBuilder = IdCard.getDocBuilder();
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
         Element bootstrapToken = docBuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
                 .getDocumentElement();
 
@@ -67,14 +67,12 @@ public class BootstrapToken {
 
         logger.log(FINE, "Request body: " + XmlUtil.node2String(request, true, false));
 
-        String response = WSHelper.post(XmlUtil.node2String(request, false, false),
+        Element response = WSHelper.post(request,
                 env.getStsBaseUrl() + DEFAULT_BST_TO_ID_ENDPOINT, "Issue");
 
         logger.log(FINE, "Response: " + response);
 
-        Document responseDoc = docBuilder.parse(new ByteArrayInputStream(response.getBytes(StandardCharsets.UTF_8)));
-
-        XPathContext xpath = new XPathContext(responseDoc);
+        XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
         Element requestSecurityTokenResponse = xpath.findElement(REQUEST_SECURITY_TOKEN_RESPONSE_XPATH);
 
@@ -101,7 +99,7 @@ public class BootstrapToken {
     private Element createBootstrapToIdentityTokenRequest(Element bootstrapToken, String audience, String cpr)
             throws ParserConfigurationException {
 
-        DocumentBuilder docBuilder = IdCard.getDocBuilder();
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
         Document doc = docBuilder.newDocument();
 
         Element envelope = appendChild(doc, NsPrefixes.soap, "Envelope");
