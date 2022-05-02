@@ -128,7 +128,7 @@ public abstract class IdCard {
 
         Element requestedSecurityToken = xpath.findElement(IDCARD_TO_TOKEN_RESPONSE_XPATH);
 
-        assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "saml:EncryptedAssertion");
+        assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "Assertion");
         if (assertion != null) {
             return new OIOSAMLToken(env, null, null, assertion, false, null);
         }

@@ -187,6 +187,10 @@ public class XmlUtil {
 		return child;
 	}
 
+	public static String getAttribute(Element elm, NsPrefixes ns, String name) {
+		return elm.getAttributeNS(NsPrefixes.wsu.namespaceUri, ns.name() + ":" + name);
+	}
+
 	public static void setAttribute(Element elm, NsPrefixes ns, String name, String value) {
 		elm.setAttributeNS(NsPrefixes.wsu.namespaceUri, ns.name() + ":" + name, value);
 	}

@@ -59,5 +59,14 @@ public class IDCardTest extends AbstractTest {
 
         OIOSAMLToken samlToken = idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
         assertNotNull(samlToken);
+
+        if (samlToken.isEncrypted()) {
+            Element encryptedAssertion = samlToken.getAssertion();
+            assertEquals("EncryptedAssertion", encryptedAssertion.getLocalName());
+            assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
+        } else {
+            assertEquals("Lars Larsen", samlToken.getCommonName());
+        }
+
     }
 }

@@ -1,8 +1,11 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.SamlUtil.getSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 import static com.trifork.unsealed.XmlUtil.declareNamespaces;
 import static com.trifork.unsealed.XmlUtil.setAttribute;
+import static com.trifork.unsealed.XmlUtil.getChild;
+import static com.trifork.unsealed.XmlUtil.getTextChild;
 import static java.util.logging.Level.FINE;
 
 import java.io.ByteArrayInputStream;
@@ -13,6 +16,9 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -64,13 +70,15 @@ public class OIOSAMLToken {
     private Key privateKey;
     private X509Certificate certificate;
     private String xml;
+    private boolean encrypted;
 
     public OIOSAMLToken(NSPEnv env, Key privateKey, X509Certificate certificate, Element assertion,
-            boolean encryptedAssertion, String xml) {
+            boolean encrypted, String xml) {
         this.env = env;
         this.privateKey = privateKey;
         this.certificate = certificate;
         this.assertion = assertion;
+        this.encrypted = encrypted;
         this.xml = xml;
     }
 
@@ -127,14 +135,15 @@ public class OIOSAMLToken {
         return assertion;
     }
 
+    public boolean isEncrypted() {
+        return encrypted;
+    }
+
     public String getCommonName() {
-        // Element commonNameElm = getAttributeElement(OIOSAMLAttributes.COMMON_NAME);
-        // if(commonNameElm == null) {
-        // throw new ModelException("Mandatory 'commonName' SAML attribute
-        // (urn:oid:2.5.4.3) is missing");
-        // }
-        // return commonNameElm.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String commonName = getSamlAttribute(attributeStatement, COMMON_NAME);
+
+        return commonName;
     }
 
     /**
@@ -152,8 +161,10 @@ public class OIOSAMLToken {
      *         <code>dk:gov:saml:attribute:CprNumberIdentifier</code> tag.
      */
     public String getCpr() {
-        // return getAttribute(OIOSAMLAttributes.CPR_NUMBER);
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String cpr = getSamlAttribute(attributeStatement, CPR_NUMBER);
+
+        return cpr;
     }
 
     /**
@@ -171,8 +182,10 @@ public class OIOSAMLToken {
      *         <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> tag.
      */
     public String getCvrNumberIdentifier() {
-        // return getAttribute(OIOSAMLAttributes.CVR_NUMBER);
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String cvr = getSamlAttribute(attributeStatement, CVR_NUMBER);
+
+        return cvr;
     }
 
     /**
@@ -190,13 +203,10 @@ public class OIOSAMLToken {
      *         tag.
      */
     public String getEmail() {
-        // Element emailElm = getAttributeElement(OIOSAMLAttributes.EMAIL);
-        // if(emailElm == null) {
-        // throw new ModelException("Mandatory 'email' SAML attribute
-        // (urn:oid:0.9.2342.19200300.100.1.3) is missing");
-        // }
-        // return emailElm.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String email = getSamlAttribute(attributeStatement, EMAIL);
+
+        return email;
     }
 
     /**
@@ -210,11 +220,12 @@ public class OIOSAMLToken {
      *
      * @return The value of the <code>saml:Conditions#NotBefore</code> tag.
      */
-    public Date getNotBefore() {
-        // Element ac = getTag(SAMLTags.assertion, SAMLTags.conditions);
-        // return convertToDate(ac, SAMLAttributes.NOT_BEFORE);
+    public ZonedDateTime getNotBefore() {
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "Conditions");
+        String notBefore = attributeStatement.getAttribute("NotBefore");
 
-        return null;
+        ZonedDateTime date = ZonedDateTime.parse(notBefore);
+        return date;
     }
 
     /**
@@ -228,10 +239,12 @@ public class OIOSAMLToken {
      *
      * @return The value of the <code>saml:Conditions#NotOnOrAfter</code> tag.
      */
-    public Date getNotOnOrAfter() {
-        // Element ac = getTag(SAMLTags.assertion, SAMLTags.conditions);
-        // return convertToDate(ac, SAMLAttributes.NOT_ON_OR_AFTER);
-        return null;
+    public ZonedDateTime getNotOnOrAfter() {
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "Conditions");
+        String notOnOrAfter = attributeStatement.getAttribute("NotOnOrAfter");
+
+        ZonedDateTime date = ZonedDateTime.parse(notOnOrAfter);
+        return date;
     }
 
     /**
@@ -248,8 +261,10 @@ public class OIOSAMLToken {
      * @return The value of the <code>urn:oid:2.5.4.10</code>/organizationName tag.
      */
     public String getOrganizationName() {
-        // return getAttribute(OIOSAMLAttributes.ORGANIZATION_NAME);
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String organizationName = getSamlAttribute(attributeStatement, ORGANIZATION_NAME);
+
+        return organizationName;
     }
 
     /**
@@ -265,13 +280,10 @@ public class OIOSAMLToken {
      * @return The value of the <code>urn:oid:2.5.4.4</code>/surName tag.
      */
     public String getSurName() {
-        // Element surNameElm = getAttributeElement(OIOSAMLAttributes.SURNAME);
-        // if(surNameElm == null) {
-        // throw new ModelException("Mandatory 'surName' SAML attribute
-        // (urn:oid:2.5.4.4) is missing");
-        // }
-        // return surNameElm.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String surname = getSamlAttribute(attributeStatement, SURNAME);
+
+        return surname;
     }
 
     /**
@@ -288,14 +300,10 @@ public class OIOSAMLToken {
      *         tag.
      */
     public String getAssuranceLevel() {
-        // Element assuranceLevelElm =
-        // getAttributeElement(OIOSAMLAttributes.ASSURANCE_LEVEL);
-        // if(assuranceLevelElm == null) {
-        // throw new ModelException("Mandatory 'assuranceLevel' SAML attribute
-        // (dk:gov:saml:attribute:AssuranceLevel) is missing");
-        // }
-        // return assuranceLevelElm.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String assuranceLevel = getSamlAttribute(attributeStatement, ASSURANCE_LEVEL);
+
+        return assuranceLevel;
     }
 
     /**
@@ -311,13 +319,10 @@ public class OIOSAMLToken {
      * @return The value of the <code>dk:gov:saml:attribute:SpecVer</code> tag.
      */
     public String getSpecVersion() {
-        // Element specVersionElm = getAttributeElement(OIOSAMLAttributes.SPEC_VERSION);
-        // if(specVersionElm == null) {
-        // throw new ModelException("Mandatory 'specVersion' SAML attribute
-        // (dk:gov:saml:attribute:SpecVer) is missing");
-        // }
-        // return specVersionElm.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String specVersion = getSamlAttribute(attributeStatement, SPEC_VERSION);
+
+        return specVersion;
     }
 
     /**
@@ -332,13 +337,11 @@ public class OIOSAMLToken {
      * @return The value of the <code>saml:AudienceRestriction</code> tag.
      */
     public String getAudienceRestriction() {
-        // Element ac = getTag(SAMLTags.assertion, SAMLTags.conditions,
-        // SAMLTags.audienceRestriction);
-        // if (ac == null) {
-        // return null;
-        // }
-        // return ac.getTextContent().trim();
-        return null;
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "Conditions");
+        Element audienceRestriction = getChild(attributeStatement, NsPrefixes.saml, "AudienceRestriction");
+        String audience = getTextChild(audienceRestriction, NsPrefixes.saml, "Audience");
+        
+        return audience;
     }
 
     /**
@@ -355,10 +358,13 @@ public class OIOSAMLToken {
      *
      * @return The value of the <code>AuthnInstant</code> attribute.
      */
-    public Date getUserAuthenticationInstant() {
-        // final Element auth = getTag(SAMLTags.assertion, SAMLTags.authnStatement);
-        // return convertToDate(auth, SAMLAttributes.AUTHN_INSTANT);
-        return null;
+    public ZonedDateTime getUserAuthenticationInstant() {
+
+        Element authnStatement = getChild(assertion, NsPrefixes.saml, "AuthnStatement");
+        String authnInstant = authnStatement.getAttribute("AuthnInstant");
+
+        ZonedDateTime date = ZonedDateTime.parse(authnInstant);
+        return date;
     }
 
     /**
@@ -489,4 +495,5 @@ public class OIOSAMLToken {
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:ITSystemName", itSystemName);
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:UserGivenName", userGivenName);
     }
+
 }
