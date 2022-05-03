@@ -1,18 +1,12 @@
 package com.trifork.unsealed;
 
-import static com.trifork.unsealed.KeystoreUtil.guessKeystoreType;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 public class IdCardBuilder extends AbstractSigningBuilder {
 

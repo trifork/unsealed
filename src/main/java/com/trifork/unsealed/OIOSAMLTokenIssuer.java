@@ -31,12 +31,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
-    private String keystoreFromClassPath;
-    private String keystoreFromFilePath;
-    private InputStream keystoreFromInputStream;
-    private KeyStore keystore;
-    private String keystoreType;
-    private char[] keystorePassword;
     private String subjectName;
     private String recipient;
     private String audience;
@@ -55,17 +49,16 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
     }
 
     private OIOSAMLTokenIssuer(String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
+            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType,
+            char[] keystorePassword,
             String subjectName, String recipient,
             String audience, String issuer, String uid, String pidNumber, String cvrNumber,
             String ridNumber, String cprNumber, String surName, String commonName, String email,
             String organisationName) {
 
-        this.keystoreFromClassPath = keystoreFromClassPath;
-        this.keystoreFromFilePath = keystoreFromFilePath;
-        this.keystoreFromInputStream = keystoreFromInputStream;
-        this.keystore = keystore;
-        this.keystorePassword = keystorePassword;
+        super(keystoreFromClassPath, keystoreFromFilePath,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword);
+
         this.subjectName = subjectName;
         this.recipient = recipient;
         this.audience = audience;
@@ -83,7 +76,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -91,7 +85,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer keystorePath(String keystorePath) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -99,7 +94,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -107,7 +103,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer keystorePassword(char[] keystorePassword) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -115,7 +112,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer subjectName(String subjectName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -123,7 +121,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer recipient(String recipient) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -131,7 +130,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer audience(String audience) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -139,7 +139,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer issuer(String issuer) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -147,7 +148,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer uid(String uid) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -155,7 +157,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer pidNumber(String pidNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -163,7 +166,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer cvrNumber(String cvrNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -171,7 +175,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer ridNumber(String ridNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -179,7 +184,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer cprNumber(String cprNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -187,7 +193,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer surName(String surName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -195,7 +202,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer commonName(String commonName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -203,7 +211,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer email(String email) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
@@ -211,54 +220,28 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer organisationName(String organisationName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName, recipient,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
+                recipient,
                 audience, issuer, uid, pidNumber, cvrNumber,
                 ridNumber, cprNumber, surName, commonName, email,
                 organisationName);
     }
 
-    public OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
-            UnrecoverableKeyException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
+    public OIOSAMLToken build()
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
+            UnrecoverableKeyException, InvalidAlgorithmParameterException, MarshalException,
+            XMLSignatureException,
             ParserConfigurationException {
 
-        KeyStore ks = loadKeystore(keystoreType, keystoreFromFilePath);
-        X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
-
-        certificate.checkValidity();
-
-        Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
+        loadKeyStore();
 
         return createSamlToken(certificate, privateKey);
     }
 
-    private KeyStore loadKeystore(String keystoreTp, String keystoreFromFilePath)
-            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        InputStream keystoreIs;
-        KeyStore ks;
-
-        if (keystoreFromInputStream != null) {
-            keystoreIs = keystoreFromInputStream;
-            if (keystoreType == null) {
-                throw new IllegalStateException("KeystoreType must be specified with keystoreFromInputStream");
-            }
-        } else if (keystoreFromClassPath != null) {
-            keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
-            keystoreTp = guessKeystoreType(keystoreFromClassPath);
-        } else if (keystoreFromFilePath != null) {
-            keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
-            keystoreTp = guessKeystoreType(keystoreFromClassPath);
-        } else {
-            throw new IllegalStateException("No keystore specified");
-        }
-
-        ks = KeyStore.getInstance(keystoreTp);
-        ks.load(keystoreIs, keystorePassword);
-
-        return ks;
-    }
-
-    private OIOSAMLToken createSamlToken(X509Certificate idpCert, Key idpPrivateKey) throws NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, MarshalException, XMLSignatureException, UnsupportedEncodingException,
+    private OIOSAMLToken createSamlToken(X509Certificate idpCert, Key idpPrivateKey)
+            throws NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
+            UnsupportedEncodingException,
             ParserConfigurationException {
 
         Instant now = Instant.now();
@@ -286,14 +269,17 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
         subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
-        Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml, "SubjectConfirmationData");
+        Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml,
+                "SubjectConfirmationData");
         subjectConfirmationData.setAttribute("NotOnOrAfter",
                 XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
         subjectConfirmationData.setAttribute("Recipient", recipient);
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
         conditions.setAttribute("NotBefore", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now));
-        conditions.setAttribute("NotOnOrAfter", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml, "Audience",
+        conditions.setAttribute("NotOnOrAfter",
+                XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
+        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml,
+                "Audience",
                 audience);
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
 
@@ -328,7 +314,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
             addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME, organisationName,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         } else {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME, "Ingen organisatorisk tilknytning",
+            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME,
+                    "Ingen organisatorisk tilknytning",
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         }
 
@@ -344,21 +331,24 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
         Element authnContext = appendChild(authnStatement, NsPrefixes.saml, "AuthnContext");
         authnStatement.setAttribute("AuthnInstant", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now));
         authnStatement.setAttribute("SessionIndex", assertionId);
-        appendChild(authnContext, NsPrefixes.saml, "AuthnContextClassRef", "urn:oasis:names:tc:SAML:2.0:ac:classes:X509");
+        appendChild(authnContext, NsPrefixes.saml, "AuthnContextClassRef",
+                "urn:oasis:names:tc:SAML:2.0:ac:classes:X509");
 
         String referenceUri = "#" + assertionId;
         String signatureId = null;
 
         doc.normalizeDocument();
 
-        SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert, idpPrivateKey,
+        SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert,
+                idpPrivateKey,
                 true);
 
         return new OIOSAMLToken(assertion);
     }
 
     private String createBootstrapToken(X509Certificate idpCert, Key idpPrivateKey)
-            throws ParserConfigurationException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            throws ParserConfigurationException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException,
             MarshalException, XMLSignatureException, UnsupportedEncodingException {
 
         Instant now = Instant.now();
@@ -379,7 +369,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
         assertion.setAttribute("ID", assertionId);
         assertion.setIdAttribute("ID", true);
 
-        // NOTE: We might have to use a different issuer for the bootstrap token in test, because
+        // NOTE: We might have to use a different issuer for the bootstrap token in
+        // test, because
         // STS trusts a special issuer "TEST trusted IdP" here
         appendChild(assertion, NsPrefixes.saml, "Issuer", issuer);
 
@@ -389,13 +380,16 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
         subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
-        Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml, "SubjectConfirmationData");
+        Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml,
+                "SubjectConfirmationData");
         subjectConfirmationData.setAttribute("NotOnOrAfter",
                 XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
         subjectConfirmationData.setAttribute("Recipient", "https://sosi");
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
-        conditions.setAttribute("NotOnOrAfter", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml, "Audience",
+        conditions.setAttribute("NotOnOrAfter",
+                XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
+        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml,
+                "Audience",
                 "https://bootstrap.sts.nspop.dk/");
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
         Element assurranceLevelAttr = addSamlAttribute(attributeStatement, "Attribute", "3",
@@ -405,7 +399,8 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
         String referenceUri = "#" + assertionId;
         String signatureId = null;
 
-        SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert, idpPrivateKey,
+        SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert,
+                idpPrivateKey,
                 true);
 
         return XmlUtil.node2String(assertion, false, false);
