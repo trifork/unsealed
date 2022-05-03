@@ -425,9 +425,6 @@ public class OIOSAMLToken {
 
         Element envelope = appendChild(doc, NsPrefixes.soap, "Envelope");
 
-        // declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.ds, NsPrefixes.xsi,
-        // NsPrefixes.wsse, NsPrefixes.wst,
-        // NsPrefixes.wsa10, NsPrefixes.wsu, NsPrefixes.xsd);
         declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.xsi, NsPrefixes.wsse, NsPrefixes.wst, NsPrefixes.wsa,
                 NsPrefixes.wsu, NsPrefixes.xsd);
 

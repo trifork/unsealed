@@ -18,12 +18,6 @@ public class IdCardBuilder extends AbstractSigningBuilder {
 
     private NSPEnv env;
     private String cpr;
-    private String keystoreFromClassPath;
-    private String keystoreFromFilePath;
-    private InputStream keystoreFromInputStream;
-    private KeyStore keystore;
-    private String keystoreType;
-    private char[] keystorePassword;
     private String email;
     private String role;
     private String occupation;
@@ -38,14 +32,11 @@ public class IdCardBuilder extends AbstractSigningBuilder {
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
             String email, String role, String occupation, String authorizationCode, String systemName) {
 
+        super(keystoreFromClassPath, keystoreFromFilePath,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword);
+
         this.env = env;
         this.cpr = cpr;
-        this.keystoreFromClassPath = keystoreFromClassPath;
-        this.keystoreFromFilePath = keystoreFromFilePath;
-        this.keystoreFromInputStream = keystoreFromInputStream;
-        this.keystore = keystore;
-        this.keystoreType = keystoreType;
-        this.keystorePassword = keystorePassword;
         this.email = email;
         this.role = role;
         this.occupation = occupation;
@@ -117,22 +108,10 @@ public class IdCardBuilder extends AbstractSigningBuilder {
     public UserIdCard buildUserIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException {
 
-        String keystoreTp = keystoreType;
+        loadKeyStore();
 
-        KeyStore ks;
-        if (keystore != null) {
-            ks = keystore;
-        } else {
-            ks = loadKeystore(keystoreTp, keystoreFromFilePath);
-        }
-
-        X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
-
-        certificate.checkValidity();
-
-        Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
-
-        UserIdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation, authorizationCode,
+        UserIdCard idCard = new UserIdCard(env, cpr, certificate, privateKey, email, role, occupation,
+                authorizationCode,
                 systemName);
 
         return idCard;
@@ -141,49 +120,10 @@ public class IdCardBuilder extends AbstractSigningBuilder {
     public SystemIdCard buildSystemIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException {
 
-        String keystoreTp = keystoreType;
-
-        KeyStore ks;
-        if (keystore != null) {
-            ks = keystore;
-        } else {
-            ks = loadKeystore(keystoreTp, keystoreFromFilePath);
-        }
-
-        X509Certificate certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
-
-        certificate.checkValidity();
-
-        Key privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
-
+        loadKeyStore();
+                
         SystemIdCard idCard = new SystemIdCard(env, certificate, privateKey, systemName);
 
         return idCard;
     }
-
-    private KeyStore loadKeystore(String keystoreTp, String keystoreFromFilePath) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        InputStream keystoreIs;
-        KeyStore ks;
-
-        if (keystoreFromInputStream != null) {
-            keystoreIs = keystoreFromInputStream;
-            if (keystoreType == null) {
-                throw new IllegalStateException("KeystoreType must be specified with keystoreFromInputStream");
-            }
-        } else if (keystoreFromClassPath != null) {
-            keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
-            keystoreTp = guessKeystoreType(keystoreFromClassPath);
-        } else if (keystoreFromFilePath != null) {
-            keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
-            keystoreTp = guessKeystoreType(keystoreFromClassPath);
-        } else {
-            throw new IllegalStateException("No keystore specified");
-        }
-
-        ks = KeyStore.getInstance(keystoreTp);
-        ks.load(keystoreIs, keystorePassword);
-
-        return ks;
-    }
-
 }
