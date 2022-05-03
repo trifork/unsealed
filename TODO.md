@@ -1,10 +1,10 @@
 # TODO
-- Handle keystores containing multiple certificates (specify alias)
+- Validation of builder params (missing or inconsistent)
 - Server side validation - validate Idcard or SAML token from client
 - Fix hardcoded attributes in OIOSAMLToken.appendSenderVouchesAssertion 
-- Validation of builder params (missing or inconsistent)
 - Decrypt OIOSAMLAssertion
 - Javadoc
+- DONE Handle keystores containing multiple certificates (specify alias)
 - DONE Share code in common AbstractSigningBuilder class
 - DONE JWT token -> IDWS token
 - DONE Procuration

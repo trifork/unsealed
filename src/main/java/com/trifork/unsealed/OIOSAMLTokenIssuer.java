@@ -50,14 +50,14 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     private OIOSAMLTokenIssuer(String keystoreFromClassPath, String keystoreFromFilePath,
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType,
-            char[] keystorePassword,
+            char[] keystorePassword, String keystoreAlias,
             String subjectName, String recipient,
             String audience, String issuer, String uid, String pidNumber, String cvrNumber,
             String ridNumber, String cprNumber, String surName, String commonName, String email,
             String organisationName) {
 
         super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
 
         this.subjectName = subjectName;
         this.recipient = recipient;
@@ -76,155 +76,128 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
 
     public OIOSAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer keystorePath(String keystorePath) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer keystorePassword(char[] keystorePassword) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
+    }
+
+    public OIOSAMLTokenIssuer keystoreAlias(String keystoreAlias) {
+        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer subjectName(String subjectName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer recipient(String recipient) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer audience(String audience) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer issuer(String issuer) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer uid(String uid) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer pidNumber(String pidNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer cvrNumber(String cvrNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer ridNumber(String ridNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer cprNumber(String cprNumber) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer surName(String surName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer commonName(String commonName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer email(String email) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLTokenIssuer organisationName(String organisationName) {
         return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, subjectName,
-                recipient,
-                audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email,
-                organisationName);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
+                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
+                ridNumber, cprNumber, surName, commonName, email, organisationName);
     }
 
     public OIOSAMLToken build()

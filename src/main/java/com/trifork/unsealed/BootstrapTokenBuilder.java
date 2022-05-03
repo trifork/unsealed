@@ -19,10 +19,10 @@ public class BootstrapTokenBuilder extends AbstractSigningBuilder {
 
     private BootstrapTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
-            String xml, String jwt) {
+            String keystoreAlias, String xml, String jwt) {
 
         super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
 
         this.env = env;
         this.xml = xml;
@@ -31,37 +31,42 @@ public class BootstrapTokenBuilder extends AbstractSigningBuilder {
 
     public BootstrapTokenBuilder env(NSPEnv env) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder fromXml(String xml) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder fromJwt(String jwt) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder keystorePath(String keystorePath) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapTokenBuilder keystorePassword(char[] keystorePassword) {
         return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, xml, jwt);
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+    }
+
+    public BootstrapTokenBuilder keystoreAlias(String keystoreAlias) {
+        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
     }
 
     public BootstrapToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,

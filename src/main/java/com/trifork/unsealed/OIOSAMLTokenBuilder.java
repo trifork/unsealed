@@ -20,10 +20,10 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
 
     private OIOSAMLTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
             InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
-            Element assertion, String xml) {
+            String keystoreAlias, Element assertion, String xml) {
 
         super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword);
+                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
 
         this.env = env;
         this.assertion = assertion;
@@ -32,37 +32,42 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
 
     public OIOSAMLTokenBuilder env(NSPEnv env) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder xml(String xml) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder keystorePath(String keystorePath) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder keystorePassword(char[] keystorePassword) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+    }
+
+    public OIOSAMLTokenBuilder keystoreAlias(String keystoreAlias) {
+        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     public OIOSAMLTokenBuilder assertion(Element assertion) {
         return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, assertion, xml);
+                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
     }
 
     OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,

@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 public abstract class AbstractSigningBuilder {
 
@@ -24,12 +25,13 @@ public abstract class AbstractSigningBuilder {
     protected char[] keystorePassword;
     protected X509Certificate certificate;
     protected Key privateKey;
+    protected String keystoreAlias;
 
     protected AbstractSigningBuilder() {
     }
 
     protected AbstractSigningBuilder(String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword) {
+            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword, String keystoreAlias) {
 
         this.keystoreFromClassPath = keystoreFromClassPath;
         this.keystoreFromFilePath = keystoreFromFilePath;
@@ -37,6 +39,7 @@ public abstract class AbstractSigningBuilder {
         this.keystore = keystore;
         this.keystoreType = keystoreType;
         this.keystorePassword = keystorePassword;
+        this.keystoreAlias = keystoreAlias;
     }
 
     protected void loadKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
@@ -66,10 +69,16 @@ public abstract class AbstractSigningBuilder {
             ks.load(keystoreIs, keystorePassword);
         }
 
-        certificate = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+        String alias = keystoreAlias != null ? keystoreAlias : ks.aliases().nextElement();
+
+        certificate = (X509Certificate) ks.getCertificate(alias);
+
+        if (certificate == null) {
+            throw new IllegalArgumentException("No certificate found with alias \"" + alias + "\", found " + Collections.list(ks.aliases()));
+        }
 
         certificate.checkValidity();
 
-        privateKey = ks.getKey(ks.aliases().nextElement(), keystorePassword);
+        privateKey = ks.getKey(alias, keystorePassword);
     }
 }

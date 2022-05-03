@@ -57,6 +57,18 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
+    void cannotBuildBootstrapTokenWithWrongAlias() throws Exception {
+
+        String xml = BootstrapTokenHelper.createBootstrapToken(idpCert, idpPrivateKey,
+                "C=DK,O=Ingen organisatorisk tilknytning,CN=Lars Larsen,Serial=PID:9208-2002-2-514358910503");
+
+        assertThrows(IllegalArgumentException.class, () -> new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
+                .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks").keystorePassword("Test1234".toCharArray())
+                .keystoreAlias("wrongalias").fromXml(xml).build());
+
+    }
+
+    @Test
     void canExchangeBootstrapTokenToIDWSTokenWithProcuration() throws Exception {
 
         String xml = BootstrapTokenHelper.createBootstrapToken(idpCert, idpPrivateKey,
