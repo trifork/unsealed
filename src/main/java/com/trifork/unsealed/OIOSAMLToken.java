@@ -11,13 +11,22 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.security.spec.AlgorithmParameterSpec;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilder;
@@ -102,12 +111,12 @@ public class OIOSAMLToken {
 
         XPathContext xpath = new XPathContext(response.getOwnerDocument());
 
-        String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" 
+        String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/"
                 + NsPrefixes.soap.name() + ":Envelope/"
-                + NsPrefixes.soap.name() + ":Body/" 
-                + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/" 
+                + NsPrefixes.soap.name() + ":Body/"
+                + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
                 + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse/"
-                + NsPrefixes.wst13.name() + ":RequestedSecurityToken/" 
+                + NsPrefixes.wst13.name() + ":RequestedSecurityToken/"
                 + NsPrefixes.saml.name() + ":Assertion";
 
         Element assertion = xpath.findElement(REQUEST_SECURITY_TOKEN_RESPONSE_XPATH);
@@ -326,7 +335,7 @@ public class OIOSAMLToken {
         Element attributeStatement = getChild(assertion, NsPrefixes.saml, "Conditions");
         Element audienceRestriction = getChild(attributeStatement, NsPrefixes.saml, "AudienceRestriction");
         String audience = getTextChild(audienceRestriction, NsPrefixes.saml, "Audience");
-        
+
         return audience;
     }
 
@@ -357,6 +366,7 @@ public class OIOSAMLToken {
      * Invoke this method to verify the validity of the
      * <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and
      * {@link #getNotOnOrAfter()} values.<br>
+     * 
      * @throws ValidationException
      *
      */
@@ -383,6 +393,28 @@ public class OIOSAMLToken {
 
         if (now.minusSeconds(allowedDriftInSeconds).isAfter(getNotOnOrAfter())) {
             throw new ValidationException("Assertion is no longer valid (" + getNotBefore() + " > " + now + ")");
+        }
+    }
+
+    public void decrypt() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        if (encrypted) {
+            Element encryptedData = getChild(assertion, NsPrefixes.xenc, "EncryptedData");
+            Element encryptionMethod = getChild(encryptedData, NsPrefixes.xenc, "EncryptionMethod");
+            String encryptionAlgo = encryptionMethod.getAttribute("Algorithm");
+            Element keyInfo = getChild(encryptedData, NsPrefixes.ds, "KeyInfo");
+            Element keyInfoEncryptedKey = getChild(keyInfo, NsPrefixes.xenc, "EncryptedKey");
+            Element keyInfoEncryptionMethod = getChild(keyInfoEncryptedKey, NsPrefixes.xenc, "EncryptionMethod");
+            String keyInfoEncryptionAlgo = keyInfoEncryptionMethod.getAttribute("Algorithm");
+            Element keyInfoCipherData = getChild(keyInfoEncryptedKey, NsPrefixes.xenc, "CipherData");
+            String keyInfoCipherValue = getTextChild(keyInfoCipherData, NsPrefixes.xenc, "CipherValue");
+            Element cipherData = getChild(encryptedData, NsPrefixes.xenc, "CipherData");
+            String cipherValue = getTextChild(cipherData, NsPrefixes.xenc, "CipherValue");
+
+            byte[] cryptoBytes = cipherValue.getBytes(StandardCharsets.UTF_8);
+            byte[] aesSymKey = keyInfoCipherValue.getBytes(StandardCharsets.UTF_8);
+
+            XmlUtil.decrypt(cryptoBytes, aesSymKey);
         }
     }
 

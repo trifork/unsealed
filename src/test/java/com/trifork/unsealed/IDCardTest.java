@@ -64,6 +64,9 @@ public class IDCardTest extends AbstractTest {
             Element encryptedAssertion = samlToken.getAssertion();
             assertEquals("EncryptedAssertion", encryptedAssertion.getLocalName());
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
+
+            // samlToken.decrypt();
+
         } else {
             assertEquals("Lars Larsen", samlToken.getCommonName());
         }

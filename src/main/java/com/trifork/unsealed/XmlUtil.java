@@ -5,13 +5,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.AlgorithmParameterSpec;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,7 +56,8 @@ public class XmlUtil {
 	public static final String WST_SCHEMA = "http://schemas.xmlsoap.org/ws/2005/02/trust";
 	public static final String WST_1_3_SCHEMA = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
 	public static final String WST_1_4_SCHEMA = "http://docs.oasis-open.org/ws-sx/ws-trust/200802";
-	// public static final String WSA_SCHEMA = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
+	// public static final String WSA_SCHEMA =
+	// "http://schemas.xmlsoap.org/ws/2004/08/addressing";
 	public static final String WSA_1_0_SCHEMA = "http://www.w3.org/2005/08/addressing";
 	public static final String WSP_SCHEMA = "http://schemas.xmlsoap.org/ws/2004/09/policy";
 	public static final String XMLNS_SCHEMA = "http://www.w3.org/2000/xmlns/";
@@ -54,6 +67,8 @@ public class XmlUtil {
 	public static final String LIBERTY_SECURITY_SCHEMA = "urn:liberty:security:2006-08";
 	public static final String WSF_AUTH_SCHEMA = "http://docs.oasis-open.org/wsfed/authorization/200706";
 	public static final String OIO_BASIC_PRIVILEGES_PROFILE = "http://itst.dk/oiosaml/basic_privilege_profile";
+	public static final String XENC = "http://www.w3.org/2001/04/xmlenc#";
+	public static final String BPP = "http://itst.dk/oiosaml/basic_privilege_profile";
 
 	public static final String NS_SAML = "saml";
 	public static final String NS_SAMLP = "samlp";
@@ -78,6 +93,7 @@ public class XmlUtil {
 	public static final String NS_LIB_SEC = "sec";
 	public static final String NS_WSF_AUTH = "auth";
 	public static final String NS_BPP = "bpp";
+
 
 	@Deprecated
 	public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
@@ -227,6 +243,7 @@ public class XmlUtil {
 
 		return null;
 	}
+
 	public static Element getChild(Element parent, NsPrefixes nsPrefix, String name) {
 		NodeList childNodes = parent.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
@@ -239,32 +256,54 @@ public class XmlUtil {
 		return null;
 	}
 
-    public static Element getChild(Element parent, NsPrefixes nsPrefix, String name, Predicate<Element> predicate) {
+	public static Element getChild(Element parent, NsPrefixes nsPrefix, String name, Predicate<Element> predicate) {
 		NodeList childNodes = parent.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node item = childNodes.item(i);
-			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName()) && predicate.test((Element)item)) {
+			if (nsPrefix.namespaceUri.equals(item.getNamespaceURI()) && name.equals(item.getLocalName())
+					&& predicate.test((Element) item)) {
 				return (Element) item;
 			}
 		}
 
 		return null;
-    }
-
+	}
 
 	public static void declareNamespaces(Element element, NsPrefixes... prefixes) {
-        for (NsPrefixes prefix : prefixes) {
-            element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix.name(), prefix.namespaceUri);
-        }
-    }
+		for (NsPrefixes prefix : prefixes) {
+			element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix.name(), prefix.namespaceUri);
+		}
+	}
 
-    static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
-        // Neither DocumentBuilderFactory nor DocumentBuilder are guarenteed to be
-        // thread safe
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        return dbf.newDocumentBuilder();
-    }
+	static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
+		// Neither DocumentBuilderFactory nor DocumentBuilder are guarenteed to be
+		// thread safe
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(true);
+		return dbf.newDocumentBuilder();
+	}
 
+	public static byte[] decrypt(byte[] cryptoBytes, byte[] aesSymKey)
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+
+		String cipherMethod = "AES/CBC/ISO10126Padding"; // This should be derived from Cryptic Saml
+
+		AlgorithmParameterSpec iv = new IvParameterSpec(cryptoBytes, 0, 16);
+
+		// Strip off the the first 16 bytes because those are the IV
+		byte[] cipherBlock = Arrays.copyOfRange(cryptoBytes, 16, cryptoBytes.length);
+
+		// Create a secret key based on symKey
+		SecretKeySpec secretSauce = new SecretKeySpec(aesSymKey, "AES");
+
+		// Now we have all the ingredients to decrypt
+		Cipher cipher = Cipher.getInstance(cipherMethod);
+		cipher.init(Cipher.DECRYPT_MODE, secretSauce, iv);
+
+		// Do the decryption
+		byte[] decrypedBytes = cipher.doFinal(cipherBlock);
+		return decrypedBytes;
+	}
 
 }
