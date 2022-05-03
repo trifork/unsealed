@@ -8,7 +8,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
     private NSPEnv env;
@@ -71,11 +74,14 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
     }
 
     OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
-            UnrecoverableKeyException {
+            UnrecoverableKeyException, ParserConfigurationException, SAXException {
 
         loadKeyStore();
 
-        return new OIOSAMLToken(env, privateKey, certificate, assertion,
-                assertion != null && "EncryptedAssertion".equals(assertion.getTagName()), xml);
+        if (assertion != null) {
+            return new OIOSAMLToken(env, privateKey, certificate, assertion, "EncryptedAssertion".equals(assertion.getTagName()));
+        } else {
+            return new OIOSAMLToken(env, privateKey, certificate, false, xml);
+        }
     }
 }

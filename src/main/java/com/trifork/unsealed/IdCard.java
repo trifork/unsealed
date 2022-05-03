@@ -106,11 +106,11 @@ public abstract class IdCard {
 
         assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "Assertion");
         if (assertion != null) {
-            return new OIOSAMLToken(env, null, null, assertion, false, null);
+            return new OIOSAMLToken(env, null, null, assertion, false);
         }
         
         encryptedAssertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "EncryptedAssertion");
-        return new OIOSAMLToken(env, null, null, encryptedAssertion, true, null);
+        return new OIOSAMLToken(env, null, null, encryptedAssertion, true);
     }
 
     public String asString(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {

@@ -15,18 +15,13 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.security.spec.AlgorithmParameterSpec;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilder;
@@ -72,34 +67,53 @@ public class OIOSAMLToken {
     private NSPEnv env;
     private Key privateKey;
     private X509Certificate certificate;
-    private String xml;
     private boolean encrypted;
 
+    public OIOSAMLToken(NSPEnv env, Key privateKey, X509Certificate certificate,
+            boolean encrypted, String xml) throws ParserConfigurationException, SAXException, IOException {
+
+        this(env, privateKey, certificate, parseAssertion(xml), encrypted);
+    }
+
     public OIOSAMLToken(NSPEnv env, Key privateKey, X509Certificate certificate, Element assertion,
-            boolean encrypted, String xml) {
+            boolean encrypted) {
         this.env = env;
         this.privateKey = privateKey;
         this.certificate = certificate;
         this.assertion = assertion;
         this.encrypted = encrypted;
-        this.xml = xml;
     }
 
     public OIOSAMLToken(Element assertion) {
         this.assertion = assertion;
     }
 
-    public IdCard exchangeToIdCard() throws ParserConfigurationException, IOException, InterruptedException,
+    private static Element parseAssertion(String xml) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
+        Document doc = docBuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+        return doc.getDocumentElement();
+    }
+
+    public IdCard exchangeToIdCard(String itSystemName, String authorisationCode, String role)
+            throws ParserConfigurationException, IOException, InterruptedException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
             SAXException, XPathExpressionException, STSInvocationException {
 
         System.setProperty("com.sun.org.apache.xml.internal.security.ignoreLineBreaks", "true");
 
-        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
-        Element samlToken = docBuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
-                .getDocumentElement();
+        String nameIdValue = getUID();
+        String userSurName = getSurName();
+        String commonName = getCommonName();
+        String userGivenName;
+        if (commonName.endsWith(userSurName)) {
+            userGivenName = commonName.substring(0, commonName.length() - userSurName.length()).trim();
+        } else {
+            userGivenName = "";
+        }
 
-        Element request = createSAMLTokenToIdCardRequest(samlToken);
+        Element request = createSAMLTokenToIdCardRequest(assertion, itSystemName, nameIdValue, userSurName,
+                userGivenName, authorisationCode, role);
 
         Document doc = request.getOwnerDocument();
 
@@ -362,6 +376,13 @@ public class OIOSAMLToken {
         return date;
     }
 
+    public String getUID() {
+        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+        String uid = getSamlAttribute(attributeStatement, UID);
+
+        return uid;
+    }
+
     /**
      * Invoke this method to verify the validity of the
      * <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and
@@ -418,7 +439,9 @@ public class OIOSAMLToken {
         }
     }
 
-    private Element createSAMLTokenToIdCardRequest(Element samlToken) throws ParserConfigurationException {
+    private Element createSAMLTokenToIdCardRequest(Element samlToken, String itSystemName, String nameIdValue,
+            String userSurName, String userGivenName, String authorisationCode, String role)
+            throws ParserConfigurationException {
 
         DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
         Document doc = docBuilder.newDocument();
@@ -459,7 +482,8 @@ public class OIOSAMLToken {
         Element actAs = appendChild(requestSecurityToken, NsPrefixes.wst14, "ActAs");
         actAs.appendChild(doc.importNode(samlToken, true));
 
-        appendSenderVouchesAssertion(actAs);
+        appendSenderVouchesAssertion(actAs, itSystemName, nameIdValue, userSurName, userGivenName, authorisationCode,
+                role);
 
         appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa,
                 "EndpointReference"), NsPrefixes.wsa, "Address", "http://sosi.dk");
@@ -467,13 +491,8 @@ public class OIOSAMLToken {
         return envelope;
     }
 
-    private void appendSenderVouchesAssertion(Element parent) {
-        String nameIdValue = "CVR:20921897-RID:52723247";
-        String userEducationCode = "doctor";
-        String userAuthorizationCode = "J0184";
-        String userSurName = "Larsen";
-        String itSystemName = "FMK-online";
-        String userGivenName = "Lars";
+    private void appendSenderVouchesAssertion(Element parent, String itSystemName, String nameIdValue,
+            String userSurName, String userGivenName, String authorisationCode, String role) {
 
         Element assertion = appendChild(parent, NsPrefixes.saml, "Assertion");
 
@@ -483,7 +502,7 @@ public class OIOSAMLToken {
         assertion.setAttribute("Version", "2.0");
         assertion.setAttribute("ID", "sva");
 
-        appendChild(assertion, NsPrefixes.saml, "Issuer", "FMK-online");
+        appendChild(assertion, NsPrefixes.saml, "Issuer", itSystemName);
 
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
         Element nameId = appendChild(subject, NsPrefixes.saml, "NameID", nameIdValue);
@@ -494,9 +513,9 @@ public class OIOSAMLToken {
 
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "saml:AttributeStatement");
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:UserEducationCode",
-                userEducationCode);
+                role);
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:UserAuthorizationCode",
-                userAuthorizationCode);
+                authorisationCode);
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:UserSurName", userSurName);
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:ITSystemName", itSystemName);
         SamlUtil.addSamlAttribute(attributeStatement, "dk:healthcare:saml:attribute:UserGivenName", userGivenName);

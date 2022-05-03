@@ -60,7 +60,7 @@ public class OIOSamlTest extends AbstractTest {
                 .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();
 
-        IdCard exchangedIdCard = samlToken.exchangeToIdCard();
+        IdCard exchangedIdCard = samlToken.exchangeToIdCard("FMK-online", "J0184", "doctor");
         assertNotNull(exchangedIdCard);
 
         String subjectName = exchangedIdCard.getSubjectName();
