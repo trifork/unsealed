@@ -165,10 +165,9 @@ public class SignatureUtil {
             boolean sv = signature.getSignatureValue().validate(valContext);
             sb.append("Signature validation status: ").append(sv);
             // check the validation status of each Reference
-            Iterator<Reference> i = signature.getSignedInfo().getReferences().iterator();
-            for (int j = 0; i.hasNext(); j++) {
-                boolean refValid = ((Reference) i.next()).validate(valContext);
-                sb.append("; ref[" + j + "] validity status: " + refValid);
+            for (Reference ref: signature.getSignedInfo().getReferences()) {
+                boolean refValid = ref.validate(valContext);
+                sb.append("; ref[" + ref.getURI() + "] validity status: " + refValid);
             }
             throw new ValidationException(sb.toString());
         }
