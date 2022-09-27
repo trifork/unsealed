@@ -2,6 +2,7 @@ package com.trifork.unsealed;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -9,24 +10,30 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class IDCardTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
 
     @Test
     void canSignIdCard() throws Exception {
-        IdCardBuilder builder = new IdCardBuilder();
-        IdCard idCard = builder.env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
                 .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+
         idCard.sign();
+
+        idCard.validate();
     }
 
     @Test
     void canSignSystemIdCard() throws Exception {
-        IdCardBuilder builder = new IdCardBuilder();
-        IdCard idCard = builder.env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
+
         idCard.sign();
 
         assertEquals("TEST1-NSP-STS", idCard.getIssuer());
@@ -47,14 +54,18 @@ public class IDCardTest extends AbstractTest {
 
         LocalDateTime notOnOrAfter = idCard.getNotOnOrAfter();
         assertTrue(notOnOrAfter.isAfter(LocalDateTime.now()));
+
+        idCard.validate();
     }
 
     @Test
     void canExchangeIdCardToOIOSAMLToken() throws Exception {
-        IdCardBuilder builder = new IdCardBuilder();
-        IdCard idCard = builder.env(NSPTestEnv.TEST1_DNSP).keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_DNSP)
+                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
                 .occupation("occupation").systemName("systemname").buildUserIdCard();
+
         idCard.sign();
 
         OIOSAMLToken samlToken = idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
@@ -65,11 +76,46 @@ public class IDCardTest extends AbstractTest {
             assertEquals("EncryptedAssertion", encryptedAssertion.getLocalName());
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
 
-            // samlToken.decrypt();
+            OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
+                    .keystoreFromClassPath("oiosaml-sp.jks")
+                    .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
+
+            samlToken1.decrypt();
+
+            assertEquals("Lars Larsen", samlToken1.getCommonName());
 
         } else {
             assertEquals("Lars Larsen", samlToken.getCommonName());
         }
 
     }
+
+    @Test
+    void willFailOnInvalidSignature() throws Exception {
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+
+        idCard.sign();
+
+        idCard.validate();
+
+        Element assertion = idCard.getAssertion();
+
+        // Find the userGivenName AttributeValue
+        XPathContext xpath = new XPathContext(assertion.getOwnerDocument());
+        Element userGivenName = xpath
+                .findElement("//" + NsPrefixes.saml.name() + ":Attribute[@Name='medcom:UserGivenName']/"
+                        + NsPrefixes.saml.name() + ":AttributeValue");
+
+        // Change user given name. This should provoke a validation exception
+        userGivenName.setTextContent("Peter");
+
+        assertThrows(ValidationException.class, () -> {
+            idCard.validate();
+        });
+    }
+
 }

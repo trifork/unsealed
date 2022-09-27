@@ -1,9 +1,10 @@
 # TODO
 - Validation of builder params (missing or inconsistent)
-- Server side validation - validate Idcard or SAML token from client
-- Fix hardcoded attributes in OIOSAMLToken.appendSenderVouchesAssertion 
-- Decrypt OIOSAMLAssertion
+- Server side validation - IDWS token and request signature 
 - Javadoc
+- DONE Server side validation - validate Idcard including signature
+- DONE Decrypt EncryptedAssertion
+- DONE Fix hardcoded attributes in OIOSAMLToken.appendSenderVouchesAssertion 
 - DONE Handle keystores containing multiple certificates (specify alias)
 - DONE Share code in common AbstractSigningBuilder class
 - DONE JWT token -> IDWS token

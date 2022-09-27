@@ -73,6 +73,7 @@ public class OIOSamlTest extends AbstractTest {
     private OIOSAMLToken issueSamlToken() throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
             IOException, UnrecoverableKeyException, InvalidAlgorithmParameterException, MarshalException,
             XMLSignatureException, ParserConfigurationException {
+                
         OIOSAMLToken token = samlTokenIssuer
                 .audience("https://fmk")
                 .commonName("Lars Larsen")

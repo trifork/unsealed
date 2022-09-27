@@ -2,16 +2,29 @@ package com.trifork.unsealed;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
+import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
+import javax.xml.crypto.AlgorithmMethod;
+import javax.xml.crypto.KeySelector;
+import javax.xml.crypto.KeySelectorException;
+import javax.xml.crypto.KeySelectorResult;
 import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.XMLCryptoContext;
+import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
@@ -22,15 +35,28 @@ import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMSignContext;
+import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.crypto.dsig.keyinfo.KeyInfo;
 import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class SignatureUtil {
+    static final Logger log = Logger.getLogger(SignatureUtil.class.getName());
+
+    static final Map<String, String> URI_2_ALGO;
+    static {
+        URI_2_ALGO = new HashMap<>();
+        URI_2_ALGO.put(SignatureMethod.DSA_SHA1, "DSA");
+        URI_2_ALGO.put(SignatureMethod.RSA_SHA1, "RSA");
+        URI_2_ALGO.put(SignatureMethod.DSA_SHA256, "DSA");
+        URI_2_ALGO.put(SignatureMethod.RSA_SHA256, "RSA");
+    }
     static XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM");
 
     static void sign(Element rootElement, Element nextSibling, String[] referenceUris, String signatureId,
@@ -103,5 +129,124 @@ public class SignatureUtil {
         // return Base64.getMimeEncoder(Integer.MAX_VALUE, new
         // byte[0]).encodeToString(hash);
         return Base64.getEncoder().encodeToString(hash);
+    }
+
+    public static void validate(Element signedElement) throws MarshalException, XMLSignatureException, ValidationException {
+
+        // // Instantiate the document to be validated
+        // DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        // dbf.setNamespaceAware(true);
+        // Document doc = dbf.newDocumentBuilder().parse(new FileInputStream(args[0]));
+
+        // // Find Signature element
+        NodeList nl = signedElement.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+        if (nl.getLength() == 0) {
+            throw new XMLSignatureException("Cannot find Signature element");
+        }
+
+        // Create a DOM XMLSignatureFactory that will be used to unmarshal the
+        // document containing the XMLSignature
+        XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+
+        // Create a DOMValidateContext and specify a KeyValue KeySelector
+        // and document context
+        DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), nl.item(0));
+
+        // unmarshal the XMLSignature
+        XMLSignature signature = fac.unmarshalXMLSignature(valContext);
+
+        // Validate the XMLSignature (generated above)
+        boolean coreValidity = signature.validate(valContext);
+
+        // Check core validation status
+        if (coreValidity == false) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Signature failed core validation. ");
+            boolean sv = signature.getSignatureValue().validate(valContext);
+            sb.append("Signature validation status: ").append(sv);
+            // check the validation status of each Reference
+            Iterator<Reference> i = signature.getSignedInfo().getReferences().iterator();
+            for (int j = 0; i.hasNext(); j++) {
+                boolean refValid = ((Reference) i.next()).validate(valContext);
+                sb.append("; ref[" + j + "] validity status: " + refValid);
+            }
+            throw new ValidationException(sb.toString());
+        }
+    }
+
+    /**
+     * KeySelector which retrieves the public key out of the KeyValue element and
+     * returns it. NOTE: If the key algorithm doesn't match signature algorithm,
+     * then the public key will be ignored.
+     */
+    private static class KeyValueKeySelector extends KeySelector {
+        public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method,
+                XMLCryptoContext context) throws KeySelectorException {
+
+            if (keyInfo == null) {
+                throw new KeySelectorException("Null KeyInfo object!");
+            }
+
+            SignatureMethod sm = (SignatureMethod) method;
+            List<XMLStructure> list = keyInfo.getContent();
+
+            for (int i = 0; i < list.size(); i++) {
+                XMLStructure xmlStructure = (XMLStructure) list.get(i);
+                if (xmlStructure instanceof KeyValue) {
+                    PublicKey pk = null;
+                    try {
+                        pk = ((KeyValue) xmlStructure).getPublicKey();
+                    } catch (KeyException ke) {
+                        throw new KeySelectorException(ke);
+                    }
+                    // make sure algorithm is compatible with method
+                    if (algEquals(sm.getAlgorithm(), pk.getAlgorithm())) {
+                        return new SimpleKeySelectorResult(pk);
+                    }
+                } else if (xmlStructure instanceof X509Data) {
+                    X509Data x509Data = (X509Data) xmlStructure;
+
+                    Iterator<?> xi = x509Data.getContent().iterator();
+                    while (xi.hasNext()) {
+                        Object o = xi.next();
+
+                        if (!(o instanceof X509Certificate))
+                            continue;
+
+                        X509Certificate certificate = (X509Certificate) o;
+                        if (!isTrustedCertificate(certificate)) {
+                            continue;
+                        }
+
+                        final PublicKey key = certificate.getPublicKey();
+                        // make sure algorithm is compatible with method
+                        if (algEquals(method.getAlgorithm(), key.getAlgorithm())) {
+                            return new SimpleKeySelectorResult(key);
+                        }
+                    }
+                }
+            }
+            throw new KeySelectorException("No KeyValue element found!");
+        }
+
+        private boolean isTrustedCertificate(X509Certificate certificate) {
+            return true;
+        }
+
+        private static boolean algEquals(String algURI, String algName) {
+            return algName.equals(URI_2_ALGO.get(algURI));
+        }
+    }
+
+    private static class SimpleKeySelectorResult implements KeySelectorResult {
+        private PublicKey pk;
+
+        SimpleKeySelectorResult(PublicKey pk) {
+            this.pk = pk;
+        }
+
+        public Key getKey() {
+            return pk;
+        }
     }
 }

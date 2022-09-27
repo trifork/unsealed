@@ -14,6 +14,8 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public abstract class AbstractSigningBuilder {
 
@@ -43,7 +45,10 @@ public abstract class AbstractSigningBuilder {
     }
 
     protected void loadKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
-        InputStream keystoreIs;
+
+        validateParameters();
+
+        InputStream keystoreIs = null;
         String keystoreTp = keystoreType;
 
         KeyStore ks;
@@ -52,17 +57,12 @@ public abstract class AbstractSigningBuilder {
         } else {
             if (keystoreFromInputStream != null) {
                 keystoreIs = keystoreFromInputStream;
-                if (keystoreType == null) {
-                    throw new IllegalStateException("KeystoreType must be specified with keystoreFromInputStream");
-                }
             } else if (keystoreFromClassPath != null) {
                 keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
                 keystoreTp = guessKeystoreType(keystoreFromClassPath);
             } else if (keystoreFromFilePath != null) {
                 keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
                 keystoreTp = guessKeystoreType(keystoreFromClassPath);
-            } else {
-                throw new IllegalStateException("No keystore specified");
             }
 
             ks = KeyStore.getInstance(keystoreTp);
@@ -80,5 +80,15 @@ public abstract class AbstractSigningBuilder {
         certificate.checkValidity();
 
         privateKey = ks.getKey(alias, keystorePassword);
+    }
+
+    private void validateParameters() {
+        if (Stream.of(keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore).filter(Objects::nonNull).count() != 1) {
+            throw new IllegalStateException("Exactly one of [keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore] must be specified");
+        }
+
+        if (keystoreFromInputStream != null && keystoreType == null) {
+            throw new IllegalStateException("When keystoreFromInputStream is specified, keystoreType must also be specified");
+        }
     }
 }

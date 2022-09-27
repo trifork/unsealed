@@ -10,12 +10,17 @@ import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 
 public class SystemIdCard extends IdCard {
-    protected SystemIdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
-        super(env, certificate, privateKey, systemName);
-    }
-
     private static final Pattern subjectRegex = Pattern
             .compile(".*O=(.*) // CVR:(\\d+),.*");
+
+    protected SystemIdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
+        super(env, certificate, privateKey, systemName);
+    }    
+
+    protected SystemIdCard(NSPEnv env, Element signedIdCard) {
+        super(env, null, null, null);
+        this.signedIdCard = signedIdCard;
+    }    
 
     @Override
     protected void extractKeystoreOwnerInfo(X509Certificate cert) {

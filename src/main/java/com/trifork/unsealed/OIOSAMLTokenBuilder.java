@@ -79,7 +79,7 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
         loadKeyStore();
 
         if (assertion != null) {
-            return new OIOSAMLToken(env, privateKey, certificate, assertion, "EncryptedAssertion".equals(assertion.getTagName()));
+            return new OIOSAMLToken(env, privateKey, certificate, assertion, "EncryptedAssertion".equals(assertion.getLocalName()));
         } else {
             return new OIOSAMLToken(env, privateKey, certificate, false, xml);
         }

@@ -7,11 +7,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.AlgorithmParameterSpec;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -22,7 +22,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -93,7 +92,6 @@ public class XmlUtil {
 	public static final String NS_WSF_AUTH = "auth";
 	public static final String NS_BPP = "bpp";
 
-
 	@Deprecated
 	public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 
@@ -113,11 +111,20 @@ public class XmlUtil {
 		SOSI_NAMESPACES.put(NS_XSD, XSD_SCHEMA);
 	}
 
+	public static final Map<String, String> URL_TO_JCE;
+	static {
+		URL_TO_JCE = new HashMap<>();
+		URL_TO_JCE.put("http://www.w3.org/2001/04/xmlenc#rsa-1_5", "RSA/ECB/PKCS1Padding");
+		URL_TO_JCE.put("http://www.w3.org/2001/04/xmlenc#aes128-cbc", "AES/CBC/ISO10126Padding");
+	}
+
 	public static final DateTimeFormatter ISO_WITH_MILLIS_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("UTC"));
 
 	public static final DateTimeFormatter ISO_WITHOUT_MILLIS_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
+
+	private static byte[] bytes;
 
 	public static Supplier<InputStream> node2InputStream(Node node, boolean pretty, boolean includeXMLHeader) {
 
@@ -282,27 +289,53 @@ public class XmlUtil {
 		return dbf.newDocumentBuilder();
 	}
 
-	public static byte[] decrypt(byte[] cryptoBytes, byte[] aesSymKey)
+	public static Key decryptKey(Key privateKey, Element encryptedKey, String encryptedKeyEncryptionAlgo, String encryptionAlgo)
+			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+
+		Element encryptedKeyCipherData = getChild(encryptedKey, NsPrefixes.xenc, "CipherData");
+		String encryptedKeyCipherValue = getTextChild(encryptedKeyCipherData, NsPrefixes.xenc, "CipherValue");
+
+		byte[] encryptedBytes = Base64.getMimeDecoder().decode(encryptedKeyCipherValue);
+
+		String jce1 = URL_TO_JCE.get(encryptionAlgo);
+		String jceKeyAlgorithm = jce1.substring(0, jce1.indexOf('/'));
+
+		String jceAlgorithm = URL_TO_JCE.get(encryptedKeyEncryptionAlgo);
+
+		Cipher c = Cipher.getInstance(jceAlgorithm);
+		c.init(Cipher.UNWRAP_MODE, privateKey);
+		Key key = c.unwrap(encryptedBytes, jceKeyAlgorithm, Cipher.SECRET_KEY);
+
+		return key;
+	}
+
+	public static String decrypt(Key dataEncryptionKey, Element encryptedData, String encryptionAlgo)
 			throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 
-		String cipherMethod = "AES/CBC/ISO10126Padding"; // This should be derived from Cryptic Saml
+		String type = encryptedData.getAttribute("Type");
 
-		AlgorithmParameterSpec iv = new IvParameterSpec(cryptoBytes, 0, 16);
+		if (!"http://www.w3.org/2001/04/xmlenc#Element".equals(type)) {
+			throw new RuntimeException("EncryptedData was of unsupported type '" + type + "'");
+		}
 
-		// Strip off the the first 16 bytes because those are the IV
-		byte[] cipherBlock = Arrays.copyOfRange(cryptoBytes, 16, cryptoBytes.length);
+		Element cipherData = getChild(encryptedData, NsPrefixes.xenc, "CipherData");
+		String cipherValue = getTextChild(cipherData, NsPrefixes.xenc, "CipherValue");
 
-		// Create a secret key based on symKey
-		SecretKeySpec secretSauce = new SecretKeySpec(aesSymKey, "AES");
+		byte[] cryptoBytes = Base64.getMimeDecoder().decode(cipherValue);
+		
+		String jceAlgorithm = URL_TO_JCE.get(encryptionAlgo);
 
-		// Now we have all the ingredients to decrypt
-		Cipher cipher = Cipher.getInstance(cipherMethod);
-		cipher.init(Cipher.DECRYPT_MODE, secretSauce, iv);
+		Cipher cipher = Cipher.getInstance(jceAlgorithm);
 
-		// Do the decryption
-		byte[] decrypedBytes = cipher.doFinal(cipherBlock);
-		return decrypedBytes;
+		int ivLen = cipher.getBlockSize();
+
+		IvParameterSpec iv = new IvParameterSpec(cryptoBytes, 0, ivLen);		
+
+		cipher.init(Cipher.DECRYPT_MODE, dataEncryptionKey, iv);
+
+		bytes = cipher.doFinal(cryptoBytes, ivLen, cryptoBytes.length - ivLen);
+
+		return new String(bytes, StandardCharsets.UTF_8);
 	}
-
 }

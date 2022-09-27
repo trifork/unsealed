@@ -95,12 +95,23 @@ public class OIOSAMLToken {
         return doc.getDocumentElement();
     }
 
+    public IdCard exchangeToIdCard(String itSystemName)
+            throws ParserConfigurationException, IOException, InterruptedException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
+            SAXException, XPathExpressionException, STSInvocationException {
+        return exchangeToIdCard(itSystemName, null, null);
+    }
+
     public IdCard exchangeToIdCard(String itSystemName, String authorisationCode, String role)
             throws ParserConfigurationException, IOException, InterruptedException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
             SAXException, XPathExpressionException, STSInvocationException {
 
         System.setProperty("com.sun.org.apache.xml.internal.security.ignoreLineBreaks", "true");
+
+        if (role == null) {
+            role = "urn:dk:healthcare:no-role";
+        }
 
         String nameIdValue = getUID();
         String userSurName = getSurName();
@@ -418,25 +429,26 @@ public class OIOSAMLToken {
     }
 
     public void decrypt() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
-        if (encrypted) {
-            Element encryptedData = getChild(assertion, NsPrefixes.xenc, "EncryptedData");
-            Element encryptionMethod = getChild(encryptedData, NsPrefixes.xenc, "EncryptionMethod");
-            String encryptionAlgo = encryptionMethod.getAttribute("Algorithm");
-            Element keyInfo = getChild(encryptedData, NsPrefixes.ds, "KeyInfo");
-            Element keyInfoEncryptedKey = getChild(keyInfo, NsPrefixes.xenc, "EncryptedKey");
-            Element keyInfoEncryptionMethod = getChild(keyInfoEncryptedKey, NsPrefixes.xenc, "EncryptionMethod");
-            String keyInfoEncryptionAlgo = keyInfoEncryptionMethod.getAttribute("Algorithm");
-            Element keyInfoCipherData = getChild(keyInfoEncryptedKey, NsPrefixes.xenc, "CipherData");
-            String keyInfoCipherValue = getTextChild(keyInfoCipherData, NsPrefixes.xenc, "CipherValue");
-            Element cipherData = getChild(encryptedData, NsPrefixes.xenc, "CipherData");
-            String cipherValue = getTextChild(cipherData, NsPrefixes.xenc, "CipherValue");
+            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, SAXException, IOException, 
+            ParserConfigurationException {
 
-            byte[] cryptoBytes = cipherValue.getBytes(StandardCharsets.UTF_8);
-            byte[] aesSymKey = keyInfoCipherValue.getBytes(StandardCharsets.UTF_8);
-
-            XmlUtil.decrypt(cryptoBytes, aesSymKey);
+        if (!encrypted) {
+            throw new IllegalStateException("Assertion is not encrypted");
         }
+
+        Element encryptedData = getChild(assertion, NsPrefixes.xenc, "EncryptedData");
+        Element encryptionMethod = getChild(encryptedData, NsPrefixes.xenc, "EncryptionMethod");
+        String encryptionAlgo = encryptionMethod.getAttribute("Algorithm");
+        Element keyInfo = getChild(encryptedData, NsPrefixes.ds, "KeyInfo");
+        Element encryptedKey = getChild(keyInfo, NsPrefixes.xenc, "EncryptedKey");
+        Element encryptedKeyEncryptionMethod = getChild(encryptedKey, NsPrefixes.xenc, "EncryptionMethod");
+        String encryptedKeyEncryptionAlgo = encryptedKeyEncryptionMethod.getAttribute("Algorithm");
+
+        Key decryptedKey = XmlUtil.decryptKey(privateKey, encryptedKey, encryptedKeyEncryptionAlgo, encryptionAlgo);
+
+        String decrypted = XmlUtil.decrypt(decryptedKey, encryptedData, encryptionAlgo);
+
+        assertion = XmlUtil.getDocBuilder().parse(new ByteArrayInputStream(decrypted.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
     }
 
     private Element createSAMLTokenToIdCardRequest(Element samlToken, String itSystemName, String nameIdValue,

@@ -1,11 +1,8 @@
 package com.trifork.unsealed;
 
-import static com.trifork.unsealed.KeystoreUtil.guessKeystoreType;
 import static com.trifork.unsealed.SamlUtil.addSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;

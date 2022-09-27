@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
@@ -254,4 +256,36 @@ public abstract class IdCard {
         return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), ISO_WITHOUT_MILLIS_FORMATTER);
     }
 
+    public void validate() throws ValidationException {
+        validateTimes(null);
+        validateSignature();
+    }
+
+    protected Element getAssertion() {
+        return signedIdCard != null ? signedIdCard : assertion;
+    }
+
+    private void validateSignature() throws ValidationException {
+        try {
+            SignatureUtil.validate(signedIdCard);
+        } catch (MarshalException | XMLSignatureException e) {
+            throw new ValidationException("Error validating signature", e);
+        }
+    }
+
+    private void validateTimes(LocalDateTime now) throws ValidationException {
+        if (now == null) {
+            now = LocalDateTime.now();
+        }
+        
+        LocalDateTime notBefore = getNotBefore();
+        if (now.isBefore(notBefore)) {
+            throw new ValidationException("NotBefore condition not met, NotBefore=" + notBefore + ", now=" + now);
+        }
+
+        LocalDateTime notOnOrAfter = getNotOnOrAfter();
+        if (now.isEqual(notOnOrAfter) || now.isAfter(notOnOrAfter)) {
+            throw new ValidationException("NotOnOrAfter condition not met, NotOnOrAfter=" + notOnOrAfter + ", now=" + now);
+        }
+    }
 }

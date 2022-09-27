@@ -39,7 +39,6 @@ public class BootstrapToken {
     private Key privateKey;
     private String xml;
     private String jwt;
-;
 
     BootstrapToken(NSPEnv env, X509Certificate certificate, Key privateKey, String xml, String jwt) {
         this.env = env;
