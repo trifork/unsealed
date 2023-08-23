@@ -10,13 +10,12 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class IDCardTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
 
     @Test
-    void canSignIdCard() throws Exception {
+    void canSignMoces2IdCard() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
                 .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
@@ -29,9 +28,22 @@ public class IDCardTest extends AbstractTest {
     }
 
     @Test
-    void canSignSystemIdCard() throws Exception {
+    void canSignIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
+                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+
+        idCard.sign();
+
+        idCard.validate();
+    }
+
+    @Test
+    void canSignMoces2SystemIdCard() throws Exception {
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineOiosamlSP-test1.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
 
         idCard.sign();
@@ -59,10 +71,72 @@ public class IDCardTest extends AbstractTest {
     }
 
     @Test
+    void canSignSystemIdCard() throws Exception {
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
+
+        idCard.sign();
+
+        assertEquals("TEST1-NSP-STS", idCard.getIssuer());
+        String subjectName = idCard.getSubjectName();
+        assertNotNull(subjectName);
+
+        Document doc = XmlUtil.getDocBuilder().newDocument();
+
+        Element copy = idCard.serialize2DOMDocument(doc);
+        doc.appendChild(copy);
+
+        String serialized = XmlUtil.node2String(doc, true, false);
+
+        assertTrue(serialized.contains("Assertion"));
+
+        LocalDateTime notBefore = idCard.getNotBefore();
+        assertTrue(notBefore.isBefore(LocalDateTime.now()));
+
+        LocalDateTime notOnOrAfter = idCard.getNotOnOrAfter();
+        assertTrue(notOnOrAfter.isAfter(LocalDateTime.now()));
+
+        idCard.validate();
+    }
+
+    @Test
+    void canExchangeMoces2IdCardToOIOSAMLToken() throws Exception {
+
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .occupation("occupation").systemName("systemname").buildUserIdCard();
+
+        idCard.sign();
+
+        OIOSAMLToken samlToken = idCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
+        assertNotNull(samlToken);
+
+        if (samlToken.isEncrypted()) {
+            Element encryptedAssertion = samlToken.getAssertion();
+            assertEquals("EncryptedAssertion", encryptedAssertion.getLocalName());
+            assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
+
+            OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
+                    .keystoreFromClassPath("oiosaml-sp.jks")
+                    .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
+
+            samlToken1.decrypt();
+
+            assertEquals("Lars Larsen", samlToken1.getCommonName());
+
+        } else {
+            assertEquals("Lars Larsen", samlToken.getCommonName());
+        }
+
+    }
+
+    @Test
     void canExchangeIdCardToOIOSAMLToken() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
                 .occupation("occupation").systemName("systemname").buildUserIdCard();
 

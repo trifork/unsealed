@@ -327,7 +327,7 @@ public class XmlUtil {
 		String jceAlgorithm = URL_TO_JCE.get(encryptionAlgo);
 
 		Cipher cipher = Cipher.getInstance(jceAlgorithm);
-
+		
 		int ivLen = cipher.getBlockSize();
 
 		IvParameterSpec iv = new IvParameterSpec(cryptoBytes, 0, ivLen);		

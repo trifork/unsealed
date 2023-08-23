@@ -57,7 +57,7 @@ public class OIOSamlTest extends AbstractTest {
 
         OIOSAMLTokenBuilder samlTokenBuilder = new OIOSAMLTokenBuilder();
         OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T.jks")
+                .keystoreFromClassPath("FMKOnlineOiosamlSP-test1.jks")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();
 
         IdCard exchangedIdCard = samlToken.exchangeToIdCard("FMK-online", "J0184", "doctor");

@@ -4,14 +4,23 @@ import static com.trifork.unsealed.XmlUtil.appendChild;
 
 import java.security.Key;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+
+import javax.naming.InvalidNameException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.ldap.LdapName;
 
 import org.w3c.dom.Element;
 
 public class UserIdCard extends IdCard {
-    private static final Pattern mocesSubjectRegex = Pattern
-            .compile("CN=([^\\+ ]+) ([^\\+]+) \\+ SERIALNUMBER=CVR:(\\d+)-RID:(\\d+), O=([^,]+), C=(\\w\\w)");
+    private static final String MOCES2_ORG_DIVIDER = " // CVR:";
+    private static final String ORG_ID = "OID.2.5.4.97";
+    private static final Pattern OI_PATTERN = Pattern.compile("NTRDK-(?<Cvr>[0-9]{1,8})");
 
     private String cpr;
     private String role;
@@ -37,21 +46,72 @@ public class UserIdCard extends IdCard {
         this.signedIdCard = signedIdCard;
     }
 
-    @Override
     protected void extractKeystoreOwnerInfo(X509Certificate cert) {
         String subject = cert.getSubjectDN().getName();
-        Matcher matcher = mocesSubjectRegex.matcher(subject);
-        if (matcher.matches()) {
-            firstName = matcher.group(1);
-            lastName = matcher.group(2);
-            cvr = matcher.group(3);
-            // rid = matcher.group(4);
-            organisation = matcher.group(5);
 
-            int idx = organisation.indexOf(" // CVR:");
-            if (idx != -1) {
-                organisation = organisation.substring(0, idx);
+        LdapName ldapName;
+        try {
+            ldapName = new LdapName(subject);
+        } catch (InvalidNameException e) {
+            throw new RuntimeException(e);
+        }
+
+        HashMap<String, String> attributes = ldapName.getRdns().stream().collect(Collector.of(
+                () -> new HashMap<String, String>(),
+                (map, rdn) -> {
+                    NamingEnumeration<? extends Attribute> en = rdn.toAttributes().getAll();
+                    while (en.hasMoreElements()) {
+                        Attribute attribute = en.nextElement();
+                        try {
+                            map.put(attribute.getID(), attribute.get().toString());
+                        } catch (NamingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                },
+                (map1, map2) -> {
+                    map1.putAll(map2);
+                    return map1;
+                }));
+
+        String serialNumber = attributes.get("SERIALNUMBER");
+        String cn = attributes.get("CN");
+        String o = attributes.get("O");
+
+        if (serialNumber != null && serialNumber.indexOf("RID") > 0) {
+            // Moces2
+            cvr = null;
+            int idx1 = o.indexOf(MOCES2_ORG_DIVIDER);
+            if (idx1 != -1) {
+                organisation = o.substring(0, idx1);
+                cvr = o.substring(idx1 + MOCES2_ORG_DIVIDER.length());
             }
+
+            int idx2 = cn.lastIndexOf(" ");
+            firstName = cn.substring(0, idx2);
+            lastName = cn.substring(idx2 + 1);
+
+            // int idx3 = serialNumber.indexOf("RID:");
+            //rid = serialNumber.substring(idx3 + "RID:".length());
+
+        } else {
+            // Moces3
+            firstName = attributes.get("GIVENNAME");
+            lastName = attributes.get("SURNAME");
+
+            String orgId = attributes.get(ORG_ID);
+
+            // String uuid = serialNumber.substring(serialNumber.lastIndexOf(":") + 1);
+
+            Matcher oiMatcher = null;
+            if (orgId != null) {
+                oiMatcher = OI_PATTERN.matcher(orgId);
+                if (oiMatcher.find()) {
+                    cvr = oiMatcher.group("Cvr");
+                }
+            }
+
+            organisation = o;
         }
     }
 
