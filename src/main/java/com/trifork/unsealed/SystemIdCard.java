@@ -59,13 +59,14 @@ public class SystemIdCard extends IdCard {
                     return map1;
                 }));
 
-        String serialNumber = attributes.get("SERIALNUMBER");
+        // String serialNumber = attributes.get("SERIALNUMBER");
         // String cn = attributes.get("CN");
         String o = attributes.get("O");
 
-        if (serialNumber != null && serialNumber.indexOf("UID") > 0) {
+        if (o != null && o.indexOf(MOCES2_ORG_DIVIDER) != -1) {
             // Moces2
             cvr = null;
+
             int idx1 = o.indexOf(MOCES2_ORG_DIVIDER);
             if (idx1 != -1) {
                 organisation = o.substring(0, idx1);
