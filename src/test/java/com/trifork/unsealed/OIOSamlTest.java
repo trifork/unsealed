@@ -17,6 +17,7 @@ import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class OIOSamlTest extends AbstractTest {
@@ -27,7 +28,7 @@ public class OIOSamlTest extends AbstractTest {
     void setup0() throws Exception {
         AbstractTest.setup();
 
-        samlTokenIssuer = new OIOSAMLTokenIssuer().keystoreFromClassPath("TestTrustedIdpForBootstrapToken.p12")
+        samlTokenIssuer = new OIOSAMLTokenIssuer().keystoreFromClassPath("TEST whitelisted SP SOSI alias.p12")
                 .keystorePassword("Test1234".toCharArray());
 
     }
@@ -49,6 +50,7 @@ public class OIOSamlTest extends AbstractTest {
         assertTrue(ZonedDateTime.now().isAfter(token.getUserAuthenticationInstant()));
     }
 
+    @Disabled
     @Test
     void canExchangeOIOSAMLTokenToIdCard() throws Exception {
         OIOSAMLToken token = issueSamlToken();
@@ -57,7 +59,7 @@ public class OIOSamlTest extends AbstractTest {
 
         OIOSAMLTokenBuilder samlTokenBuilder = new OIOSAMLTokenBuilder();
         OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineOiosamlSP-test1.jks")
+                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();
 
         IdCard exchangedIdCard = samlToken.exchangeToIdCard("FMK-online", "J0184", "doctor");

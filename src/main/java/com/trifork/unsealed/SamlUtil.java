@@ -17,12 +17,25 @@ public class SamlUtil {
             attr.setAttribute("NameFormat", nameFormat);
         }
         appendChild(attr, NsPrefixes.saml, "AttributeValue", value);
-    
+
+        return attr;
+    }
+
+    public static Element addUriTypeSamlAttribute(Element parent, String name, String value) {
+        Element attr = appendChild(parent, NsPrefixes.saml, "Attribute");
+        attr.setAttribute("Name", name);
+
+        attr.setAttribute("NameFormat", "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        Element attrValue = appendChild(attr, NsPrefixes.saml, "AttributeValue", value);
+        attrValue.setAttributeNS(NsPrefixes.xsi.namespaceUri, NsPrefixes.xsi.name() + ":" + "type",
+                NsPrefixes.xsd.name() + ":string");
+
         return attr;
     }
 
     public static String getSamlAttribute(Element parent, String name) {
-        Element attribute = XmlUtil.getChild(parent, NsPrefixes.saml, "Attribute", child -> name.equals(child.getAttribute("Name")));
+        Element attribute = XmlUtil.getChild(parent, NsPrefixes.saml, "Attribute",
+                child -> name.equals(child.getAttribute("Name")));
         return XmlUtil.getTextChild(attribute, NsPrefixes.saml, "AttributeValue");
     }
 

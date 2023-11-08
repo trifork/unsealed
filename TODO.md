@@ -1,4 +1,6 @@
 # TODO
+- Create bootstrap tokens for pros (BootstrapTokenHelper)
+- Implement bst2sosi
 - Validation of builder params (missing or inconsistent)
 - Server side validation - IDWS token and request signature 
 - Javadoc

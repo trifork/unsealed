@@ -109,7 +109,7 @@ public class BootstrapToken {
 
         declareNamespaces(envelope, NsPrefixes.soap, NsPrefixes.ds, NsPrefixes.saml, NsPrefixes.xsi,
                 NsPrefixes.wsse,
-                NsPrefixes.wst, NsPrefixes.wsa, NsPrefixes.wsu, NsPrefixes.xsd);
+                NsPrefixes.wst, NsPrefixes.wsa, NsPrefixes.wsu);
 
         Element soapHeader = appendChild(envelope, NsPrefixes.soap, "Header");
 
@@ -146,7 +146,7 @@ public class BootstrapToken {
             Element bootstrapToken = docBuilder
                     .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
                     .getDocumentElement();
-    
+
             actAs.appendChild(doc.importNode(bootstrapToken, true));
         } else if (jwt != null) {
             Element binarySecurityToken = appendChild(actAs, NsPrefixes.wsse, "BinarySecurityToken");
@@ -172,6 +172,10 @@ public class BootstrapToken {
         }
 
         return envelope;
+    }
+
+    public IdentityToken exchangeToIdCard(String string, String string2) {
+        return null;
     }
 
 }

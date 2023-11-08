@@ -203,9 +203,22 @@ public class XmlUtil {
 		return child;
 	}
 
+	public static Element appendChild(Element parent, String nsUrl, String name) {
+		Element child = parent.getOwnerDocument().createElementNS(nsUrl, name);
+		parent.appendChild(child);
+		return child;
+	}
+
 	public static Element appendChild(Element parent, NsPrefixes nsPrefix, String name, String textValue) {
 		Element child = parent.getOwnerDocument().createElementNS(nsPrefix.namespaceUri, name);
 		child.setPrefix(nsPrefix.name());
+		child.setTextContent(textValue);
+		parent.appendChild(child);
+		return child;
+	}
+
+	public static Element appendChild(Element parent, String nsUrl, String name, String textValue) {
+		Element child = parent.getOwnerDocument().createElementNS(nsUrl, name);
 		child.setTextContent(textValue);
 		parent.appendChild(child);
 		return child;

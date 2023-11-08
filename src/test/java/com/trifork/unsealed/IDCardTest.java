@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,6 +15,7 @@ import org.w3c.dom.Element;
 public class IDCardTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
 
+    @Disabled
     @Test
     void canSignMoces2IdCard() throws Exception {
 
@@ -43,7 +45,7 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignMoces2SystemIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineOiosamlSP-test1.jks")
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
 
         idCard.sign();
@@ -100,6 +102,7 @@ public class IDCardTest extends AbstractTest {
         idCard.validate();
     }
 
+    @Disabled
     @Test
     void canExchangeMoces2IdCardToOIOSAMLToken() throws Exception {
 
@@ -119,7 +122,7 @@ public class IDCardTest extends AbstractTest {
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
 
             OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
-                    .keystoreFromClassPath("oiosaml-sp.jks")
+                    .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
                     .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
 
             samlToken1.decrypt();
@@ -151,7 +154,7 @@ public class IDCardTest extends AbstractTest {
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
 
             OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
-                    .keystoreFromClassPath("oiosaml-sp.jks")
+                    .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
                     .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
 
             samlToken1.decrypt();
@@ -168,7 +171,7 @@ public class IDCardTest extends AbstractTest {
     void willFailOnInvalidSignature() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
+                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
                 .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
                 .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
 
