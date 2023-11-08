@@ -1,6 +1,6 @@
 package com.trifork.unsealed;
 
-enum NsPrefixes {
+public enum NsPrefixes {
 	ds(XmlUtil.DSIG_SCHEMA), saml(XmlUtil.SAML2ASSERTION_SCHEMA), xsi(XmlUtil.XMLSCHEMAINSTANCE_SCHEMA),
 	medcom(XmlUtil.MEDCOM_SCHEMA), wsp(XmlUtil.WSP_SCHEMA), wsse(XmlUtil.WSSE_SCHEMA), wst(XmlUtil.WST_SCHEMA),
 	wst13(XmlUtil.WST_1_3_SCHEMA), wst14(XmlUtil.WST_1_4_SCHEMA), wsu(XmlUtil.WSU_SCHEMA),
