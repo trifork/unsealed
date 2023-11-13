@@ -9,10 +9,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.crypto.MarshalException;
@@ -25,8 +30,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+class Claim {
+    final String uri;
+    final String value;
+
+    Claim(String uri, String value) {
+        this.uri = uri;
+        this.value = value;
+    }
+}
+
 public class BootstrapToken {
     static final String DEFAULT_BST_TO_ID_ENDPOINT = "/sts/services/Bst2Idws";
+    static final String DEFAULT_BST_TO_SOSI_ENDPOINT = "/sts/services/BST2SOSI";
     static final String DEFAULT_JWT_TO_ID_ENDPOINT = "/sts/services/JWT2Idws";
 
     private static final String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
@@ -62,7 +78,17 @@ public class BootstrapToken {
             MarshalException, XMLSignatureException, XPathExpressionException, STSInvocationException,
             ParserConfigurationException, SAXException {
 
-        Element request = createBootstrapToIdentityTokenRequest(audience, cpr, procurationCpr);
+        ArrayList<Claim> claims = new ArrayList<>();
+
+        claims.add(new Claim("dk:gov:saml:attribute:CprNumberIdentifier", cpr));
+
+        if (procurationCpr != null) {
+            claims.add(new Claim("dk:healthcare:saml:attribute:OnBehalfOf",
+                    "urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:"
+                            + procurationCpr));
+        }
+
+        Element request = createBootstrapExchangeRequest(audience, claims);
 
         Document doc = request.getOwnerDocument();
 
@@ -97,8 +123,7 @@ public class BootstrapToken {
                 .expires(expiresInstant).build();
     }
 
-    private Element createBootstrapToIdentityTokenRequest(String audience, String cpr,
-            String procurationCpr)
+    private Element createBootstrapExchangeRequest(String audience, List<Claim> claimsList)
             throws ParserConfigurationException, SAXException, IOException {
 
         DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
@@ -159,23 +184,56 @@ public class BootstrapToken {
 
         Element claims = appendChild(requestSecurityToken, NsPrefixes.wst13, "Claims");
         claims.setAttribute("Dialect", "http://docs.oasis-open.org/wsfed/authorization/200706/authclaims");
-        Element cprClaimType = appendChild(claims, NsPrefixes.auth, "ClaimType");
-        cprClaimType.setAttribute("Uri", "dk:gov:saml:attribute:CprNumberIdentifier");
-        appendChild(cprClaimType, NsPrefixes.auth, "Value", cpr);
 
-        if (procurationCpr != null) {
-            Element procurationClaimType = appendChild(claims, NsPrefixes.auth, "ClaimType");
-            procurationClaimType.setAttribute("Uri", "dk:healthcare:saml:attribute:OnBehalfOf");
-            appendChild(procurationClaimType, NsPrefixes.auth, "Value",
-                    "urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:"
-                            + procurationCpr);
+        for (Claim claim : claimsList) {
+            Element claimType = appendChild(claims, NsPrefixes.auth, "ClaimType");
+            claimType.setAttribute("Uri", claim.uri);
+            appendChild(claimType, NsPrefixes.auth, "Value", claim.value);
         }
 
         return envelope;
     }
 
-    public IdentityToken exchangeToIdCard(String string, String string2) {
-        return null;
-    }
+    public UserIdCard exchangeToUserIdCard(String audience, String role, String occupation,
+            String authId, String systemName)
+            throws IOException, InterruptedException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            MarshalException, XMLSignatureException, XPathExpressionException, STSInvocationException,
+            ParserConfigurationException, SAXException, UnrecoverableKeyException, KeyStoreException,
+            CertificateException {
 
+        ArrayList<Claim> claims = new ArrayList<>();
+
+        claims.add(new Claim("medcom:ITSystemName", systemName));
+        if (role != null) {
+            claims.add(new Claim("medcom:UserRole", role)); // e.g. "urn:dk:healthcare:no-role"
+        }
+        if (authId != null) {
+            claims.add(new Claim("medcom:UserAuthorizationCode", authId));
+        }
+        // claims.add(new Claim("sosi:SubjectNameID", uuid));
+
+        Element request = createBootstrapExchangeRequest(audience, claims);
+
+        Document doc = request.getOwnerDocument();
+
+        SignatureUtil.sign(doc.getElementById("security"), null,
+                new String[] { "#messageID", "#action", "#ts", "#body" }, null, certificate, privateKey,
+                false);
+
+        String stsEndpoint = DEFAULT_BST_TO_SOSI_ENDPOINT;
+
+        Element response = WSHelper.post(request,
+                env.getStsBaseUrl() + stsEndpoint, "Issue");
+
+        XPathContext xpath = new XPathContext(response.getOwnerDocument());
+
+        Element requestSecurityTokenResponse = xpath.findElement(REQUEST_SECURITY_TOKEN_RESPONSE_XPATH);
+
+        Element assertion = xpath.findElement(requestSecurityTokenResponse,
+                NsPrefixes.wst13.name() + ":RequestedSecurityToken/" + NsPrefixes.saml.name()
+                        + ":Assertion");
+
+        return new IdCardBuilder().assertion(assertion).buildUserIdCard();
+    }
 }
