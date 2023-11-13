@@ -2,71 +2,64 @@ package com.trifork.unsealed;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-public class BootstrapTokenBuilder extends AbstractSigningBuilder {
-    private NSPEnv env;
-    private String xml;
-    private String jwt;
+public class BootstrapTokenBuilder extends AbstractSigningBuilder<BootstrapTokenBuilderParams> {
 
     public BootstrapTokenBuilder() {
-        super();
+        super(new BootstrapTokenBuilderParams());
     }
 
-    private BootstrapTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
-            String keystoreAlias, String xml, String jwt) {
-
-        super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
-
-        this.env = env;
-        this.xml = xml;
-        this.jwt = jwt;
+    private BootstrapTokenBuilder(BootstrapTokenBuilderParams params) {
+        super(params);
     }
 
     public BootstrapTokenBuilder env(NSPEnv env) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        
+        params.env = env;
+
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder fromXml(String xml) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.xml = xml;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder fromJwt(String jwt) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.jwt = jwt;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
-    }
-
-    public BootstrapTokenBuilder keystorePath(String keystorePath) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.keystoreFromClassPath = keystoreFromClassPath;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.keystoreFromInputStream = is;
+        params.keystoreType = keystoreType;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder keystorePassword(char[] keystorePassword) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.keystorePassword = keystorePassword;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapTokenBuilder keystoreAlias(String keystoreAlias) {
-        return new BootstrapTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, xml, jwt);
+        var params = this.params.copy();
+        params.keystoreAlias = keystoreAlias;
+        return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
@@ -74,7 +67,7 @@ public class BootstrapTokenBuilder extends AbstractSigningBuilder {
 
         loadKeyStore();
 
-        return new BootstrapToken(env, certificate, privateKey, xml, jwt);
+        return new BootstrapToken(params.env, certificate, privateKey, params.xml, params.jwt);
     }
 
 }

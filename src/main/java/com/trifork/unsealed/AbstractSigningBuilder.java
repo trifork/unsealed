@@ -17,31 +17,15 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public abstract class AbstractSigningBuilder {
+public abstract class AbstractSigningBuilder<ParamsType extends AbstractSigningBuilderParams> {
 
-    protected String keystoreFromClassPath;
-    protected String keystoreFromFilePath;
-    protected InputStream keystoreFromInputStream;
-    protected KeyStore keystore;
-    protected String keystoreType;
-    protected char[] keystorePassword;
+    
+    protected ParamsType params;
     protected X509Certificate certificate;
     protected Key privateKey;
-    protected String keystoreAlias;
 
-    protected AbstractSigningBuilder() {
-    }
-
-    protected AbstractSigningBuilder(String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword, String keystoreAlias) {
-
-        this.keystoreFromClassPath = keystoreFromClassPath;
-        this.keystoreFromFilePath = keystoreFromFilePath;
-        this.keystoreFromInputStream = keystoreFromInputStream;
-        this.keystore = keystore;
-        this.keystoreType = keystoreType;
-        this.keystorePassword = keystorePassword;
-        this.keystoreAlias = keystoreAlias;
+    protected AbstractSigningBuilder(ParamsType params) {
+        this.params = params;
     }
 
     protected void loadKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
@@ -49,27 +33,27 @@ public abstract class AbstractSigningBuilder {
         validateParameters();
 
         InputStream keystoreIs = null;
-        String keystoreTp = keystoreType;
+        String keystoreTp = params.keystoreType;
 
         KeyStore ks;
-        if (keystore != null) {
-            ks = keystore;
+        if (params.keystore != null) {
+            ks = params.keystore;
         } else {
-            if (keystoreFromInputStream != null) {
-                keystoreIs = keystoreFromInputStream;
-            } else if (keystoreFromClassPath != null) {
-                keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(keystoreFromClassPath);
-                keystoreTp = guessKeystoreType(keystoreFromClassPath);
-            } else if (keystoreFromFilePath != null) {
-                keystoreIs = new FileInputStream(new File(keystoreFromFilePath));
-                keystoreTp = guessKeystoreType(keystoreFromClassPath);
+            if (params.keystoreFromInputStream != null) {
+                keystoreIs = params.keystoreFromInputStream;
+            } else if (params.keystoreFromClassPath != null) {
+                keystoreIs = Thread.currentThread().getContextClassLoader().getResourceAsStream(params.keystoreFromClassPath);
+                keystoreTp = guessKeystoreType(params.keystoreFromClassPath);
+            } else if (params.keystoreFromFilePath != null) {
+                keystoreIs = new FileInputStream(new File(params.keystoreFromFilePath));
+                keystoreTp = guessKeystoreType(params.keystoreFromClassPath);
             }
 
             ks = KeyStore.getInstance(keystoreTp);
-            ks.load(keystoreIs, keystorePassword);
+            ks.load(keystoreIs, params.keystorePassword);
         }
 
-        String alias = keystoreAlias != null ? keystoreAlias : ks.aliases().nextElement();
+        String alias = params.keystoreAlias != null ? params.keystoreAlias : ks.aliases().nextElement();
 
         certificate = (X509Certificate) ks.getCertificate(alias);
 
@@ -79,15 +63,15 @@ public abstract class AbstractSigningBuilder {
 
         certificate.checkValidity();
 
-        privateKey = ks.getKey(alias, keystorePassword);
+        privateKey = ks.getKey(alias, params.keystorePassword);
     }
 
     private void validateParameters() {
-        if (Stream.of(keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore).filter(Objects::nonNull).count() != 1) {
+        if (Stream.of(params.keystoreFromClassPath, params.keystoreFromFilePath, params.keystoreFromInputStream, params.keystore).filter(Objects::nonNull).count() != 1) {
             throw new IllegalStateException("Exactly one of [keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream, keystore] must be specified");
         }
 
-        if (keystoreFromInputStream != null && keystoreType == null) {
+        if (params.keystoreFromInputStream != null && params.keystoreType == null) {
             throw new IllegalStateException("When keystoreFromInputStream is specified, keystoreType must also be specified");
         }
     }

@@ -2,7 +2,6 @@ package com.trifork.unsealed;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -13,64 +12,57 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
-    private NSPEnv env;
-    private Element assertion;
-    private String xml;
+public class OIOSAMLTokenBuilder extends AbstractSigningBuilder<OIOSAMLTokenBuilderParams> {
 
     public OIOSAMLTokenBuilder() {
+        super(new OIOSAMLTokenBuilderParams());
     }
 
-    private OIOSAMLTokenBuilder(NSPEnv env, String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType, char[] keystorePassword,
-            String keystoreAlias, Element assertion, String xml) {
-
-        super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
-
-        this.env = env;
-        this.assertion = assertion;
-        this.xml = xml;
+    private OIOSAMLTokenBuilder(OIOSAMLTokenBuilderParams params) {
+        super(params);
     }
 
     public OIOSAMLTokenBuilder env(NSPEnv env) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.env = env;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder xml(String xml) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.xml = xml;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
-    }
-
-    public OIOSAMLTokenBuilder keystorePath(String keystorePath) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.keystoreFromClassPath = keystoreFromClassPath;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.keystoreFromInputStream = is;
+        params.keystoreType = keystoreType;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder keystorePassword(char[] keystorePassword) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.keystorePassword = keystorePassword;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder keystoreAlias(String keystoreAlias) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.keystoreAlias = keystoreAlias;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     public OIOSAMLTokenBuilder assertion(Element assertion) {
-        return new OIOSAMLTokenBuilder(env, keystoreFromClassPath, keystoreFromFilePath, keystoreFromInputStream,
-                keystore, keystoreType, keystorePassword, keystoreAlias, assertion, xml);
+        OIOSAMLTokenBuilderParams params = this.params.copy();
+        params.assertion = assertion;
+        return new OIOSAMLTokenBuilder(params);
     }
 
     OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
@@ -78,10 +70,10 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder {
 
         loadKeyStore();
 
-        if (assertion != null) {
-            return new OIOSAMLToken(env, privateKey, certificate, assertion, "EncryptedAssertion".equals(assertion.getLocalName()));
+        if (params.assertion != null) {
+            return new OIOSAMLToken(params.env, privateKey, certificate, params.assertion, "EncryptedAssertion".equals(params.assertion.getLocalName()));
         } else {
-            return new OIOSAMLToken(env, privateKey, certificate, false, xml);
+            return new OIOSAMLToken(params.env, privateKey, certificate, false, params.xml);
         }
     }
 }

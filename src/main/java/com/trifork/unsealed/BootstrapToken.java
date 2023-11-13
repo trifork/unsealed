@@ -50,6 +50,7 @@ public class BootstrapToken {
             + ":RequestSecurityTokenResponseCollection/"
             + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse";
 
+
     private NSPEnv env;
     private X509Certificate certificate;
     private Key privateKey;

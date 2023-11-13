@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -27,174 +26,117 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
-    private String subjectName;
-    private String recipient;
-    private String audience;
-    private String issuer;
-    private String uid;
-    private String pidNumber;
-    private String cvrNumber;
-    private String ridNumber;
-    private String cprNumber;
-    private String surName;
-    private String commonName;
-    private String email;
-    private String organisationName;
+public class OIOSAMLTokenIssuer extends AbstractSigningBuilder<OIOSAMLTokenIssuerParams> {
 
     public OIOSAMLTokenIssuer() {
+        super(new OIOSAMLTokenIssuerParams());
     }
 
-    private OIOSAMLTokenIssuer(String keystoreFromClassPath, String keystoreFromFilePath,
-            InputStream keystoreFromInputStream, KeyStore keystore, String keystoreType,
-            char[] keystorePassword, String keystoreAlias,
-            String subjectName, String recipient,
-            String audience, String issuer, String uid, String pidNumber, String cvrNumber,
-            String ridNumber, String cprNumber, String surName, String commonName, String email,
-            String organisationName) {
-
-        super(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias);
-
-        this.subjectName = subjectName;
-        this.recipient = recipient;
-        this.audience = audience;
-        this.issuer = issuer;
-        this.uid = uid;
-        this.pidNumber = pidNumber;
-        this.cvrNumber = cvrNumber;
-        this.ridNumber = ridNumber;
-        this.cprNumber = cprNumber;
-        this.surName = surName;
-        this.commonName = commonName;
-        this.email = email;
-        this.organisationName = organisationName;
+    private OIOSAMLTokenIssuer(OIOSAMLTokenIssuerParams params) {
+        super(params);
     }
 
     public OIOSAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
-    }
-
-    public OIOSAMLTokenIssuer keystorePath(String keystorePath) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.keystoreFromClassPath = keystoreFromClassPath;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.keystoreFromInputStream = is;
+        params.keystoreType = keystoreType;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer keystorePassword(char[] keystorePassword) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.keystorePassword = keystorePassword;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer keystoreAlias(String keystoreAlias) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.keystoreAlias = keystoreAlias;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer subjectName(String subjectName) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.subjectName = subjectName;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer recipient(String recipient) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.recipient = recipient;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer audience(String audience) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.audience = audience;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer issuer(String issuer) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.issuer = issuer;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer uid(String uid) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.uid = uid;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer pidNumber(String pidNumber) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.pidNumber = pidNumber;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer cvrNumber(String cvrNumber) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.cvrNumber = cvrNumber;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer ridNumber(String ridNumber) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.ridNumber = ridNumber;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer cprNumber(String cprNumber) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.cprNumber = cprNumber;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer surName(String surName) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.surName = surName;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer commonName(String commonName) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.commonName = commonName;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer email(String email) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.email = email;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLTokenIssuer organisationName(String organisationName) {
-        return new OIOSAMLTokenIssuer(keystoreFromClassPath, keystoreFromFilePath,
-                keystoreFromInputStream, keystore, keystoreType, keystorePassword, keystoreAlias,
-                subjectName, recipient, audience, issuer, uid, pidNumber, cvrNumber,
-                ridNumber, cprNumber, surName, commonName, email, organisationName);
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.organisationName = organisationName;
+        return new OIOSAMLTokenIssuer(params);
     }
 
     public OIOSAMLToken build()
@@ -231,10 +173,10 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
         assertion.setAttribute("ID", assertionId);
         assertion.setIdAttribute("ID", true);
 
-        appendChild(assertion, NsPrefixes.saml, "Issuer", issuer);
+        appendChild(assertion, NsPrefixes.saml, "Issuer", params.issuer);
 
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
-        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", subjectName);
+        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", params.subjectName);
         nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
@@ -243,45 +185,45 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
                 "SubjectConfirmationData");
         subjectConfirmationData.setAttribute("NotOnOrAfter",
                 XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        subjectConfirmationData.setAttribute("Recipient", recipient);
+        subjectConfirmationData.setAttribute("Recipient", params.recipient);
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
         conditions.setAttribute("NotBefore", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now));
         conditions.setAttribute("NotOnOrAfter",
                 XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
         appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml,
                 "Audience",
-                audience);
+                params.audience);
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
 
         addSamlAttribute(attributeStatement, OIOSAMLToken.SPEC_VERSION, "DK-SAML-2.0",
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
 
-        if (ridNumber != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.UID, "CVR:" + cvrNumber + "-RID:" + ridNumber,
+        if (params.ridNumber != null) {
+            addSamlAttribute(attributeStatement, OIOSAMLToken.UID, "CVR:" + params.cvrNumber + "-RID:" + params.ridNumber,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-            addSamlAttribute(attributeStatement, OIOSAMLToken.CVR_NUMBER, cvrNumber,
+            addSamlAttribute(attributeStatement, OIOSAMLToken.CVR_NUMBER, params.cvrNumber,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-            addSamlAttribute(attributeStatement, OIOSAMLToken.RID_NUMBER, ridNumber,
+            addSamlAttribute(attributeStatement, OIOSAMLToken.RID_NUMBER, params.ridNumber,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         } else {
 
         }
         addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        addSamlAttribute(attributeStatement, OIOSAMLToken.CPR_NUMBER, cprNumber,
+        addSamlAttribute(attributeStatement, OIOSAMLToken.CPR_NUMBER, params.cprNumber,
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        if (surName != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.SURNAME, surName,
+        if (params.surName != null) {
+            addSamlAttribute(attributeStatement, OIOSAMLToken.SURNAME, params.surName,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         }
-        addSamlAttribute(attributeStatement, OIOSAMLToken.COMMON_NAME, commonName,
+        addSamlAttribute(attributeStatement, OIOSAMLToken.COMMON_NAME, params.commonName,
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        if (email != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.EMAIL, email,
+        if (params.email != null) {
+            addSamlAttribute(attributeStatement, OIOSAMLToken.EMAIL, params.email,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         }
-        if (organisationName != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME, organisationName,
+        if (params.organisationName != null) {
+            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME, params.organisationName,
                     "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         } else {
             addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME,
@@ -342,10 +284,10 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder {
         // NOTE: We might have to use a different issuer for the bootstrap token in
         // test, because
         // STS trusts a special issuer "TEST trusted IdP" here
-        appendChild(assertion, NsPrefixes.saml, "Issuer", issuer);
+        appendChild(assertion, NsPrefixes.saml, "Issuer", params.issuer);
 
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
-        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", subjectName);
+        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", params.subjectName);
         nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
