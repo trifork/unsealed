@@ -74,7 +74,7 @@ public class KeyStoreLoader {
         return new KeyStoreLoader(params);
     }
 
-    protected CertAndKey load() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
+    public CertAndKey load() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
 
         validateParameters();
 
