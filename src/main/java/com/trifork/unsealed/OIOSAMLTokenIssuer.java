@@ -4,7 +4,6 @@ import static com.trifork.unsealed.SamlUtil.addSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -36,28 +35,9 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder<OIOSAMLTokenIssue
         super(params);
     }
 
-    public OIOSAMLTokenIssuer keystoreFromClassPath(String keystoreFromClassPath) {
+    public OIOSAMLTokenIssuer idpCertAndKey(CertAndKey idpCertAndKey) {
         OIOSAMLTokenIssuerParams params = this.params.copy();
-        params.keystoreFromClassPath = keystoreFromClassPath;
-        return new OIOSAMLTokenIssuer(params);
-    }
-
-    public OIOSAMLTokenIssuer keystoreFromInputStream(InputStream is, String keystoreType) {
-        OIOSAMLTokenIssuerParams params = this.params.copy();
-        params.keystoreFromInputStream = is;
-        params.keystoreType = keystoreType;
-        return new OIOSAMLTokenIssuer(params);
-    }
-
-    public OIOSAMLTokenIssuer keystorePassword(char[] keystorePassword) {
-        OIOSAMLTokenIssuerParams params = this.params.copy();
-        params.keystorePassword = keystorePassword;
-        return new OIOSAMLTokenIssuer(params);
-    }
-
-    public OIOSAMLTokenIssuer keystoreAlias(String keystoreAlias) {
-        OIOSAMLTokenIssuerParams params = this.params.copy();
-        params.keystoreAlias = keystoreAlias;
+        params.idpCertAndKey = idpCertAndKey;
         return new OIOSAMLTokenIssuer(params);
     }
 
@@ -145,9 +125,7 @@ public class OIOSAMLTokenIssuer extends AbstractSigningBuilder<OIOSAMLTokenIssue
             XMLSignatureException,
             ParserConfigurationException {
 
-        loadKeyStore();
-
-        return createSamlToken(certificate, privateKey);
+        return createSamlToken(params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
     }
 
     private OIOSAMLToken createSamlToken(X509Certificate idpCert, Key idpPrivateKey)

@@ -28,8 +28,7 @@ public class OIOSamlTest extends AbstractTest {
     void setup0() throws Exception {
         AbstractTest.setup();
 
-        samlTokenIssuer = new OIOSAMLTokenIssuer().keystoreFromClassPath("TEST whitelisted SP SOSI alias.p12")
-                .keystorePassword("Test1234".toCharArray());
+        samlTokenIssuer = new OIOSAMLTokenIssuer().idpCertAndKey(new KeyStoreLoader().fromClassPath("TEST whitelisted SP SOSI alias.p12").password("Test1234").load());
 
     }
 
@@ -59,8 +58,8 @@ public class OIOSamlTest extends AbstractTest {
 
         OIOSAMLTokenBuilder samlTokenBuilder = new OIOSAMLTokenBuilder();
         OIOSAMLToken samlToken = samlTokenBuilder.env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).xml(assertion).build();
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .xml(assertion).build();
 
         IdCard exchangedIdCard = samlToken.exchangeToIdCard("FMK-online", "J0184", "doctor");
         assertNotNull(exchangedIdCard);

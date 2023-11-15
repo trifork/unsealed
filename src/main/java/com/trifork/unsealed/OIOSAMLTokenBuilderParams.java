@@ -6,6 +6,7 @@ public class OIOSAMLTokenBuilderParams extends AbstractSigningBuilderParams {
     NSPEnv env;
     Element assertion;
     String xml;
+    public CertAndKey spCertAndKey;
 
     OIOSAMLTokenBuilderParams copy() {
         try {

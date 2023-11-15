@@ -14,6 +14,7 @@ public class OIOSAMLTokenIssuerParams extends AbstractSigningBuilderParams {
     String commonName;
     String email;
     String organisationName;
+    public CertAndKey idpCertAndKey;
 
     OIOSAMLTokenIssuerParams copy() {
         try {

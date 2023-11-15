@@ -69,13 +69,13 @@ public class OIOSAMLToken {
     private X509Certificate certificate;
     private boolean encrypted;
 
-    public OIOSAMLToken(NSPEnv env, Key privateKey, X509Certificate certificate,
+    public OIOSAMLToken(NSPEnv env, X509Certificate certificate, Key privateKey,
             boolean encrypted, String xml) throws ParserConfigurationException, SAXException, IOException {
 
-        this(env, privateKey, certificate, parseAssertion(xml), encrypted);
+        this(env, certificate, privateKey, parseAssertion(xml), encrypted);
     }
 
-    public OIOSAMLToken(NSPEnv env, Key privateKey, X509Certificate certificate, Element assertion,
+    public OIOSAMLToken(NSPEnv env, X509Certificate certificate, Key privateKey, Element assertion,
             boolean encrypted) {
         this.env = env;
         this.privateKey = privateKey;

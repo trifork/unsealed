@@ -1,7 +1,6 @@
 package com.trifork.unsealed;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -34,28 +33,9 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder<OIOSAMLTokenBuil
         return new OIOSAMLTokenBuilder(params);
     }
 
-    public OIOSAMLTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
+    public OIOSAMLTokenBuilder spCertAndKey(CertAndKey spCertAndKey) {
         OIOSAMLTokenBuilderParams params = this.params.copy();
-        params.keystoreFromClassPath = keystoreFromClassPath;
-        return new OIOSAMLTokenBuilder(params);
-    }
-
-    public OIOSAMLTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        OIOSAMLTokenBuilderParams params = this.params.copy();
-        params.keystoreFromInputStream = is;
-        params.keystoreType = keystoreType;
-        return new OIOSAMLTokenBuilder(params);
-    }
-
-    public OIOSAMLTokenBuilder keystorePassword(char[] keystorePassword) {
-        OIOSAMLTokenBuilderParams params = this.params.copy();
-        params.keystorePassword = keystorePassword;
-        return new OIOSAMLTokenBuilder(params);
-    }
-
-    public OIOSAMLTokenBuilder keystoreAlias(String keystoreAlias) {
-        OIOSAMLTokenBuilderParams params = this.params.copy();
-        params.keystoreAlias = keystoreAlias;
+        params.spCertAndKey = spCertAndKey;
         return new OIOSAMLTokenBuilder(params);
     }
 
@@ -68,12 +48,12 @@ public class OIOSAMLTokenBuilder extends AbstractSigningBuilder<OIOSAMLTokenBuil
     OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
             UnrecoverableKeyException, ParserConfigurationException, SAXException {
 
-        loadKeyStore();
-
         if (params.assertion != null) {
-            return new OIOSAMLToken(params.env, privateKey, certificate, params.assertion, "EncryptedAssertion".equals(params.assertion.getLocalName()));
+            return new OIOSAMLToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey,
+                    params.assertion, "EncryptedAssertion".equals(params.assertion.getLocalName()));
         } else {
-            return new OIOSAMLToken(params.env, privateKey, certificate, false, params.xml);
+            return new OIOSAMLToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey, false,
+                    params.xml);
         }
     }
 }

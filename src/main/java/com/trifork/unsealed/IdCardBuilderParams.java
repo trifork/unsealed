@@ -11,6 +11,7 @@ public class IdCardBuilderParams extends AbstractSigningBuilderParams {
     String authorizationCode;
     String systemName;
     Element assertion;
+    public CertAndKey certAndKey;
 
     IdCardBuilderParams copy() {
         try {

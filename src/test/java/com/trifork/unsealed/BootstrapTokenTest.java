@@ -30,9 +30,17 @@ public class BootstrapTokenTest extends AbstractTest {
     private static X509Certificate spCert2;
     private static Key idpPrivateKey;
     private static Key idpPrivateKey2;
+    private BootstrapTokenIssuer issuer;
 
     @BeforeEach
     void setup0() throws Exception {
+        issuer = new BootstrapTokenIssuer()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .idpCertAndKey(new KeyStoreLoader().fromClassPath("NSP_Test_Identity_Provider_sds.p12")
+                        .password("Test1234").load())
+                .spCertAndKey((new KeyStoreLoader().fromClassPath("NSP_Test_Service_Consumer_sds.p12")
+                        .password("Test1234").load()));
+
         KeyStore idpKeyStore = KeyStore.getInstance("PKCS12");
         idpKeyStore.load(BootstrapTokenHelper.class.getResourceAsStream("/TEST whitelisted SP SOSI alias.p12"),
                 "Test1234".toCharArray());
@@ -62,6 +70,20 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
+    void canIssueBootstrapTokenForCitizen() throws Exception {
+        BootstrapToken bootstrapToken = issuer.cpr("1102014746").issueForCitizen();
+
+        assertNotNull(bootstrapToken);
+    }
+
+    @Test
+    void canIssueBootstrapTokenForPro() throws Exception {
+        BootstrapToken bootstrapToken = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872").orgName("Sundhedsdatastyrelsen").issueForProfessional();
+
+        assertNotNull(bootstrapToken);
+    }
+
+    @Test
     void canExchangeLegacyBootstrapTokenToIDWSToken() throws Exception {
 
         String xml = BootstrapTokenHelper.createLegacyCitizenBootstrapToken(idpCert,
@@ -69,8 +91,8 @@ public class BootstrapTokenTest extends AbstractTest {
                 "C=DK,O=Ingen organisatorisk tilknytning,CN=Lars Larsen,Serial=PID:9208-2002-2-514358910503");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
@@ -88,8 +110,8 @@ public class BootstrapTokenTest extends AbstractTest {
                 "0501792275");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
@@ -108,9 +130,10 @@ public class BootstrapTokenTest extends AbstractTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                        .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                        .keystorePassword("Test1234".toCharArray())
-                        .keystoreAlias("wrongalias").fromXml(xml).build());
+                        .spCertAndKey(new KeyStoreLoader()
+                                .fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                                .password("Test1234").alias("wrong-alias").load())
+                        .fromXml(xml).build());
 
     }
 
@@ -121,8 +144,8 @@ public class BootstrapTokenTest extends AbstractTest {
                 "C=DK,O=Ingen organisatorisk tilknytning,CN=Lars Larsen,Serial=PID:9208-2002-2-514358910503");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118");
@@ -153,8 +176,8 @@ public class BootstrapTokenTest extends AbstractTest {
         String xml = readFromClasspath("/bootstrap-token.xml");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
                 .fromXml(xml).build();
 
         assertThrows(STSInvocationException.class, () -> {
@@ -169,8 +192,8 @@ public class BootstrapTokenTest extends AbstractTest {
         String jwt = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIySWh5aEM4Y1o3WEtmVm1BVG53Wnpxam00THFwMWFnN000d3UyTjNLVGtzIn0.eyJleHAiOjE2OTkwMjU1NjgsIm5iZiI6MCwiaWF0IjoxNjk5MDIxOTY4LCJhdXRoX3RpbWUiOjE2OTkwMjE5NjgsImp0aSI6IjAzYzE5OGY2LWFjNTktNDU2NS1hODczLWQzMmM2NDdkYjA2MiIsImlzcyI6Imh0dHBzOi8vb2lkYy10ZXN0Lmhvc3RlZC50cmlmb3JrLmNvbS9hdXRoL3JlYWxtcy9zZHMiLCJhdWQiOiJmbWtfbW9jayIsInN1YiI6IjRlZGI5MjgwLTIxMjQtNGNiNi04NDcwLWViMzhhNjFmM2Y3MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZta19tb2NrIiwibm9uY2UiOiIzMzQxMTI5Iiwic2Vzc2lvbl9zdGF0ZSI6IjM1YWMwMzhkLTZlMmQtNDA2Ny1iM2RjLTJjMWM0MTkyYzg2NSIsImFjciI6IjEiLCJzY29wZSI6Im9wZW5pZCBmbWsgb2ZmbGluZV9hY2Nlc3Mgc29zaS1zdHMgcHJvZmlsZSBldmVudGJveCIsInNpZCI6IjM1YWMwMzhkLTZlMmQtNDA2Ny1iM2RjLTJjMWM0MTkyYzg2NSIsImNwciI6IjA1MDE3OTIyNzUiLCJjZXJ0bmFtZSI6Ik1va2V5IE1pY2siLCJjZXJ0c3ViZG4iOiJDTj1Nb2tleSBNaWNrK3NlcmlhbG51bWJlcj1QSUQ6cGlkMDUwMTc5MjI3NSxPPUluZ2VuIG9yZ2FuaXNhdG9yaXNrIHRpbGtueXRuaW5nLEM9REsiLCJuYW1lIjoiTW9rZXkgTWljayIsInByZWZlcnJlZF91c2VybmFtZSI6InBpZC0wNTAxNzkyMjc1IiwiZ2l2ZW5fbmFtZSI6Ik1va2V5IiwiZmFtaWx5X25hbWUiOiJNaWNrIn0.UgbcaY6mdXZihgdQVD_fumypnuyY6gZWJyXuqMGOz3DddhjpaYk_xsyka6dOK5Xn3pQ1B_OcSkR6YkFK4Zdy2uWXa7H1_H-fVS-Wb8OYfvq-FrUpGE4N9F-3pWwyy48Qw5wdE9Z11KTgethShWRHcbyOhSfKqqwJXQg4MKNfzpkeZM0bU76jm7JeMreIqVhOM78lvCl_VGGcsZb-iXj3kTPn-A1QbmsTmtrI0uIZaPdmatojcKoJNnMgTyYUgxDHw8eaA0fFMEQgqInU9voLPQm23MZHJi55JRKCdUJY0-w4pOMOrhKcx95iTsyjDuYcd0aRNv_LBcT_RquNun3KKpezS5E-MgTZPyEVz-gVo7aFHWY7-BjXTOeEcdenu_lhisFqCymxN0FJabJ7otj0yWPjpAgcLeIg3W_G5ebt6Luhh0ezIZtAPfjqpInHDsqAGQnDwKInj0t6xKb5p-ZRHZhbIok_TosA83Xkr6KeqMQ8EBsf6Bek2eUrxZz2Cb52";
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
                 .fromJwt(jwt).build();
 
         STSInvocationException e = assertThrows(STSInvocationException.class, () -> {
@@ -181,16 +204,18 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    void canExchangeBootstrapTokenToIdCard() throws Exception {
+    void canExchangeBootstrapTokenToIdCard_old() throws Exception {
 
-        String xml = BootstrapTokenHelper.createProfessionalBootstrapToken(idpCert2, idpPrivateKey2, spCert2, "53767053-0628-4176-b66f-0da3a0b6e868", "33257872", "Sundhedsdatastyrelsen");
+        String xml = BootstrapTokenHelper.createProfessionalBootstrapToken(idpCert2, idpPrivateKey2, spCert2,
+                "53767053-0628-4176-b66f-0da3a0b6e868", "33257872", "Sundhedsdatastyrelsen");
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
-                .keystoreFromClassPath("NSP_Test_Service_Consumer_sds.p12")
-                .keystorePassword("Test1234".toCharArray())
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("NSP_Test_Service_Consumer_sds.p12")
+                        .password("Test1234").load())
                 .fromXml(xml).build();
 
-        // UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", "ef6e6b1a-3373-4a30-b8ec-cbf16ef69a3e", null, null, "MJP84", "FMK-online");
+        // UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk",
+        // "ef6e6b1a-3373-4a30-b8ec-cbf16ef69a3e", null, null, "MJP84", "FMK-online");
         UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
 
         assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
@@ -200,6 +225,16 @@ public class BootstrapTokenTest extends AbstractTest {
         // assertEquals("https://fmk", userIdCard.audience);
         // assertTrue(userIdCard.created.isBefore(ZonedDateTime.now()));
         // assertTrue(userIdCard.expires.isAfter(userIdCard.created.plusSeconds(5)));
+    }
+
+    @Test
+    void canExchangeBootstrapTokenToIdCard() throws Exception {
+        BootstrapToken bst = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872").orgName("Sundhedsdatastyrelsen").issueForProfessional();
+
+        UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
+
+        assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
+        assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
     }
 
     private String readFromClasspath(String path) throws IOException {

@@ -1,7 +1,6 @@
 package com.trifork.unsealed;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -38,28 +37,9 @@ public class IdCardBuilder extends AbstractSigningBuilder<IdCardBuilderParams> {
         return new IdCardBuilder(params);
     }
 
-    public IdCardBuilder keystoreFromClassPath(String keystoreFromClassPath) {
+    public IdCardBuilder certAndKey(CertAndKey certAndKey) {
         IdCardBuilderParams params = this.params.copy();
-        params.keystoreFromClassPath = keystoreFromClassPath;
-        return new IdCardBuilder(params);
-    }
-
-    public IdCardBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        IdCardBuilderParams params = this.params.copy();
-        params.keystoreFromInputStream = is;
-        params.keystoreType = keystoreType;
-        return new IdCardBuilder(params);
-    }
-
-    public IdCardBuilder keystorePassword(char[] keystorePassword) {
-        IdCardBuilderParams params = this.params.copy();
-        params.keystorePassword = keystorePassword;
-        return new IdCardBuilder(params);
-    }
-
-    public IdCardBuilder keystoreAlias(String keystoreAlias) {
-        IdCardBuilderParams params = this.params.copy();
-        params.keystoreAlias = keystoreAlias;
+        params.certAndKey = certAndKey;
         return new IdCardBuilder(params);
     }
 
@@ -71,7 +51,7 @@ public class IdCardBuilder extends AbstractSigningBuilder<IdCardBuilderParams> {
 
     public IdCardBuilder role(String role) {
         IdCardBuilderParams params = this.params.copy();
-        params.role = role; 
+        params.role = role;
         return new IdCardBuilder(params);
     }
 
@@ -107,11 +87,11 @@ public class IdCardBuilder extends AbstractSigningBuilder<IdCardBuilderParams> {
         if (params.assertion != null) {
             idCard = new UserIdCard(params.env, params.assertion);
         } else {
-            loadKeyStore();
-            idCard = new UserIdCard(params.env, params.cpr, certificate, privateKey, params.email, params.role, params.occupation, params.authorizationCode,
+            idCard = new UserIdCard(params.env, params.cpr, params.certAndKey.certificate,
+                    params.certAndKey.privateKey, params.email, params.role, params.occupation,
+                    params.authorizationCode,
                     params.systemName);
         }
-
 
         return idCard;
     }
@@ -125,8 +105,7 @@ public class IdCardBuilder extends AbstractSigningBuilder<IdCardBuilderParams> {
             idCard = new SystemIdCard(params.env, params.assertion);
 
         } else {
-            loadKeyStore();
-            idCard = new SystemIdCard(params.env, certificate, privateKey, params.systemName);
+            idCard = new SystemIdCard(params.env, params.certAndKey.certificate, params.certAndKey.privateKey, params.systemName);
         }
 
         return idCard;

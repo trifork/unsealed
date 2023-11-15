@@ -20,8 +20,8 @@ public class IDCardTest extends AbstractTest {
     void canSignMoces2IdCard() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .certAndKey(new KeyStoreLoader().fromClassPath("TRIFORK AS - Lars Larsen.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .cpr("0501792275").role("role")
                 .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
@@ -33,8 +33,8 @@ public class IDCardTest extends AbstractTest {
     void canSignIdCard() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .cpr("0501792275").role("role")
                 .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
@@ -45,8 +45,9 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignMoces2SystemIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .systemName("systemname").buildSystemIdCard();
 
         idCard.sign();
 
@@ -75,8 +76,9 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignSystemIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP).keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).systemName("systemname").buildSystemIdCard();
+        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .systemName("systemname").buildSystemIdCard();
 
         idCard.sign();
 
@@ -107,8 +109,8 @@ public class IDCardTest extends AbstractTest {
     void canExchangeMoces2IdCardToOIOSAMLToken() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("TRIFORK AS - Lars Larsen.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .certAndKey(new KeyStoreLoader().fromClassPath("TRIFORK AS - Lars Larsen.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .cpr("0501792275").role("role")
                 .occupation("occupation").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
@@ -122,8 +124,8 @@ public class IDCardTest extends AbstractTest {
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
 
             OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
-                    .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                    .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
+                    .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                    .assertion(samlToken.getAssertion()).build();
 
             samlToken1.decrypt();
 
@@ -139,8 +141,8 @@ public class IDCardTest extends AbstractTest {
     void canExchangeIdCardToOIOSAMLToken() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .cpr("0501792275").role("role")
                 .occupation("occupation").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
@@ -154,8 +156,8 @@ public class IDCardTest extends AbstractTest {
             assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
 
             OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
-                    .keystoreFromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                    .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).assertion(samlToken.getAssertion()).build();
+                    .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                    .assertion(samlToken.getAssertion()).build();
 
             samlToken1.decrypt();
 
@@ -171,8 +173,8 @@ public class IDCardTest extends AbstractTest {
     void willFailOnInvalidSignature() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .keystoreFromClassPath("Lars_Larsen_prodben.p12")
-                .keystorePassword(KEYSTORE_PASSWORD.toCharArray()).cpr("0501792275").role("role")
+                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .cpr("0501792275").role("role")
                 .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
 
         idCard.sign();

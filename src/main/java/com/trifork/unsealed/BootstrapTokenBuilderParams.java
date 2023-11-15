@@ -4,6 +4,7 @@ public class BootstrapTokenBuilderParams extends AbstractSigningBuilderParams {
     NSPEnv env;
     String xml;
     String jwt;
+    CertAndKey spCertAndKey;
 
     BootstrapTokenBuilderParams copy() {
         try {

@@ -1,7 +1,6 @@
 package com.trifork.unsealed;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -19,7 +18,7 @@ public class BootstrapTokenBuilder extends AbstractSigningBuilder<BootstrapToken
 
     public BootstrapTokenBuilder env(NSPEnv env) {
         var params = this.params.copy();
-        
+
         params.env = env;
 
         return new BootstrapTokenBuilder(params);
@@ -37,37 +36,17 @@ public class BootstrapTokenBuilder extends AbstractSigningBuilder<BootstrapToken
         return new BootstrapTokenBuilder(params);
     }
 
-    public BootstrapTokenBuilder keystoreFromClassPath(String keystoreFromClassPath) {
+    public BootstrapTokenBuilder spCertAndKey(CertAndKey spCertAndKey) {
         var params = this.params.copy();
-        params.keystoreFromClassPath = keystoreFromClassPath;
-        return new BootstrapTokenBuilder(params);
-    }
-
-    public BootstrapTokenBuilder keystoreFromInputStream(InputStream is, String keystoreType) {
-        var params = this.params.copy();
-        params.keystoreFromInputStream = is;
-        params.keystoreType = keystoreType;
-        return new BootstrapTokenBuilder(params);
-    }
-
-    public BootstrapTokenBuilder keystorePassword(char[] keystorePassword) {
-        var params = this.params.copy();
-        params.keystorePassword = keystorePassword;
-        return new BootstrapTokenBuilder(params);
-    }
-
-    public BootstrapTokenBuilder keystoreAlias(String keystoreAlias) {
-        var params = this.params.copy();
-        params.keystoreAlias = keystoreAlias;
+        params.spCertAndKey = spCertAndKey;
         return new BootstrapTokenBuilder(params);
     }
 
     public BootstrapToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
             UnrecoverableKeyException {
 
-        loadKeyStore();
-
-        return new BootstrapToken(params.env, certificate, privateKey, params.xml, params.jwt);
+        return new BootstrapToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey,
+                params.xml, params.jwt);
     }
 
 }
