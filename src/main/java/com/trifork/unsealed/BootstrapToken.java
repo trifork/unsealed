@@ -237,4 +237,12 @@ public class BootstrapToken {
 
         return new IdCardBuilder().assertion(assertion).buildUserIdCard();
     }
+
+    public String getXml() {
+        return xml;
+    }
+
+    public String getJwt() {
+        return jwt;
+    }
 }

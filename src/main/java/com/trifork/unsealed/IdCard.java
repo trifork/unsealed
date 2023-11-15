@@ -261,7 +261,7 @@ public abstract class IdCard {
         validateSignature();
     }
 
-    protected Element getAssertion() {
+    public Element getAssertion() {
         return signedIdCard != null ? signedIdCard : assertion;
     }
 

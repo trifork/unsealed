@@ -31,15 +31,20 @@ public class BootstrapTokenTest extends AbstractTest {
     private static Key idpPrivateKey;
     private static Key idpPrivateKey2;
     private BootstrapTokenIssuer issuer;
+    private CertAndKey spCertAndKey;
+    private CertAndKey idpCertAndKey;
 
     @BeforeEach
     void setup0() throws Exception {
+        spCertAndKey = new KeyStoreLoader().fromClassPath("NSP_Test_Service_Consumer_sds.p12")
+                .password("Test1234").load();
+        idpCertAndKey = new KeyStoreLoader().fromClassPath("NSP_Test_Identity_Provider_sds.p12")
+                .password("Test1234").load();
+
         issuer = new BootstrapTokenIssuer()
                 .env(NSPTestEnv.TEST1_CNSP)
-                .idpCertAndKey(new KeyStoreLoader().fromClassPath("NSP_Test_Identity_Provider_sds.p12")
-                        .password("Test1234").load())
-                .spCertAndKey((new KeyStoreLoader().fromClassPath("NSP_Test_Service_Consumer_sds.p12")
-                        .password("Test1234").load()));
+                .idpCertAndKey(idpCertAndKey)
+                .spCertAndKey(spCertAndKey);
 
         KeyStore idpKeyStore = KeyStore.getInstance("PKCS12");
         idpKeyStore.load(BootstrapTokenHelper.class.getResourceAsStream("/TEST whitelisted SP SOSI alias.p12"),
@@ -78,7 +83,8 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canIssueBootstrapTokenForPro() throws Exception {
-        BootstrapToken bootstrapToken = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872").orgName("Sundhedsdatastyrelsen").issueForProfessional();
+        BootstrapToken bootstrapToken = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
+                .orgName("Sundhedsdatastyrelsen").issueForProfessional();
 
         assertNotNull(bootstrapToken);
     }
@@ -229,9 +235,26 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canExchangeBootstrapTokenToIdCard() throws Exception {
-        BootstrapToken bst = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872").orgName("Sundhedsdatastyrelsen").issueForProfessional();
+        BootstrapToken bst = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
+                .orgName("Sundhedsdatastyrelsen").issueForProfessional();
 
         UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
+
+        assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
+        assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
+    }
+
+    @Test
+    void canExchangeBootstrapTokenViaXmlToIdCard() throws Exception {
+        BootstrapToken bst = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
+                .orgName("Sundhedsdatastyrelsen").issueForProfessional();
+
+        var xml = bst.getXml();
+
+        // Initialize a new BootstrapToken from xml string: 
+        BootstrapToken bst2 = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_CNSP).spCertAndKey(spCertAndKey).fromXml(xml).build();
+
+        UserIdCard userIdCard = bst2.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
 
         assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
         assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
