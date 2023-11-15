@@ -2,7 +2,7 @@ package com.trifork.unsealed;
 
 import org.w3c.dom.Element;
 
-public class IdCardBuilderParams extends AbstractSigningBuilderParams {
+public class IdCardBuilderParams extends AbstractBuilderParams {
     NSPEnv env;
     String cpr;
     String email;

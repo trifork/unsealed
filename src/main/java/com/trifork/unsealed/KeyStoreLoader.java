@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 public class KeyStoreLoader {
     private KeyStoreLoaderParams params;
 
-    KeyStoreLoader() {
+    public KeyStoreLoader() {
         this(new KeyStoreLoaderParams());
     }
 

@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-public class OIOSAMLTokenBuilder extends AbstractSigningBuilder<OIOSAMLTokenBuilderParams> {
+public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderParams> {
 
     public OIOSAMLTokenBuilder() {
         super(new OIOSAMLTokenBuilderParams());

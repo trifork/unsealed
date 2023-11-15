@@ -8,7 +8,7 @@ import java.security.cert.CertificateException;
 
 import org.w3c.dom.Element;
 
-public class IdCardBuilder extends AbstractSigningBuilder<IdCardBuilderParams> {
+public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
 
     public IdCardBuilder() {
         super(new IdCardBuilderParams());

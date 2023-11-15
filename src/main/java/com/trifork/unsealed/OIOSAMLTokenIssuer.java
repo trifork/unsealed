@@ -25,7 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class OIOSAMLTokenIssuer extends AbstractSigningBuilder<OIOSAMLTokenIssuerParams> {
+public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams> {
 
     public OIOSAMLTokenIssuer() {
         super(new OIOSAMLTokenIssuerParams());

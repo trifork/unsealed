@@ -2,7 +2,7 @@ package com.trifork.unsealed;
 
 import org.w3c.dom.Element;
 
-public class OIOSAMLTokenBuilderParams extends AbstractSigningBuilderParams {
+public class OIOSAMLTokenBuilderParams extends AbstractBuilderParams {
     NSPEnv env;
     Element assertion;
     String xml;

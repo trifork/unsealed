@@ -1,6 +1,6 @@
 package com.trifork.unsealed;
 
-public class OIOSAMLTokenIssuerParams extends AbstractSigningBuilderParams {
+public class OIOSAMLTokenIssuerParams extends AbstractBuilderParams {
     String subjectName;
     String recipient;
     String audience;

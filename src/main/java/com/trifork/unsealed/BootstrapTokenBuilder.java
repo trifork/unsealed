@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-public class BootstrapTokenBuilder extends AbstractSigningBuilder<BootstrapTokenBuilderParams> {
+public class BootstrapTokenBuilder extends AbstractBuilder<BootstrapTokenBuilderParams> {
 
     public BootstrapTokenBuilder() {
         super(new BootstrapTokenBuilderParams());

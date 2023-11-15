@@ -1,6 +1,6 @@
 package com.trifork.unsealed;
 
-public class BootstrapTokenIssuerParams extends AbstractSigningBuilderParams {
+public class BootstrapTokenIssuerParams extends AbstractBuilderParams {
     NSPEnv env;
     String cpr;
     String uuid;

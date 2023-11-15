@@ -19,7 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class BootstrapTokenIssuer extends AbstractSigningBuilder<BootstrapTokenIssuerParams> {
+public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerParams> {
     private static final String WELLKNOWN_STS_TEST_ISSUER_HOK = "https://idp.test.nspop.dk";
 
     public BootstrapTokenIssuer() {
