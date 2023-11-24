@@ -33,7 +33,8 @@ public class BootstrapTokenTest extends AbstractTest {
         idpCertAndKey = new KeyStoreLoader().fromClassPath("NSP_Test_Identity_Provider_sds.p12")
                 .password("Test1234").load();
 
-        idpCertAndKeyForLegacyBootstrapTokens = new KeyStoreLoader().fromClassPath("TEST whitelisted SP SOSI alias.p12")
+        idpCertAndKeyForLegacyBootstrapTokens = new KeyStoreLoader()
+                .fromClassPath("TEST whitelisted SP SOSI alias.p12")
                 .password("Test1234").load();
 
         issuer = new BootstrapTokenIssuer()
@@ -62,10 +63,11 @@ public class BootstrapTokenTest extends AbstractTest {
     @Test
     void canExchangeLegacyBootstrapTokenToIDWSToken() throws Exception {
 
-        String xml = BootstrapTokenHelper.createLegacyCitizenBootstrapToken(idpCertAndKeyForLegacyBootstrapTokens.certificate,
+        String xml = BootstrapTokenHelper.createLegacyCitizenBootstrapToken(
+                idpCertAndKeyForLegacyBootstrapTokens.certificate,
                 idpCertAndKeyForLegacyBootstrapTokens.privateKey,
                 "C=DK,O=Ingen organisatorisk tilknytning,CN=Lars Larsen,Serial=PID:9208-2002-2-514358910503");
-                
+
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
                 .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
                         .password("Test1234").load())
@@ -119,7 +121,7 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    void cannotExchangeObsoleteBootstrapTokenToIDWSToken() throws Exception {
+    void cannotExchangeExpiredBootstrapTokenToIDWSToken() throws Exception {
 
         String xml = readFromClasspath("/bootstrap-token.xml");
 
@@ -135,7 +137,25 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    void cannotExchangeObsoleteJWTTokenToIDWSToken() throws Exception {
+    void canExchangeJWTTokenToIDWSToken() throws Exception {
+
+        String jwt = OIDC.authenticate("0501792275");
+
+        BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
+                .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                        .password("Test1234").load())
+                .fromJwt(jwt).build();
+
+        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
+        assertNotNull(idwsToken.assertion);
+        assertEquals("https://fmk", idwsToken.audience);
+        assertTrue(idwsToken.created.isBefore(ZonedDateTime.now()));
+        assertTrue(idwsToken.expires.isAfter(idwsToken.created.plusSeconds(5)));
+
+    }
+
+    @Test
+    void cannotExchangeExpiredJWTTokenToIDWSToken() throws Exception {
 
         String jwt = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIySWh5aEM4Y1o3WEtmVm1BVG53Wnpxam00THFwMWFnN000d3UyTjNLVGtzIn0.eyJleHAiOjE2OTkwMjU1NjgsIm5iZiI6MCwiaWF0IjoxNjk5MDIxOTY4LCJhdXRoX3RpbWUiOjE2OTkwMjE5NjgsImp0aSI6IjAzYzE5OGY2LWFjNTktNDU2NS1hODczLWQzMmM2NDdkYjA2MiIsImlzcyI6Imh0dHBzOi8vb2lkYy10ZXN0Lmhvc3RlZC50cmlmb3JrLmNvbS9hdXRoL3JlYWxtcy9zZHMiLCJhdWQiOiJmbWtfbW9jayIsInN1YiI6IjRlZGI5MjgwLTIxMjQtNGNiNi04NDcwLWViMzhhNjFmM2Y3MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZta19tb2NrIiwibm9uY2UiOiIzMzQxMTI5Iiwic2Vzc2lvbl9zdGF0ZSI6IjM1YWMwMzhkLTZlMmQtNDA2Ny1iM2RjLTJjMWM0MTkyYzg2NSIsImFjciI6IjEiLCJzY29wZSI6Im9wZW5pZCBmbWsgb2ZmbGluZV9hY2Nlc3Mgc29zaS1zdHMgcHJvZmlsZSBldmVudGJveCIsInNpZCI6IjM1YWMwMzhkLTZlMmQtNDA2Ny1iM2RjLTJjMWM0MTkyYzg2NSIsImNwciI6IjA1MDE3OTIyNzUiLCJjZXJ0bmFtZSI6Ik1va2V5IE1pY2siLCJjZXJ0c3ViZG4iOiJDTj1Nb2tleSBNaWNrK3NlcmlhbG51bWJlcj1QSUQ6cGlkMDUwMTc5MjI3NSxPPUluZ2VuIG9yZ2FuaXNhdG9yaXNrIHRpbGtueXRuaW5nLEM9REsiLCJuYW1lIjoiTW9rZXkgTWljayIsInByZWZlcnJlZF91c2VybmFtZSI6InBpZC0wNTAxNzkyMjc1IiwiZ2l2ZW5fbmFtZSI6Ik1va2V5IiwiZmFtaWx5X25hbWUiOiJNaWNrIn0.UgbcaY6mdXZihgdQVD_fumypnuyY6gZWJyXuqMGOz3DddhjpaYk_xsyka6dOK5Xn3pQ1B_OcSkR6YkFK4Zdy2uWXa7H1_H-fVS-Wb8OYfvq-FrUpGE4N9F-3pWwyy48Qw5wdE9Z11KTgethShWRHcbyOhSfKqqwJXQg4MKNfzpkeZM0bU76jm7JeMreIqVhOM78lvCl_VGGcsZb-iXj3kTPn-A1QbmsTmtrI0uIZaPdmatojcKoJNnMgTyYUgxDHw8eaA0fFMEQgqInU9voLPQm23MZHJi55JRKCdUJY0-w4pOMOrhKcx95iTsyjDuYcd0aRNv_LBcT_RquNun3KKpezS5E-MgTZPyEVz-gVo7aFHWY7-BjXTOeEcdenu_lhisFqCymxN0FJabJ7otj0yWPjpAgcLeIg3W_G5ebt6Luhh0ezIZtAPfjqpInHDsqAGQnDwKInj0t6xKb5p-ZRHZhbIok_TosA83Xkr6KeqMQ8EBsf6Bek2eUrxZz2Cb52";
 
