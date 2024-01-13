@@ -1,97 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.trifork.unsealed</groupId>
-    <artifactId>unsealed</artifactId>
-    <version>1.0.10-SNAPSHOT</version>
-    <packaging>jar</packaging>
+  <groupId>com.trifork.unsealed</groupId>
+  <artifactId>unsealed</artifactId>
+  <version>1.0.10-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
-    <name>unsealed</name>
-    <description>This is a description</description>
+  <name>unsealed</name>
+  <description>This is a description</description>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>11</maven.compiler.release>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>11</maven.compiler.release>
+  </properties>
 
-    <repositories>
-        <repository>
-            <id>mvnrepository.com</id>
-            <name>mvnrepository.com</name>
-            <url>https://mvnrepository.com/artifact</url>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>mvnrepository.com</id>
+      <name>mvnrepository.com</name>
+      <url>https://mvnrepository.com/artifact</url>
+    </repository>
+  </repositories>
 
-    <distributionManagement>
-        <repository>
-            <id>trifork.releases</id>
-            <name>Trifork Releases</name>
-            <url>https://ci.fmk.netic.dk/nexus/content/repositories/releases/</url>
-            <layout>default</layout>
-        </repository>
-        <snapshotRepository>
-            <id>trifork.snapshots</id>
-            <name>Trifork Snapshots</name>
-            <url>https://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-        </snapshotRepository>
-    </distributionManagement>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/trifork/unsealed-ci</url>
+    </repository>
+  </distributionManagement>
 
-    <scm>
-        <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
-        <url>scm:git:git@github.com:trifork/unsealed.git</url>
-        <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
-        <tag>websecurity-1.22</tag>
-    </scm>
+  <scm>
+    <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
+    <url>scm:git:git@github.com:trifork/unsealed.git</url>
+    <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
+    <tag>websecurity-1.22</tag>
+  </scm>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <!--  https://stackoverflow.com/questions/15166781/mvn-releaseprepare-not-committing-changes-to-pom-xml -->
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.scm</groupId>
-                            <artifactId>maven-scm-provider-gitexe</artifactId>
-                            <version>1.8.1</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <!--
+          https://stackoverflow.com/questions/15166781/mvn-releaseprepare-not-committing-changes-to-pom-xml -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.8.1</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <release>11</release>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
-            </plugin>
-        </plugins>
-    </build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <release>11</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+      </plugin>
+    </plugins>
+  </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.6.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.6.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
