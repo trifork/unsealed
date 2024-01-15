@@ -26,6 +26,6 @@ jobs:
         run: mvn -B versions:set -DremoveSnapshot -DgenerateBackupPoms=false
 
       - name: Build and publish release package
-        run: mvn -B deploy -Dmaven.resolver.transport=wagon
+        run: mvn -B deploy -Dmaven.resolver.transport=wagon -DtargetRepo=triforkGithubMavenRepo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
