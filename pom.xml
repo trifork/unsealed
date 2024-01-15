@@ -26,14 +26,6 @@
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/trifork/unsealed-ci</url>
-    </repository>
-  </distributionManagement>
-
   <scm>
     <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
     <url>scm:git:git@github.com:trifork/unsealed.git</url>
@@ -90,4 +82,46 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>triforkGithubMavenRepo</id>
+      <activation>
+        <property>
+          <name>targetRepo</name>
+          <value>triforkGithubMavenRepo</value>
+        </property>
+      </activation>
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/trifork/unsealed-ci</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>fmkNeticMavenRepo</id>
+      <activation>
+        <property>
+          <name>targetRepo</name>
+          <value>fmkNeticMavenRepo</value>
+        </property>
+      </activation>
+      <distributionManagement>
+        <repository>
+          <id>trifork.releases</id>
+          <name>Trifork Releases</name>
+          <url>https://ci.fmk.netic.dk/nexus/content/repositories/releases/</url>
+          <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+          <id>trifork.snapshots</id>
+          <name>Trifork Snapshots</name>
+          <url>https://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
+          <layout>default</layout>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>
