@@ -115,7 +115,11 @@ public abstract class IdCard {
         return new OIOSAMLToken(env, null, null, encryptedAssertion, true);
     }
 
-    public String asString(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {
+    public String getXml() throws UnsupportedEncodingException {
+        return XmlUtil.node2String(signedIdCard, false, false);
+    }
+
+    public String getXml(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {
         return XmlUtil.node2String(signedIdCard, pretty, includeXMLHeader);
     }
 
@@ -231,6 +235,22 @@ public abstract class IdCard {
 
     public String getIssuer() {
         return getTextChild(signedIdCard, NsPrefixes.saml, "Issuer");
+    }
+
+    public String getAttribute(String attributeName) {
+        Element assertionElm = signedIdCard;
+        if (assertionElm == null) {
+            assertionElm = assertion;
+        }
+        XPathContext xpath = new XPathContext(assertionElm.getOwnerDocument());
+        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" + 
+            NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']/" + NsPrefixes.saml.name() + ":AttributeValue";
+            try {
+            Element element = xpath.findElement(assertionElm, path);
+            return element != null ? element.getTextContent() : null;
+        } catch (XPathExpressionException e) {
+            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
+        }
     }
 
     public String getSubjectName() {

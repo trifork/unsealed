@@ -35,7 +35,7 @@ public class IDCardTest extends AbstractTest {
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
                 .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
                 .cpr("0501792275").role("role")
-                .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+                .occupation("occupation").authorizationCode("J0184").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
 
@@ -175,7 +175,7 @@ public class IDCardTest extends AbstractTest {
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
                 .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
                 .cpr("0501792275").role("role")
-                .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+                .occupation("occupation").authorizationCode("J0184").systemName("systemname").buildUserIdCard();
 
         idCard.sign();
 

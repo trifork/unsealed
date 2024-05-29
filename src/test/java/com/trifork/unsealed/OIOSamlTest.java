@@ -67,7 +67,7 @@ public class OIOSamlTest extends AbstractTest {
         String subjectName = exchangedIdCard.getSubjectName();
         assertEquals("0501792275", subjectName);
 
-        String asString = exchangedIdCard.asString(false, false);
+        String asString = exchangedIdCard.getXml(false, false);
         assertTrue(asString.contains("Larsen"));
     }
 

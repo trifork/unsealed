@@ -45,7 +45,7 @@ public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderPara
         return new OIOSAMLTokenBuilder(params);
     }
 
-    OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
+    public OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
             UnrecoverableKeyException, ParserConfigurationException, SAXException {
 
         if (params.assertion != null) {

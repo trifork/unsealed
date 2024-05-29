@@ -180,6 +180,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
         assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
+        assertEquals("Lars", userIdCard.getAttribute("medcom:UserGivenName"));
     }
 
     @Test
@@ -188,6 +189,10 @@ public class BootstrapTokenTest extends AbstractTest {
                 .orgName("Sundhedsdatastyrelsen").issueForProfessional();
 
         var xml = bst.getXml();
+
+        ZonedDateTime notOnOrAfter = bst.getNotOnOrAfter();
+
+        assertTrue(notOnOrAfter.isAfter(ZonedDateTime.now()));
 
         // Initialize a new BootstrapToken from xml string:
         BootstrapToken bst2 = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_CNSP).spCertAndKey(spCertAndKey)

@@ -50,6 +50,8 @@ public class BootstrapToken {
             + ":RequestSecurityTokenResponseCollection/"
             + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse";
 
+    private static final String BOOTSTRAP_CONDITIONS_XPATH = "/" + NsPrefixes.saml.name() + ":Assertion/"
+            + NsPrefixes.saml.name() + ":Conditions";
 
     private NSPEnv env;
     private X509Certificate certificate;
@@ -81,7 +83,9 @@ public class BootstrapToken {
 
         ArrayList<Claim> claims = new ArrayList<>();
 
-        claims.add(new Claim("dk:gov:saml:attribute:CprNumberIdentifier", cpr));
+        if (cpr != null) {
+            claims.add(new Claim("dk:gov:saml:attribute:CprNumberIdentifier", cpr));
+        }
 
         if (procurationCpr != null) {
             claims.add(new Claim("dk:healthcare:saml:attribute:OnBehalfOf",
@@ -244,5 +248,22 @@ public class BootstrapToken {
 
     public String getJwt() {
         return jwt;
+    }
+
+    public ZonedDateTime getNotOnOrAfter() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+        if (xml == null) {
+            return null;
+        }
+        // NOTE: It is suboptimal that we repeatedly parse xml here..
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
+        Element bootstrapToken = docBuilder
+                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
+                .getDocumentElement();
+
+        XPathContext xpath = new XPathContext(bootstrapToken.getOwnerDocument());
+
+        Element conditions = xpath.findElement(BOOTSTRAP_CONDITIONS_XPATH);
+
+        return ZonedDateTime.parse(conditions.getAttribute("NotOnOrAfter"));
     }
 }

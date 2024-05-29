@@ -14,10 +14,18 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.ldap.LdapName;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
 public class UserIdCard extends IdCard {
+    private static final String MEDCOM_USER_CIVIL_REGISTRATION_NUMBER = "medcom:UserCivilRegistrationNumber";
+    private static final String MEDCOM_USER_OCCUPATION = "medcom:UserOccupation";
+    private static final String MEDCOM_USER_ROLE = "medcom:UserRole";
+    private static final String MEDCOM_USER_SUR_NAME = "medcom:UserSurName";
+    private static final String MEDCOM_USER_GIVEN_NAME = "medcom:UserGivenName";
+    private static final String MEDCOM_USER_EMAIL_ADDRESS = "medcom:UserEmailAddress";
+    private static final String MEDCOM_USER_AUTHORIZATION_CODE = "medcom:UserAuthorizationCode";
     private static final String MOCES2_ORG_DIVIDER = " // CVR:";
     private static final String ORG_ID = "OID.2.5.4.97";
     private static final Pattern OI_PATTERN = Pattern.compile("NTRDK-(?<Cvr>[0-9]{1,8})");
@@ -44,6 +52,56 @@ public class UserIdCard extends IdCard {
     protected UserIdCard(NSPEnv env, Element signedIdCard) {
         super(env, null, null, null);
         this.signedIdCard = signedIdCard;
+
+        XPathContext xpathContext = new XPathContext(signedIdCard.getOwnerDocument());
+
+        cpr = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER);
+        role = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_ROLE);
+        occupation = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_OCCUPATION);
+        authorizationCode = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_AUTHORIZATION_CODE);
+        email = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_EMAIL_ADDRESS);
+        firstName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_GIVEN_NAME);
+        lastName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_SUR_NAME);
+    }
+
+    protected String getSamlAttribute(XPathContext xpathContext, Element rootElement, String attributeName) {
+        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" +
+                NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']/" + NsPrefixes.saml.name()
+                + ":AttributeValue";
+        try {
+            Element element = xpathContext.findElement(rootElement, path);
+            return element != null ? element.getTextContent() : null;
+        } catch (XPathExpressionException e) {
+            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
+        }
+    }
+
+    public String getCpr() {
+        return cpr;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getOccupation() {
+        return occupation;
+    }
+
+    public String getAuthorizationCode() {
+        return authorizationCode;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
     }
 
     protected void extractKeystoreOwnerInfo(X509Certificate cert) {
@@ -92,7 +150,7 @@ public class UserIdCard extends IdCard {
             lastName = cn.substring(idx2 + 1);
 
             // int idx3 = serialNumber.indexOf("RID:");
-            //rid = serialNumber.substring(idx3 + "RID:".length());
+            // rid = serialNumber.substring(idx3 + "RID:".length());
 
         } else {
             // Moces3
@@ -131,27 +189,26 @@ public class UserIdCard extends IdCard {
         userLog.setAttribute("id", "UserLog");
         // userLog.setIdAttribute("id", true);
 
-        SamlUtil.addSamlAttribute(userLog, "medcom:UserCivilRegistrationNumber", cpr);
+        SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER, cpr);
 
-        SamlUtil.addSamlAttribute(userLog, "medcom:UserGivenName", firstName);
+        SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_GIVEN_NAME, firstName);
 
-        SamlUtil.addSamlAttribute(userLog, "medcom:UserSurName", lastName);
+        SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_SUR_NAME, lastName);
 
         if (email != null) {
-            SamlUtil.addSamlAttribute(userLog, "medcom:UserEmailAddress", email);
+            SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_EMAIL_ADDRESS, email);
         }
 
         if (role != null) {
-            SamlUtil.addSamlAttribute(userLog, "medcom:UserRole", role);
+            SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_ROLE, role);
         }
 
         if (occupation != null) {
-            SamlUtil.addSamlAttribute(userLog, "medcom:UserOccupation", occupation);
+            SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_OCCUPATION, occupation);
         }
 
         if (authorizationCode != null) {
-            SamlUtil.addSamlAttribute(userLog, "medcom:AuthorizationCode", authorizationCode);
+            SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_AUTHORIZATION_CODE, authorizationCode);
         }
     }
-
 }

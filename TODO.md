@@ -1,9 +1,9 @@
 # TODO
 - Create bootstrap tokens for pros (BootstrapTokenHelper)
-- Implement bst2sosi
 - Validation of builder params (missing or inconsistent)
 - Server side validation - IDWS token and request signature 
 - Javadoc
+- DONE Implement bst2sosi
 - DONE Server side validation - validate Idcard including signature
 - DONE Decrypt EncryptedAssertion
 - DONE Fix hardcoded attributes in OIOSAMLToken.appendSenderVouchesAssertion 
