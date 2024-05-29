@@ -70,7 +70,7 @@ public class WSHelper {
 
                     throw new STSInvocationException(
                             "Got fault from STS, faultcode=" + faultCode + ", faultstring=" + faultString
-                                    + ", full response: " + response.body());
+                                    + ", full response: " + response.body(), faultCode, faultString);
                 }
             }
 
