@@ -2,6 +2,8 @@ package com.trifork.unsealed;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -40,7 +42,8 @@ public class OIDC {
 
     public static String authenticate(String cpr, String pid, String name) {
         try {
-            HttpClient httpClient = HttpClient.newHttpClient();
+            CookieManager cookieManager = new CookieManager();
+            HttpClient httpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build();
 
             String postActionUrl = codeflow_step1a_authenticationRequest(httpClient, CLIENT_ID, REDIRECT_URL, SCOPE);
             String code = codeflow_step1b_authenticationResponse(httpClient, postActionUrl, cpr, pid, name);
@@ -77,8 +80,12 @@ public class OIDC {
     private static String codeflow_step1b_authenticationResponse(HttpClient httpClient, String postActionUrl,
                                                                  String cpr, String pid, String name) throws IOException, InterruptedException, URISyntaxException {
 
-        String subdn = "CN=" + name + " + SERIALNUMBER=PID:" + pid
+        String subdnOld = "CN=" + name + " + SERIALNUMBER=PID:" + pid
                 + ",O=Ingen organisatorisk tilknytning, C=DK";
+
+        String uuid = "47ac10b-58cc-4372-a567-0e02b2c3d479";
+        String subdn = "CN=" + name + ", SERIALNUMBER=UI:DK-P:G:" + uuid;
+
         String responseJsonValue = constructMockAuthResponse(name, pid, cpr, subdn);
 
         List<NameValuePair> form = new ArrayList<>();
