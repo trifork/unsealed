@@ -142,6 +142,11 @@ public abstract class IdCard {
         Element claims = appendChild(requestSecurityToken, NsPrefixes.wst, "Claims");
         claims.appendChild(idcard);
 
+        // Seal includes an Issuer as below, but this WSA namespace predates WSA 1.0! 
+        // Element issuer = appendChild(requestSecurityToken, NsPrefixes.wst, "Issuer");
+        // Element address = appendChild(issuer, NsPrefixes.wsax, "Address");
+        // address.setTextContent("SealJava-2.6.35-TheSOSILibrary");
+
         return envelope;
     }
 
@@ -184,7 +189,7 @@ public abstract class IdCard {
         assertion.setAttribute("id", "IDCard");
         assertion.setIdAttribute("id", true);
 
-        appendChild(assertion, NsPrefixes.saml, "Issuer", "The SOSI library");
+        appendChild(assertion, NsPrefixes.saml, "Issuer", "Unsealed");
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
 
         addSubjectAttributes(subject);

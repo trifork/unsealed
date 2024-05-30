@@ -43,6 +43,22 @@ public class IDCardTest extends AbstractTest {
     }
 
     @Test
+    void canSignIdCardWithoutCpr() throws Exception {
+        // If no cpr is specified, STS is kind enough to look it up
+        UserIdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .role("urn:dk:healthcare:no-role")
+                .systemName("systemname")
+                .buildUserIdCard();
+
+        idCard.sign();
+
+        assertEquals("0501792275", idCard.getCpr());
+
+        idCard.validate();
+    }
+
+    @Test
     void canSignMoces2SystemIdCard() throws Exception {
 
         IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)

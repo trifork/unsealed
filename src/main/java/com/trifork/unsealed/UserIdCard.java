@@ -53,6 +53,16 @@ public class UserIdCard extends IdCard {
         super(env, null, null, null);
         this.signedIdCard = signedIdCard;
 
+        extractSamlAttributes(signedIdCard);
+    }
+
+    @Override
+    public void sign() throws Exception {
+        super.sign();
+        extractSamlAttributes(signedIdCard);
+    }
+
+    private void extractSamlAttributes(Element signedIdCard) {
         XPathContext xpathContext = new XPathContext(signedIdCard.getOwnerDocument());
 
         cpr = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER);
@@ -189,7 +199,9 @@ public class UserIdCard extends IdCard {
         userLog.setAttribute("id", "UserLog");
         // userLog.setIdAttribute("id", true);
 
-        SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER, cpr);
+        if (cpr != null) {
+            SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER, cpr);
+        }
 
         SamlUtil.addSamlAttribute(userLog, MEDCOM_USER_GIVEN_NAME, firstName);
 
