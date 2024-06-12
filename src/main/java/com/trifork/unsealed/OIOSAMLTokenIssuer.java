@@ -282,7 +282,7 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
                 "Audience",
                 "https://bootstrap.sts.nspop.dk/");
         Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        Element assurranceLevelAttr = addSamlAttribute(attributeStatement, "Attribute", "3",
+        Element assurranceLevelAttr = addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
         assurranceLevelAttr.setAttribute("FriendlyName", "AssuranceLevel");
 
