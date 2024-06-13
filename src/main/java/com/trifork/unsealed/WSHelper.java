@@ -67,10 +67,11 @@ public class WSHelper {
                 if (soapFault != null) {
                     String faultCode = getTextChild(soapFault, "faultcode");
                     String faultString = getTextChild(soapFault, "faultstring");
+                    String faultActor = getTextChild(soapFault, "faultactor");
 
                     throw new STSInvocationException(
                             "Got fault from STS, faultcode=" + faultCode + ", faultstring=" + faultString
-                                    + ", full response: " + response.body(), faultCode, faultString);
+                                    + ", full response: " + response.body(), faultCode, faultString, faultActor);
                 }
             }
 
