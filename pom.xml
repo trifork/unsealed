@@ -43,7 +43,6 @@
         <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
         <url>scm:git:git@github.com:trifork/unsealed.git</url>
         <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
-        <tag>websecurity-1.22</tag>
     </scm>
 
     <build>
