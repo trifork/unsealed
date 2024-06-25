@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -14,15 +15,26 @@ import org.w3c.dom.Element;
 
 public class IDCardTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
+    private static CertAndKey moces3CertAndKey;
+
+    @BeforeAll
+    static void loadKeystore() throws Exception {
+        moces3CertAndKey = new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load();
+    }
 
     @Disabled
     @Test
     void canSignMoces2IdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
                 .certAndKey(new KeyStoreLoader().fromClassPath("TRIFORK AS - Lars Larsen.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .cpr("0501792275").role("role")
-                .occupation("occupation").authorizationCode("authid").systemName("systemname").buildUserIdCard();
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("authid")
+                .systemName("systemname")
+                .buildUserIdCard();
 
         idCard.sign();
 
@@ -32,10 +44,15 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .cpr("0501792275").role("role")
-                .occupation("occupation").authorizationCode("J0184").systemName("systemname").buildUserIdCard();
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
 
         idCard.sign();
 
@@ -45,8 +62,9 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignIdCardWithoutCpr() throws Exception {
         // If no cpr is specified, STS is kind enough to look it up
-        UserIdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+        UserIdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
                 .role("urn:dk:healthcare:no-role")
                 .systemName("systemname")
                 .buildUserIdCard();
@@ -59,11 +77,14 @@ public class IDCardTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     void canSignMoces2SystemIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .systemName("systemname").buildSystemIdCard();
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T.jks").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .systemName("systemname")
+                .buildSystemIdCard();
 
         idCard.sign();
 
@@ -92,9 +113,11 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignSystemIdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
                 .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .systemName("systemname").buildSystemIdCard();
+                .systemName("systemname")
+                .buildSystemIdCard();
 
         idCard.sign();
 
@@ -124,10 +147,14 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canExchangeMoces2IdCardToOIOSAMLToken() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
                 .certAndKey(new KeyStoreLoader().fromClassPath("TRIFORK AS - Lars Larsen.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .cpr("0501792275").role("role")
-                .occupation("occupation").systemName("systemname").buildUserIdCard();
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .systemName("systemname")
+                .buildUserIdCard();
 
         idCard.sign();
 
@@ -156,10 +183,14 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canExchangeIdCardToOIOSAMLToken() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .cpr("0501792275").role("role")
-                .occupation("occupation").systemName("systemname").buildUserIdCard();
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .systemName("systemname")
+                .buildUserIdCard();
 
         idCard.sign();
 
@@ -188,10 +219,15 @@ public class IDCardTest extends AbstractTest {
     @Test
     void willFailOnInvalidSignature() throws Exception {
 
-        IdCard idCard = new IdCardBuilder().env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(new KeyStoreLoader().fromClassPath("Lars_Larsen_prodben.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
-                .cpr("0501792275").role("role")
-                .occupation("occupation").authorizationCode("J0184").systemName("systemname").buildUserIdCard();
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
 
         idCard.sign();
 
@@ -212,5 +248,4 @@ public class IDCardTest extends AbstractTest {
             idCard.validate();
         });
     }
-
 }

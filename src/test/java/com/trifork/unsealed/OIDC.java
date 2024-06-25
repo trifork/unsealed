@@ -2,7 +2,6 @@ package com.trifork.unsealed;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.URI;
 import java.net.URISyntaxException;

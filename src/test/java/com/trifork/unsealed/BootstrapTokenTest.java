@@ -100,8 +100,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118");
 
-        // Extract priviledge attribibute, base64 decode it, and verify that our
-        // procuration cpr is there
+        // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
         Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
                 "AttributeStatement");
         String privsBase64 = SamlUtil.getSamlAttribute(attributeStatement,

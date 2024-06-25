@@ -57,14 +57,13 @@ public class SignatureUtil {
         URI_2_ALGO.put(SignatureMethod.DSA_SHA256, "DSA");
         URI_2_ALGO.put(SignatureMethod.RSA_SHA256, "RSA");
     }
+
+    // Create a DOM XMLSignatureFactory that will be used to generate the enveloped signatures
     static XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM");
 
     static void sign(Element rootElement, Element nextSibling, String[] referenceUris, String signatureId,
             Certificate certificate, Key privateKey, boolean enveloped) throws NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, MarshalException, XMLSignatureException {
-
-        // Create a DOM XMLSignatureFactory that will be used to generate the
-        // enveloped signature
 
         // Create a Reference to the enveloped document (in this case we are
         // signing the whole document, so a URI of "" signifies that) and
@@ -86,14 +85,14 @@ public class SignatureUtil {
         ArrayList<Reference> references = new ArrayList<>();
         for (String referenceUri : referenceUris) {
             references.add(xmlSignatureFactory.newReference(referenceUri,
-                    xmlSignatureFactory.newDigestMethod(DigestMethod.SHA1, null), transforms, null, null));
+                    xmlSignatureFactory.newDigestMethod(DigestMethod.SHA256, null), transforms, null, null));
         }
 
         // Create the SignedInfo
         SignedInfo si = xmlSignatureFactory.newSignedInfo(
                 xmlSignatureFactory.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE,
                         (C14NMethodParameterSpec) null),
-                xmlSignatureFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null), references);
+                xmlSignatureFactory.newSignatureMethod(SignatureMethod.RSA_SHA256, null), references);
 
         KeyInfoFactory kif = xmlSignatureFactory.getKeyInfoFactory();
 
@@ -109,9 +108,6 @@ public class SignatureUtil {
         if (nextSibling != null) {
             dsc.setNextSibling(nextSibling);
         }
-        // DOMSignContext dsc = new DOMSignContext(privateKey,
-        // rootElement.getOwnerDocument().getDocumentElement());
-
         // Create the XMLSignature (but don't sign it yet)
         XMLSignature signature = xmlSignatureFactory.newXMLSignature(si, ki, null, signatureId, null);
 
@@ -124,19 +120,12 @@ public class SignatureUtil {
 
         byte[] certAsBytes = certificate.getEncoded();
 
-        byte[] hash = MessageDigest.getInstance("SHA-1").digest(certAsBytes);
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(certAsBytes);
 
-        // return Base64.getMimeEncoder(Integer.MAX_VALUE, new
-        // byte[0]).encodeToString(hash);
         return Base64.getEncoder().encodeToString(hash);
     }
 
     public static void validate(Element signedElement) throws MarshalException, XMLSignatureException, ValidationException {
-
-        // // Instantiate the document to be validated
-        // DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        // dbf.setNamespaceAware(true);
-        // Document doc = dbf.newDocumentBuilder().parse(new FileInputStream(args[0]));
 
         // // Find Signature element
         NodeList nl = signedElement.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
@@ -144,12 +133,10 @@ public class SignatureUtil {
             throw new XMLSignatureException("Cannot find Signature element");
         }
 
-        // Create a DOM XMLSignatureFactory that will be used to unmarshal the
-        // document containing the XMLSignature
+        // Create a DOM XMLSignatureFactory that will be used to unmarshal the document containing the XMLSignature
         XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 
-        // Create a DOMValidateContext and specify a KeyValue KeySelector
-        // and document context
+        // Create a DOMValidateContext and specify a KeyValue KeySelector and document context
         DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), nl.item(0));
 
         // unmarshal the XMLSignature
