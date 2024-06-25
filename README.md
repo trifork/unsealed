@@ -20,4 +20,5 @@ NOTE: There is currently very limited support for server side validation!
 
 A seconday use of Unsealed is for issuing OIOSAML assertions and bootstrap tokens (OIOSAMLTokenIssuer+BootstrapTokenIssuer). This is primarily intended for test purposes..
 
-# Example usages - see src/test/java/com/trifork/unsealed/*Test.java
+# Example usages
+See src/test/java/com/trifork/unsealed/*Test.java
