@@ -11,7 +11,8 @@ public class IdCardBuilderParams extends AbstractBuilderParams {
     String authorizationCode;
     String systemName;
     Element assertion;
-    public CertAndKey certAndKey;
+    String xml;
+    CertAndKey certAndKey;
 
     IdCardBuilderParams copy() {
         try {

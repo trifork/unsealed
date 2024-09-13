@@ -31,6 +31,11 @@ public abstract class IdCard {
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
 
+    protected static final String SOSI_IDCARD_TYPE = "sosi:IDCardType";
+    protected static final String MEDCOM_IT_SYSTEM_NAME = "medcom:ITSystemName";
+    protected static final String MEDCOM_CARE_PROVIDER_ID = "medcom:CareProviderID";
+    protected static final String MEDCOM_CARE_PROVIDER_NAME = "medcom:CareProviderName";
+
     private static final String IDCARD_TO_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
     + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
     + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse/" + NsPrefixes.wst13.name() + ":RequestedSecurityToken";
@@ -41,6 +46,11 @@ public abstract class IdCard {
     private X509Certificate certificate;
     private Key privateKey;
     private String systemName;
+    protected String idCardType;
+    protected String itSystemName;
+    protected String careProviderId;
+    protected String careProviderIdNameFormat;
+    protected String careProviderName;
 
     protected Element signedIdCard;
 
@@ -58,6 +68,61 @@ public abstract class IdCard {
     IdCard(NSPEnv env, Element signedIdCard) {
         this.env = env;
         this.signedIdCard = signedIdCard;
+    
+        extractSamlAttributes(signedIdCard);
+    }
+
+    public String getItSystemName() {
+        return itSystemName;
+    }
+
+    public String getCareProviderId() {
+        return careProviderId;
+    }
+
+    public String getCareProviderIdNameFormat() {
+        return careProviderIdNameFormat;
+    }
+
+    public String getCareProviderName() {
+        return careProviderName;
+    }
+
+    protected void extractSamlAttributes(Element signedIdCard) {
+        XPathContext xpathContext = new XPathContext(signedIdCard.getOwnerDocument());
+
+        idCardType = getSamlAttribute(xpathContext, signedIdCard, SOSI_IDCARD_TYPE);
+        itSystemName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_IT_SYSTEM_NAME);
+        careProviderId = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_CARE_PROVIDER_ID);
+        careProviderIdNameFormat = getSamlAttributeNameFormat(xpathContext, signedIdCard, MEDCOM_CARE_PROVIDER_ID);
+        careProviderName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_CARE_PROVIDER_NAME);
+
+        extractSamlAttributes(signedIdCard, xpathContext);
+    }
+
+    protected abstract void extractSamlAttributes(Element signedIdCard, XPathContext xpathContext);
+
+    protected String getSamlAttribute(XPathContext xpathContext, Element rootElement, String attributeName) {
+        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" +
+                NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']/" + NsPrefixes.saml.name()
+                + ":AttributeValue";
+        try {
+            Element element = xpathContext.findElement(rootElement, path);
+            return element != null ? element.getTextContent() : null;
+        } catch (XPathExpressionException e) {
+            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
+        }
+    }
+
+    protected String getSamlAttributeNameFormat(XPathContext xpathContext, Element rootElement, String attributeName) {
+        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" +
+                NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']";
+        try {
+            Element element = xpathContext.findElement(rootElement, path);
+            return element != null ? element.getAttribute("NameFormat") : null;
+        } catch (XPathExpressionException e) {
+            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
+        }
     }
 
     protected abstract void extractKeystoreOwnerInfo(X509Certificate cert);
@@ -89,6 +154,9 @@ public abstract class IdCard {
         XPath xpath = xpathFactory.newXPath();
         signedIdCard = (Element) xpath.evaluate("//*[@id='IDCard']", response.getOwnerDocument(), XPathConstants.NODE);
         signedIdCard.setIdAttribute("id", true);
+
+        extractSamlAttributes(signedIdCard);
+
     }
 
     public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,

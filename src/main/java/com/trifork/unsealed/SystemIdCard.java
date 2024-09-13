@@ -27,8 +27,10 @@ public class SystemIdCard extends IdCard {
     }
 
     protected SystemIdCard(NSPEnv env, Element signedIdCard) {
-        super(env, null, null, null);
-        this.signedIdCard = signedIdCard;
+        super(env, signedIdCard);
+    }
+
+    protected void extractSamlAttributes(Element signedIdCard, XPathContext xpathContext) {
     }
 
     protected void extractKeystoreOwnerInfo(X509Certificate cert) {

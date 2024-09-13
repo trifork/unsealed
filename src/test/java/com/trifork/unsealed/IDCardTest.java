@@ -248,4 +248,96 @@ public class IDCardTest extends AbstractTest {
             idCard.validate();
         });
     }
+
+    @Test
+    void canBuildIdCardFromXml() throws Exception {
+
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
+
+        idCard.sign();
+
+        idCard.validate();
+
+        Element assertion = idCard.getAssertion();
+
+        String xml = XmlUtil.node2String(assertion, false, false);
+
+        UserIdCard userIdCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .xml(xml)
+                .buildUserIdCard();
+
+        userIdCard.validate();
+
+        assertEquals("systemname", userIdCard.getItSystemName());
+        assertEquals("96908409", userIdCard.getCareProviderId());
+        assertEquals("medcom:cvrnumber", userIdCard.getCareProviderIdNameFormat());
+        assertEquals("Testorganisation nr. 96908409", userIdCard.getCareProviderName());
+    }
+
+    @Test
+    void canAutoDetectUserIdCardType() throws Exception {
+
+        IdCard userIdCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
+
+        userIdCard.sign();
+
+        userIdCard.validate();
+
+        String xml = XmlUtil.node2String(userIdCard.getAssertion(), false, false);
+
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .xml(xml)
+                .buildIdCard();
+
+        idCard.validate();
+
+        assertEquals(UserIdCard.class, idCard.getClass());
+    }
+
+    @Test
+    void canAutoDetectSystemIdCardType() throws Exception {
+
+        IdCard systemIdCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD.toCharArray()).load())
+                .systemName("systemname")
+                .buildSystemIdCard();
+
+        systemIdCard.sign();
+
+        systemIdCard.validate();
+
+        String xml = XmlUtil.node2String(systemIdCard.getAssertion(), false, false);
+
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .xml(xml)
+                .buildIdCard();
+
+        idCard.validate();
+
+        String cvr = idCard.getAttribute("medcom:CareProviderID");
+        assertEquals("33257872", cvr);
+
+        assertEquals(SystemIdCard.class, idCard.getClass());
+    }
+
 }

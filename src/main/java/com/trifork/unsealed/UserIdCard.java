@@ -14,7 +14,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.ldap.LdapName;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
@@ -50,21 +49,15 @@ public class UserIdCard extends IdCard {
     }
 
     protected UserIdCard(NSPEnv env, Element signedIdCard) {
-        super(env, null, null, null);
-        this.signedIdCard = signedIdCard;
-
-        extractSamlAttributes(signedIdCard);
+        super(env, signedIdCard);
     }
 
     @Override
     public void sign() throws Exception {
         super.sign();
-        extractSamlAttributes(signedIdCard);
     }
 
-    private void extractSamlAttributes(Element signedIdCard) {
-        XPathContext xpathContext = new XPathContext(signedIdCard.getOwnerDocument());
-
+    protected void extractSamlAttributes(Element signedIdCard, XPathContext xpathContext) {
         cpr = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER);
         role = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_ROLE);
         occupation = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_OCCUPATION);
@@ -72,18 +65,6 @@ public class UserIdCard extends IdCard {
         email = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_EMAIL_ADDRESS);
         firstName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_GIVEN_NAME);
         lastName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_SUR_NAME);
-    }
-
-    protected String getSamlAttribute(XPathContext xpathContext, Element rootElement, String attributeName) {
-        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" +
-                NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']/" + NsPrefixes.saml.name()
-                + ":AttributeValue";
-        try {
-            Element element = xpathContext.findElement(rootElement, path);
-            return element != null ? element.getTextContent() : null;
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
-        }
     }
 
     public String getCpr() {
