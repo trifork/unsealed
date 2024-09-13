@@ -32,6 +32,9 @@ public abstract class IdCard {
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
 
     protected static final String SOSI_IDCARD_TYPE = "sosi:IDCardType";
+    protected static final String SOSI_AUTH_LEVEL = "sosi:AuthenticationLevel";
+    protected static final String SOSI_IDCARD_VERSION = "sosi:IDCardVersion";
+    protected static final String SOSI_IDCARD_ID = "sosi:IDCardID";
     protected static final String MEDCOM_IT_SYSTEM_NAME = "medcom:ITSystemName";
     protected static final String MEDCOM_CARE_PROVIDER_ID = "medcom:CareProviderID";
     protected static final String MEDCOM_CARE_PROVIDER_NAME = "medcom:CareProviderName";
@@ -57,6 +60,9 @@ public abstract class IdCard {
     private Element assertion;
 
     private Element encryptedAssertion;
+    private int authLevel;
+    private String dgwsVersion;
+    private String idCardId;
 
     protected IdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
         this.env = env;
@@ -76,6 +82,18 @@ public abstract class IdCard {
         return itSystemName;
     }
 
+    public int getAuthLevel() {
+        return authLevel;
+    }
+
+    public String getDGWSVersion() {
+        return dgwsVersion;
+    }
+
+    public String getIdCardId() {
+        return idCardId;
+    }
+
     public String getCareProviderId() {
         return careProviderId;
     }
@@ -92,6 +110,9 @@ public abstract class IdCard {
         XPathContext xpathContext = new XPathContext(signedIdCard.getOwnerDocument());
 
         idCardType = getSamlAttribute(xpathContext, signedIdCard, SOSI_IDCARD_TYPE);
+        authLevel = Integer.parseInt(getSamlAttribute(xpathContext, signedIdCard, SOSI_AUTH_LEVEL));
+        dgwsVersion = getSamlAttribute(xpathContext, signedIdCard, SOSI_IDCARD_VERSION);
+        idCardId = getSamlAttribute(xpathContext, signedIdCard, SOSI_IDCARD_ID);
         itSystemName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_IT_SYSTEM_NAME);
         careProviderId = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_CARE_PROVIDER_ID);
         careProviderIdNameFormat = getSamlAttributeNameFormat(xpathContext, signedIdCard, MEDCOM_CARE_PROVIDER_ID);

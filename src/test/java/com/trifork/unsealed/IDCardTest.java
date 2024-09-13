@@ -281,6 +281,10 @@ public class IDCardTest extends AbstractTest {
         assertEquals("96908409", userIdCard.getCareProviderId());
         assertEquals("medcom:cvrnumber", userIdCard.getCareProviderIdNameFormat());
         assertEquals("Testorganisation nr. 96908409", userIdCard.getCareProviderName());
+        assertEquals(4, userIdCard.getAuthLevel());
+        assertNotNull(userIdCard.getIdCardId());
+        assertEquals(idCard.getIdCardId(), userIdCard.getIdCardId());
+        assertEquals("1.0.1", userIdCard.getDGWSVersion());
     }
 
     @Test
