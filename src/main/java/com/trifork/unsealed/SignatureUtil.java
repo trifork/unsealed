@@ -125,7 +125,7 @@ public class SignatureUtil {
         return Base64.getEncoder().encodeToString(hash);
     }
 
-    public static void validate(Element signedElement) throws MarshalException, XMLSignatureException, ValidationException {
+    public static void validate(Element signedElement, boolean allowUnsafeSignature) throws MarshalException, XMLSignatureException, ValidationException {
 
         // // Find Signature element
         NodeList nl = signedElement.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
@@ -138,6 +138,10 @@ public class SignatureUtil {
 
         // Create a DOMValidateContext and specify a KeyValue KeySelector and document context
         DOMValidateContext valContext = new DOMValidateContext(new KeyValueKeySelector(), nl.item(0));
+        
+        if (allowUnsafeSignature) {
+            valContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE);
+        }
 
         // unmarshal the XMLSignature
         XMLSignature signature = fac.unmarshalXMLSignature(valContext);

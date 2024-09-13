@@ -292,7 +292,8 @@ public abstract class IdCard {
 
     private void validateSignature() throws ValidationException {
         try {
-            SignatureUtil.validate(signedIdCard);
+            // STS signs SOSI IdCards rsa-sha1 which is considered unsafe by Java 17..
+            SignatureUtil.validate(signedIdCard, true);
         } catch (MarshalException | XMLSignatureException e) {
             throw new ValidationException("Error validating signature", e);
         }
