@@ -3,7 +3,7 @@ name: Build and publish release to GitHub Packages
 on:
   push:
     tags:
-      - "unsealed-*.*.*"
+      - "v*.*.*"
 
 jobs:
   release:
