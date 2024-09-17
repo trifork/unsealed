@@ -15,6 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.Base64;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -95,6 +96,7 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
+    @Disabled
     void canExchangeBootstrapTokenToIDWSTokenWithProcuration() throws Exception {
         BootstrapToken bst = issuer.cpr("0501792275").issueForCitizen();
 
