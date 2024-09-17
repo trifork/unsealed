@@ -25,4 +25,4 @@ jobs:
           cache: 'maven'
 
       - name: Build and test code with Maven
-        run: mvn -B package -Pgithub
+        run: mvn -B package

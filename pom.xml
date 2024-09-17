@@ -41,7 +41,13 @@
 
     <profiles>
         <profile>
-            <id>github</id>
+            <id>triforkGithubMavenRepo</id>
+            <activation>
+                <property>
+                    <name>targetRepo</name>
+                    <value>triforkGithubMavenRepo</value>
+                </property>
+            </activation>
             <distributionManagement>
                 <repository>
                     <id>github</id>
