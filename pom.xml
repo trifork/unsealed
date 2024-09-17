@@ -39,6 +39,19 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <profiles>
+        <profile>
+            <id>github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/trifork/unsealed</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
     <scm>
         <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
         <url>scm:git:git@github.com:trifork/unsealed.git</url>

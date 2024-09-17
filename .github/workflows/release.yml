@@ -1,0 +1,31 @@
+name: Build and publish release to GitHub Packages
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Remove snapshot from version in Maven
+        run: mvn -B versions:set -DremoveSnapshot -DgenerateBackupPoms=false
+
+      - name: Build and publish release package
+        run: mvn -B deploy -Dmaven.resolver.transport=wagon -Pgithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
