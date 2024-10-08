@@ -272,7 +272,7 @@ public class IDCardTest extends AbstractTest {
 
         UserIdCard userIdCard = new IdCardBuilder()
                 .env(NSPTestEnv.TEST1_CNSP)
-                .xml(xml)
+                .fromXml(xml)
                 .buildUserIdCard();
 
         userIdCard.validate();
@@ -308,7 +308,7 @@ public class IDCardTest extends AbstractTest {
 
         IdCard idCard = new IdCardBuilder()
                 .env(NSPTestEnv.TEST1_CNSP)
-                .xml(xml)
+                .fromXml(xml)
                 .buildIdCard();
 
         idCard.validate();
@@ -333,7 +333,7 @@ public class IDCardTest extends AbstractTest {
 
         IdCard idCard = new IdCardBuilder()
                 .env(NSPTestEnv.TEST1_CNSP)
-                .xml(xml)
+                .fromXml(xml)
                 .buildIdCard();
 
         idCard.validate();

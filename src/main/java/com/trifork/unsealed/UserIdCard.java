@@ -52,11 +52,6 @@ public class UserIdCard extends IdCard {
         super(env, signedIdCard);
     }
 
-    @Override
-    public void sign() throws Exception {
-        super.sign();
-    }
-
     protected void extractSamlAttributes(Element signedIdCard, XPathContext xpathContext) {
         cpr = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_CIVIL_REGISTRATION_NUMBER);
         role = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_ROLE);
@@ -67,30 +62,58 @@ public class UserIdCard extends IdCard {
         lastName = getSamlAttribute(xpathContext, signedIdCard, MEDCOM_USER_SUR_NAME);
     }
 
+    /**
+     * Get the CPR of the user
+     * @return The CPR
+     */
     public String getCpr() {
         return cpr;
     }
 
+    /**
+     * Get the role of the user
+     * @return The role
+     */
     public String getRole() {
         return role;
     }
 
+    /**
+     * Get the occupation of the user
+     * @return The occupation
+     */
     public String getOccupation() {
         return occupation;
     }
 
+    /**
+     * Get the auth id of the user
+     * @return The auth id
+     */
     public String getAuthorizationCode() {
         return authorizationCode;
     }
 
+    /**
+     * Get the email of the user
+     * @return The email
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Get the given name of the User
+     * @return The given name
+     */
     public String getFirstName() {
         return firstName;
     }
 
+    /**
+     * Get the family name of the user
+     * @return The family name
+     */
     public String getLastName() {
         return lastName;
     }

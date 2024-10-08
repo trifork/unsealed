@@ -19,9 +19,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * BootstrapTokenIssuer is an immutable builder that issues bootstrap tokens for the danish national health infrastructure. Intended for test use, since
+ * production bootstrap tokens typically are issued by official IdPs.
+ * 
+ * @author Jeppe Sommer
+ */
 public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerParams> {
     private static final String WELLKNOWN_STS_TEST_ISSUER_HOK = "https://idp.test.nspop.dk";
 
+    /**
+     * Create a blank builder instance.
+     */
     public BootstrapTokenIssuer() {
         super(new BootstrapTokenIssuerParams());
     }
@@ -30,6 +39,12 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
         super(params);
     }
 
+    /**
+     * Specify the NSP environment which will be the context for the issued bootstrap tokens
+     * 
+     * @param env Either {@link NSPEnv#fromUrl(stsBaseUrl)} or one of the enum values of {@link com.trifork.unsealed.NSPTestEnv}
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer env(NSPEnv env) {
         var params = this.params.copy();
 
@@ -38,42 +53,88 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the CPR number of the user
+     * 
+     * @param cpr
+     *            The CPR number
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer cpr(String cpr) {
         var params = this.params.copy();
         params.cpr = cpr;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the UUID of the user
+     * 
+     * @param uuid The UUID
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer uuid(String uuid) {
         var params = this.params.copy();
         params.uuid = uuid;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the CVR number of the users login organisation
+     * 
+     * @param cvr The CVR number
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer cvr(String cvr) {
         var params = this.params.copy();
         params.cvr = cvr;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the name of the users login organisation
+     * 
+     * @param orgName The organisation name
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer orgName(String orgName) {
         var params = this.params.copy();
         params.orgName = orgName;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the SP (Service Provider) {@link CertAndKey} (certificate keypair). This is used if the issued bootstrap token is exchanged to an IDWS IdentityToken or a DGWS
+     * Idcard.
+     * @see BootstrapToken#exchangeToIdentityToken(String, String)
+     * @see BootstrapToken#exchangeToIdentityToken(String, String, String)
+     * @see BootstrapToken#exchangeToUserIdCard(String, String, String, String, String)
+     * 
+     * @param spCertAndKey The SP keypair
+     * @return
+     */
     public BootstrapTokenIssuer spCertAndKey(CertAndKey spCertAndKey) {
         var params = this.params.copy();
         params.spCertAndKey = spCertAndKey;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Specify the IdP (Identify Provider) {@link CertAndKey} (certificate keypair). This will be the issuer of issued tokens.
+     * 
+     * @param idpCertAndKey The IdP keypair
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public BootstrapTokenIssuer idpCertAndKey(CertAndKey idpCertAndKey) {
         var params = this.params.copy();
         params.idpCertAndKey = idpCertAndKey;
         return new BootstrapTokenIssuer(params);
     }
 
+    /**
+     * Issue a bootstrap token for a citizen. 
+     * @return The issued bootstrap token
+     * @throws Exception
+     */
     public BootstrapToken issueForCitizen()
             throws Exception {
 
@@ -98,6 +159,11 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
                 xml, null);
     }
 
+    /**
+     * Issue a bootstrap token for a healthcare professional
+     * @return The issued bootstrap token
+     * @throws Exception
+     */
     public BootstrapToken issueForProfessional()
             throws Exception {
 
@@ -179,7 +245,6 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
 
     }
 
-
     private static void signAssertion(X509Certificate idpCert, Key idpPrivateKey, Element assertion)
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException,
             XMLSignatureException {
@@ -192,6 +257,5 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
                 idpPrivateKey,
                 true);
     }
-
 
 }

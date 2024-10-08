@@ -39,9 +39,10 @@ public abstract class IdCard {
     protected static final String MEDCOM_CARE_PROVIDER_ID = "medcom:CareProviderID";
     protected static final String MEDCOM_CARE_PROVIDER_NAME = "medcom:CareProviderName";
 
+    private static final int NOT_BEFORE_ALLOWED_SLACK = 5;
     private static final String IDCARD_TO_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
-    + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
-    + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse/" + NsPrefixes.wst13.name() + ":RequestedSecurityToken";
+            + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponseCollection/"
+            + NsPrefixes.wst13.name() + ":RequestSecurityTokenResponse/" + NsPrefixes.wst13.name() + ":RequestedSecurityToken";
 
     private NSPEnv env;
     protected String cvr;
@@ -74,34 +75,69 @@ public abstract class IdCard {
     IdCard(NSPEnv env, Element signedIdCard) {
         this.env = env;
         this.signedIdCard = signedIdCard;
-    
+
         extractSamlAttributes(signedIdCard);
     }
 
+    /**
+     * Get the IT System Name of this IDCard
+     * 
+     * @return The value of the SAML attribute named "medcom:ITSystemName"
+     */
     public String getItSystemName() {
         return itSystemName;
     }
 
+    /**
+     * Get the authentication level of this IDCard
+     * 
+     * @return The value of the SAML attribute named "sosi:AuthenticationLevel"
+     */
     public int getAuthLevel() {
         return authLevel;
     }
 
+    /**
+     * Get the DGWS-version of this IDCard
+     * 
+     * @return The value of the SAML attribute named "sosi:IDCardVersion"
+     */
     public String getDGWSVersion() {
         return dgwsVersion;
     }
 
+    /**
+     * Get the ID of this IDCard
+     * 
+     * @return The value of the SAML attribute named "sosi:IDCardID"
+     */
     public String getIdCardId() {
         return idCardId;
     }
 
+    /**
+     * Get the care provider id of this IDCard
+     * 
+     * @return The value of the SAML attribute named "medcom:CareProviderID"
+     */
     public String getCareProviderId() {
         return careProviderId;
     }
 
+    /**
+     * Get the NameFormat of the care provider id attribute of this IDCard
+     * 
+     * @return The NameFormat of the SAML attribute named "medcom:CareProviderID" - typically "medcom:cvrnumber"
+     */
     public String getCareProviderIdNameFormat() {
         return careProviderIdNameFormat;
     }
 
+    /**
+     * Get the care provider name of this IDCard
+     * 
+     * @return The value of the SAML attribute named "medcom:CareProviderName"
+     */
     public String getCareProviderName() {
         return careProviderName;
     }
@@ -148,6 +184,11 @@ public abstract class IdCard {
 
     protected abstract void extractKeystoreOwnerInfo(X509Certificate cert);
 
+    /**
+     * Sign this IDCard, i.e., send at request to SOSI STS requesting a signed IDCard.
+     * 
+     * @throws Exception
+     */
     public void sign() throws Exception {
 
         Instant now = Instant.now();
@@ -180,6 +221,19 @@ public abstract class IdCard {
 
     }
 
+    /**
+     * Exchange this IDCard to an IDWS identity token that can be used for logging in via SBO (Safe Browser Start) on a web application
+     * 
+     * @param audience
+     *            The requested audience for the IDWS token, e.g. "https://saml.test1.fmk.netic.dk/fmk/". This equals the SAML EntityID of the target web
+     *            application.
+     * @return
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws STSInvocationException
+     * @throws XPathExpressionException
+     */
     public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,
             InterruptedException, STSInvocationException, XPathExpressionException {
         if (signedIdCard == null) {
@@ -199,15 +253,31 @@ public abstract class IdCard {
         if (assertion != null) {
             return new OIOSAMLToken(env, null, null, assertion, false);
         }
-        
+
         encryptedAssertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "EncryptedAssertion");
         return new OIOSAMLToken(env, null, null, encryptedAssertion, true);
     }
 
+    /**
+     * Get the XML representation of this IDCard as a String.
+     * 
+     * @return The XML
+     * @throws UnsupportedEncodingException
+     */
     public String getXml() throws UnsupportedEncodingException {
         return XmlUtil.node2String(signedIdCard, false, false);
     }
 
+    /**
+     * Get the XML representation of this IDCard as a String.
+     * 
+     * @param pretty
+     *            Format the returned XML
+     * @param includeXMLHeader
+     *            Include XML header in the returned XML
+     * @return The XML
+     * @throws UnsupportedEncodingException
+     */
     public String getXml(boolean pretty, boolean includeXMLHeader) throws UnsupportedEncodingException {
         return XmlUtil.node2String(signedIdCard, pretty, includeXMLHeader);
     }
@@ -231,7 +301,7 @@ public abstract class IdCard {
         Element claims = appendChild(requestSecurityToken, NsPrefixes.wst, "Claims");
         claims.appendChild(idcard);
 
-        // Seal includes an Issuer as below, but this WSA namespace predates WSA 1.0! 
+        // Seal includes an Issuer as below, but this WSA namespace predates WSA 1.0!
         // Element issuer = appendChild(requestSecurityToken, NsPrefixes.wst, "Issuer");
         // Element address = appendChild(issuer, NsPrefixes.wsax, "Address");
         // address.setTextContent("SealJava-2.6.35-TheSOSILibrary");
@@ -292,7 +362,7 @@ public abstract class IdCard {
 
         appendChild(keyInfo, NsPrefixes.ds, "KeyName", "OCESSignature");
         Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
-        Instant validFrom = now.minusMillis(1000);
+        Instant validFrom = now.minusSeconds(NOT_BEFORE_ALLOWED_SLACK);
         conditions.setAttribute("NotBefore", ISO_WITHOUT_MILLIS_FORMATTER.format(validFrom));
         conditions.setAttribute("NotOnOrAfter",
                 ISO_WITHOUT_MILLIS_FORMATTER.format(validFrom.plus(24, ChronoUnit.HOURS)));
@@ -327,30 +397,43 @@ public abstract class IdCard {
 
     protected abstract void addTypeSpecificAttributes(Element idCardData, Element assertion);
 
+    /**
+     * Get the entity id of the issuer of this IDCard
+     * 
+     * @return The issuer
+     */
     public String getIssuer() {
         return getTextChild(signedIdCard, NsPrefixes.saml, "Issuer");
     }
 
+    /**
+     * Get any SAML attribute of this IDCard by name.
+     * 
+     * @param attributeName The name of the attribute
+     * @return
+     */
     public String getAttribute(String attributeName) {
-        Element assertionElm = signedIdCard;
-        if (assertionElm == null) {
-            assertionElm = assertion;
+        Element rootElement = signedIdCard;
+        if (rootElement == null) {
+            rootElement = assertion;
         }
-        XPathContext xpath = new XPathContext(assertionElm.getOwnerDocument());
-        String path = "//" + NsPrefixes.saml.name() + ":Assertion/" + 
-            NsPrefixes.saml.name() + ":AttributeStatement/" + NsPrefixes.saml.name() + ":Attribute[@Name='" + attributeName + "']/" + NsPrefixes.saml.name() + ":AttributeValue";
-            try {
-            Element element = xpath.findElement(assertionElm, path);
-            return element != null ? element.getTextContent() : null;
-        } catch (XPathExpressionException e) {
-            throw new IllegalArgumentException("Error searching for saml attribute '" + attributeName + "'", e);
-        }
+        XPathContext xpath = new XPathContext(rootElement.getOwnerDocument());
+        return getSamlAttribute(xpath, rootElement, attributeName);
     }
 
+    /**
+     * The the subject name of the certificate represented by this IDCard. 
+     * @return The subject name
+     */
     public String getSubjectName() {
         return getTextChild(getChild(signedIdCard, NsPrefixes.saml, "Subject"), NsPrefixes.saml, "NameID");
     }
 
+    /**
+     * Serialise this IDCard to a {@link org.w3c.dom.Document}
+     * @param doc
+     * @return The serialised document
+     */
     public Element serialize2DOMDocument(Document doc) {
         if (!signedIdCard.getOwnerDocument().equals(doc)) {
             // Import the IDCard DOM element into the new document
@@ -360,21 +443,37 @@ public abstract class IdCard {
         return signedIdCard;
     }
 
+    /**
+     * Get the NotBefore condition (valid from time) of this IDCard
+     * @return The NotBefore condition as a {@link java.time.LocalDateTime}
+     */
     public LocalDateTime getNotBefore() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
         return LocalDateTime.parse(cond.getAttribute("NotBefore"), ISO_WITHOUT_MILLIS_FORMATTER);
     }
 
+    /**
+     * Get the NotOnOrAfter condition (expiration time) of this IDCard
+     * @return The NotOnOrAftter condition as a {@link java.time.LocalDateTime}
+     */
     public LocalDateTime getNotOnOrAfter() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
         return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), ISO_WITHOUT_MILLIS_FORMATTER);
     }
 
+    /**
+     * Validate this IDCard, i.e. validate than NotBefore/NotOnOrAfter is satisfied and that the signature of the assertion/IDCard is valid. 
+     * @throws ValidationException
+     */
     public void validate() throws ValidationException {
         validateTimes(null);
         validateSignature();
     }
 
+    /**
+     * Get a reference to the {@link org.w3c.dom.Element} representation of this IDCard. 
+     * @return A reference to the assertion
+     */
     public Element getAssertion() {
         return signedIdCard != null ? signedIdCard : assertion;
     }
@@ -392,7 +491,7 @@ public abstract class IdCard {
         if (now == null) {
             now = LocalDateTime.now();
         }
-        
+
         LocalDateTime notBefore = getNotBefore();
         if (now.isBefore(notBefore)) {
             throw new ValidationException("NotBefore condition not met, NotBefore=" + notBefore + ", now=" + now);

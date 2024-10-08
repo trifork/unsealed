@@ -32,66 +32,152 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
 
     }
 
+    /**
+     * Specify the NSP environment which will be the context for IdCards built by this builder
+     * 
+     * @param env
+     *            Either {@link NSPEnv#fromUrl(stsBaseUrl)} or one of the enum values of {@link com.trifork.unsealed.NSPTestEnv}
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder env(NSPEnv env) {
         IdCardBuilderParams params = this.params.copy();
         params.env = env;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify the CPR number of the user
+     * 
+     * @param cpr
+     *            The CPR number
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder cpr(String cpr) {
         IdCardBuilderParams params = this.params.copy();
         params.cpr = cpr;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify the (moces/voces/foces) {@link CertAndKey} (certificate keypair) of the user or system that IdCards should identify.
+     * 
+     * @param certAndKey
+     *            The keypair
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder certAndKey(CertAndKey certAndKey) {
         IdCardBuilderParams params = this.params.copy();
         params.certAndKey = certAndKey;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify email
+     * 
+     * @param email
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder email(String email) {
         IdCardBuilderParams params = this.params.copy();
         params.email = email;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify role
+     * 
+     * @param role
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder role(String role) {
         IdCardBuilderParams params = this.params.copy();
         params.role = role;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify occupation
+     * 
+     * @param occupation
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder occupation(String occupation) {
         IdCardBuilderParams params = this.params.copy();
         params.occupation = occupation;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify authorization code of the user
+     * 
+     * @param authorizationCode
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder authorizationCode(String authorizationCode) {
         IdCardBuilderParams params = this.params.copy();
         params.authorizationCode = authorizationCode;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Specify system name
+     * 
+     * @param systemName
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder systemName(String systemName) {
         IdCardBuilderParams params = this.params.copy();
         params.systemName = systemName;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Build IdCard from a {@link org.w3c.dom.Element} representation of the assertion (XML)
+     * 
+     * @param assertion
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
     public IdCardBuilder assertion(Element assertion) {
         IdCardBuilderParams params = this.params.copy();
         params.assertion = assertion;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * @deprecated Renamed to {@link IdCardBuilder#fromXml} for consistency with other builders
+     * @param xml
+     * @return
+     */
     public IdCardBuilder xml(String xml) {
+        return fromXml(xml);
+    }
+
+    /**
+     * Built IdCard from an XML String
+     * 
+     * @param xml
+     *            The XML
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
+    public IdCardBuilder fromXml(String xml) {
         IdCardBuilderParams params = this.params.copy();
         params.xml = xml;
         return new IdCardBuilder(params);
     }
 
+    /**
+     * Build IDCard from supplied parameters. If the builder is initialized from an assertion element or XML String, the type of IDCard will be autodetected (user
+     * or system).
+     * 
+     * @return A {@link UserIdCard} or {@link SystemIdCard} dependending the attributes of the supplied XML
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws UnrecoverableKeyException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
     public IdCard buildIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException, SAXException, ParserConfigurationException {
 
@@ -132,6 +218,18 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
         }
     }
 
+    /**
+     * Built a {@link UserIdCard} from the supplied parameters.
+     * 
+     * @return a {@link UserIdCard}
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws UnrecoverableKeyException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
     public UserIdCard buildUserIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException, SAXException, ParserConfigurationException {
 
@@ -161,6 +259,18 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
         return idCard;
     }
 
+    /**
+     * Built a {@link SystemIdCard} from the supplied parameters.
+     * 
+     * @return A {@link SystemIdCard}
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws UnrecoverableKeyException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
     public SystemIdCard buildSystemIdCard() throws IOException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException, SAXException, ParserConfigurationException {
 

@@ -67,6 +67,22 @@ public class BootstrapToken {
         this.jwt = jwt;
     }
 
+    /**
+     * Invoke SOSI STS to exchange this bootstrap token to an IDWS identity token.
+     * @param audience The audience for the identity token, e.g., "https://minlog"
+     * @param cpr The CPR of the user
+     * @return The identity token
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MarshalException
+     * @throws XMLSignatureException
+     * @throws XPathExpressionException
+     * @throws STSInvocationException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
     public IdentityToken exchangeToIdentityToken(String audience, String cpr)
             throws IOException, InterruptedException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException,
@@ -75,6 +91,24 @@ public class BootstrapToken {
         return exchangeToIdentityToken(audience, cpr, null);
     }
 
+    /**
+     * 
+     * Invoke SOSI STS to exchange this bootstrap token to an IDWS identity token that includes verified procuration access. 
+     * @param audience The audience for the identity token, e.g., "https://minlog"
+     * @param cpr The CPR of the user
+     * @param procurationCpr The CPR of the person being the procuration subject
+     * @return The identity token
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MarshalException
+     * @throws XMLSignatureException
+     * @throws XPathExpressionException
+     * @throws STSInvocationException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
     public IdentityToken exchangeToIdentityToken(String audience, String cpr, String procurationCpr)
             throws IOException, InterruptedException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException,
@@ -199,6 +233,28 @@ public class BootstrapToken {
         return envelope;
     }
 
+    /**
+     * Exchange thie bootstrap token to a IDCard of type user
+     * @param audience The <code>AppliesTo</code> for the security token request. This has no effect on the returned IDCard
+     * @param role The role of the IDCard
+     * @param occupation The occupation of the IDCard
+     * @param authId The auth id of the IDCard
+     * @param systemName The system name of the IDCard
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MarshalException
+     * @throws XMLSignatureException
+     * @throws XPathExpressionException
+     * @throws STSInvocationException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws UnrecoverableKeyException
+     * @throws KeyStoreException
+     * @throws CertificateException
+     */
     public UserIdCard exchangeToUserIdCard(String audience, String role, String occupation,
             String authId, String systemName)
             throws IOException, InterruptedException,

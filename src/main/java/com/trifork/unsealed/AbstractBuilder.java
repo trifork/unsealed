@@ -1,5 +1,6 @@
 package com.trifork.unsealed;
 
+
 public abstract class AbstractBuilder<ParamsType extends AbstractBuilderParams> {
 
     protected ParamsType params;
