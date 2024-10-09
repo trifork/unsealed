@@ -24,8 +24,7 @@ public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderPara
     /**
      * Specify the NSP environment which will be the context for OIOSAML tokens built by this builder
      * 
-     * @param env
-     *            Either {@link NSPEnv#fromUrl(stsBaseUrl)} or one of the enum values of {@link com.trifork.unsealed.NSPTestEnv}
+     * @param env Either {@link NSPEnv#fromUrl(String)} or one of the enum values of {@link NSPTestEnv}
      * @return A new immutable builder instance that encapsulates the supplied parameter
      */
     public OIOSAMLTokenBuilder env(NSPEnv env) {
