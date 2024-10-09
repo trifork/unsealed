@@ -111,7 +111,7 @@ public class BootstrapToken {
 
     /**
      * Invoke SOSI STS to exchange this bootstrap token into an IDWS identity token that includes verified procuration access.
-     * @deprecated Use {@link BootstrapToken#exchangeToIdentityToken(String, String, String, OnBehalfOfClaimType))}
+     * @deprecated Use {@link BootstrapToken#exchangeToIdentityToken(String, String, String, OnBehalfOfClaimType)}
      * @param audience
      * @param cpr
      * @param procurationCpr
