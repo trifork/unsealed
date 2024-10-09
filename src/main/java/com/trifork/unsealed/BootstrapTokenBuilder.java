@@ -56,8 +56,7 @@ public class BootstrapTokenBuilder extends AbstractBuilder<BootstrapTokenBuilder
      * Specify the SP (Service Provider) {@link CertAndKey} (certificate keypair). This is used if the issued bootstrap token is exchanged to an IDWS IdentityToken or a DGWS
      * Idcard.
      * @see BootstrapToken#exchangeToIdentityToken(String, String)
-     * @see BootstrapToken#exchangeToIdentityToken(String, String, String)
-     * @see BootstrapToken#exchangeToUserIdCard(String, String, String, String, String)
+     * @see BootstrapToken#exchangeToIdentityToken(String, String, String, BootstrapToken.OnBehalfOfClaimType)
      * 
      * @param spCertAndKey The SP keypair
      * @return
