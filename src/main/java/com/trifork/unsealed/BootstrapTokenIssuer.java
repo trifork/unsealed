@@ -42,7 +42,7 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
     /**
      * Specify the NSP environment which will be the context for the issued bootstrap tokens
      * 
-     * @param env Either {@link NSPEnv#fromUrl(stsBaseUrl)} or one of the enum values of {@link com.trifork.unsealed.NSPTestEnv}
+     * @param env Either {@link NSPEnv#fromUrl(String)} or one of the enum values of {@link NSPTestEnv}
      * @return A new immutable builder instance that encapsulates the supplied parameter
      */
     public BootstrapTokenIssuer env(NSPEnv env) {
