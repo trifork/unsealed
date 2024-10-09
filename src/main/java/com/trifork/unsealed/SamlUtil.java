@@ -36,6 +36,9 @@ public class SamlUtil {
     public static String getSamlAttribute(Element parent, String name) {
         Element attribute = XmlUtil.getChild(parent, NsPrefixes.saml, "Attribute",
                 child -> name.equals(child.getAttribute("Name")));
+        if (attribute == null) {
+            return null;
+        }
         return XmlUtil.getTextChild(attribute, NsPrefixes.saml, "AttributeValue");
     }
 

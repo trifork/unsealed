@@ -5,7 +5,7 @@ public enum NsPrefixes {
 	medcom(XmlUtil.MEDCOM_SCHEMA), wsp(XmlUtil.WSP_SCHEMA), wsse(XmlUtil.WSSE_SCHEMA), wst(XmlUtil.WST_SCHEMA),
 	wst13(XmlUtil.WST_1_3_SCHEMA), wst14(XmlUtil.WST_1_4_SCHEMA), wsu(XmlUtil.WSU_SCHEMA),
 	sosi(XmlUtil.SOSI_SCHEMA), xsd(XmlUtil.XSD_SCHEMA), soap(XmlUtil.SOAP_ENV), wsa(XmlUtil.WSA_1_0_SCHEMA), wsa_Aug_2004(XmlUtil.WSA_Aug2004_SCHEMA), auth(XmlUtil.WSF_AUTH_SCHEMA), 
-	xenc(XmlUtil.XENC), bpp(XmlUtil.BPP);
+	xenc(XmlUtil.XENC), bpp(XmlUtil.BPP), srp(XmlUtil.SRP);
 
 	public final String namespaceUri;
 

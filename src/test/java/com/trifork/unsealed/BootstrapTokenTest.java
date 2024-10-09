@@ -96,11 +96,10 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    @Disabled
     void canExchangeBootstrapTokenToIDWSTokenWithProcuration() throws Exception {
         BootstrapToken bst = issuer.cpr("0501792275").issueForCitizen();
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118");
+        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118", BootstrapToken.OnBehalfOfClaimType.PROCURATION);
 
         // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
         Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
@@ -119,6 +118,30 @@ public class BootstrapTokenTest extends AbstractTest {
 
         assertEquals("urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:1111111118",
                 privileges.getAttribute("Scope"));
+    }
+
+    @Test
+    void canExchangeBootstrapTokenToIDWSTokenWithParenthood() throws Exception {
+        BootstrapToken bst = issuer.cpr("2811686517").issueForCitizen();  // Karl Bonde
+
+        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "2811686517", "0904128090", BootstrapToken.OnBehalfOfClaimType.PARENTHOOD);
+
+        // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
+        Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
+                "AttributeStatement");
+        String subjectRelationsBase64 = SamlUtil.getSamlAttribute(attributeStatement,
+                "urn:dk:healthcare:saml:attribute:SubjectRelations");
+        String privs = new String(Base64.getDecoder().decode(subjectRelationsBase64), StandardCharsets.UTF_8);
+
+        Document doc = XmlUtil.getDocBuilder()
+                .parse(new ByteArrayInputStream(privs.getBytes(StandardCharsets.UTF_8)));
+
+        XPathContext xpath = new XPathContext(doc);
+        Element verifiedRelation = xpath.findElement(doc.getDocumentElement(),
+                "/" + NsPrefixes.srp.name() + ":SubjectRelations/"
+                        + NsPrefixes.srp.name() + ":VerifiedRelation");
+
+        assertEquals("0904128090", verifiedRelation.getAttribute("relatedPersonID"));
     }
 
     @Test

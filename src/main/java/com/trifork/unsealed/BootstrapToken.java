@@ -45,6 +45,21 @@ public class BootstrapToken {
     static final String DEFAULT_BST_TO_SOSI_ENDPOINT = "/sts/services/BST2SOSI";
     static final String DEFAULT_JWT_TO_ID_ENDPOINT = "/sts/services/JWT2Idws";
 
+    static final String ON_BEHALF_OF_CLAIM_URI = "dk:healthcare:saml:attribute:OnBehalfOf";
+
+    public static enum OnBehalfOfClaimType {
+        PROCURATION("urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:"), 
+        WARD("urn:dk:healthcare:saml:actThrough:WardCustody:cprNumberIdentifier:"), 
+        PARTLY_WARD("urn:dk:healthcare:saml:actThrough:PartlyWardCustody:cprNumberIdentifier:"), 
+        PARENTHOOD("urn:dk:healthcare:saml:actThrough:ParentalCustody:cprNumberIdentifier:");
+
+        public final String prefix;
+        
+        OnBehalfOfClaimType(String prefix) {
+            this.prefix = prefix;
+        }
+    }
+
     private static final String REQUEST_SECURITY_TOKEN_RESPONSE_XPATH = "/" + NsPrefixes.soap.name() + ":Envelope/"
             + NsPrefixes.soap.name() + ":Body/" + NsPrefixes.wst13.name()
             + ":RequestSecurityTokenResponseCollection/"
@@ -69,8 +84,11 @@ public class BootstrapToken {
 
     /**
      * Invoke SOSI STS to exchange this bootstrap token to an IDWS identity token.
-     * @param audience The audience for the identity token, e.g., "https://minlog"
-     * @param cpr The CPR of the user
+     * 
+     * @param audience
+     *            The audience for the identity token, e.g., "https://minlog"
+     * @param cpr
+     *            The CPR of the user
      * @return The identity token
      * @throws IOException
      * @throws InterruptedException
@@ -92,12 +110,12 @@ public class BootstrapToken {
     }
 
     /**
-     * 
-     * Invoke SOSI STS to exchange this bootstrap token to an IDWS identity token that includes verified procuration access. 
-     * @param audience The audience for the identity token, e.g., "https://minlog"
-     * @param cpr The CPR of the user
-     * @param procurationCpr The CPR of the person being the procuration subject
-     * @return The identity token
+     * Invoke SOSI STS to exchange this bootstrap token into an IDWS identity token that includes verified procuration access.
+     * @deprecated Use {@link BootstrapToken#exchangeToIdentityToken(String, String, String, OnBehalfOfClaimType))}
+     * @param audience
+     * @param cpr
+     * @param procurationCpr
+     * @return
      * @throws IOException
      * @throws InterruptedException
      * @throws NoSuchAlgorithmException
@@ -114,6 +132,37 @@ public class BootstrapToken {
             NoSuchAlgorithmException, InvalidAlgorithmParameterException,
             MarshalException, XMLSignatureException, XPathExpressionException, STSInvocationException,
             ParserConfigurationException, SAXException {
+        return exchangeToIdentityToken(audience, cpr, procurationCpr, OnBehalfOfClaimType.PROCURATION);
+    }
+
+    /**
+     * 
+     * Invoke SOSI STS to exchange this bootstrap token into an IDWS identity token that includes verified procuration access.
+     * 
+     * @param audience
+     *            The audience for the identity token, e.g., "https://minlog"
+     * @param cpr
+     *            The CPR of the user
+     * @param onBehalfOfCpr
+     *            The CPR of the person being the procuration subject
+     * @param claimType
+     * @return The identity token
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidAlgorithmParameterException
+     * @throws MarshalException
+     * @throws XMLSignatureException
+     * @throws XPathExpressionException
+     * @throws STSInvocationException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    public IdentityToken exchangeToIdentityToken(String audience, String cpr, String onBehalfOfCpr, OnBehalfOfClaimType claimType)
+            throws IOException, InterruptedException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            MarshalException, XMLSignatureException, XPathExpressionException, STSInvocationException,
+            ParserConfigurationException, SAXException {
 
         ArrayList<Claim> claims = new ArrayList<>();
 
@@ -121,10 +170,8 @@ public class BootstrapToken {
             claims.add(new Claim("dk:gov:saml:attribute:CprNumberIdentifier", cpr));
         }
 
-        if (procurationCpr != null) {
-            claims.add(new Claim("dk:healthcare:saml:attribute:OnBehalfOf",
-                    "urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:"
-                            + procurationCpr));
+        if (onBehalfOfCpr != null && claimType != null) {
+            claims.add(new Claim(ON_BEHALF_OF_CLAIM_URI, claimType.prefix + onBehalfOfCpr));
         }
 
         Element request = createBootstrapExchangeRequest(audience, claims);
@@ -235,11 +282,17 @@ public class BootstrapToken {
 
     /**
      * Exchange thie bootstrap token to a IDCard of type user
-     * @param audience The <code>AppliesTo</code> for the security token request. This has no effect on the returned IDCard
-     * @param role The role of the IDCard
-     * @param occupation The occupation of the IDCard
-     * @param authId The auth id of the IDCard
-     * @param systemName The system name of the IDCard
+     * 
+     * @param audience
+     *            The <code>AppliesTo</code> for the security token request. This has no effect on the returned IDCard
+     * @param role
+     *            The role of the IDCard
+     * @param occupation
+     *            The occupation of the IDCard
+     * @param authId
+     *            The auth id of the IDCard
+     * @param systemName
+     *            The system name of the IDCard
      * @return
      * @throws IOException
      * @throws InterruptedException
