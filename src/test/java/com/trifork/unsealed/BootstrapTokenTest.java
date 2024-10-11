@@ -121,10 +121,10 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
-    void canExchangeBootstrapTokenToIDWSTokenWithParenthood() throws Exception {
+    void canExchangeBootstrapTokenToIDWSTokenWithParentAuthority() throws Exception {
         BootstrapToken bst = issuer.cpr("2811686517").issueForCitizen();  // Karl Bonde
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "2811686517", "0904128090", BootstrapToken.OnBehalfOfClaimType.PARENTHOOD);
+        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "2811686517", "0904128090", BootstrapToken.OnBehalfOfClaimType.PARENT_AUTHORITY);
 
         // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
         Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,

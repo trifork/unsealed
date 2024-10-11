@@ -51,7 +51,7 @@ public class BootstrapToken {
         PROCURATION("urn:dk:healthcare:saml:actThroughProcurationBy:cprNumberIdentifier:"), 
         WARD("urn:dk:healthcare:saml:actThrough:WardCustody:cprNumberIdentifier:"), 
         PARTLY_WARD("urn:dk:healthcare:saml:actThrough:PartlyWardCustody:cprNumberIdentifier:"), 
-        PARENTHOOD("urn:dk:healthcare:saml:actThrough:ParentalCustody:cprNumberIdentifier:");
+        PARENT_AUTHORITY("urn:dk:healthcare:saml:actThrough:ParentalCustody:cprNumberIdentifier:");
 
         public final String prefix;
         
