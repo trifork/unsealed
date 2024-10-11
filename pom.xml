@@ -5,7 +5,7 @@
 
     <groupId>com.trifork.unsealed</groupId>
     <artifactId>unsealed</artifactId>
-    <version>1.0.17</version>
+    <version>1.0.18-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>unsealed</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
         <url>scm:git:git@github.com:trifork/unsealed.git</url>
         <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
-      <tag>unsealed-1.0.17</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <build>
