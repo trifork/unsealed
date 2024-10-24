@@ -12,6 +12,7 @@ public class IdCardBuilderParams extends AbstractBuilderParams {
     String systemName;
     Element assertion;
     String xml;
+    boolean useLegacyDGWS_1_0;
     CertAndKey certAndKey;
 
     IdCardBuilderParams copy() {

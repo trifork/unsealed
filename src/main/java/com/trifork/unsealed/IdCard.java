@@ -12,6 +12,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ import org.w3c.dom.Element;
 
 public abstract class IdCard {
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
+    public static final String LEGACY_SIGN_IDCARD_ENDPOINT = "/sts/services/SecurityTokenService";
     public static final String DEFAULT_IDCARD_TO_TOKEN_ENDPOINT = "/sts/services/Sosi2OIOSaml";
 
     protected static final String SOSI_IDCARD_TYPE = "sosi:IDCardType";
@@ -55,6 +58,7 @@ public abstract class IdCard {
     protected String careProviderId;
     protected String careProviderIdNameFormat;
     protected String careProviderName;
+    protected boolean useLegacyDGWS_1_0;
 
     protected Element signedIdCard;
 
@@ -65,8 +69,9 @@ public abstract class IdCard {
     private String dgwsVersion;
     private String idCardId;
 
-    protected IdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
+    protected IdCard(NSPEnv env, boolean useLegacyDGWS_1_0, X509Certificate certificate, Key privateKey, String systemName) {
         this.env = env;
+        this.useLegacyDGWS_1_0 = useLegacyDGWS_1_0;
         this.certificate = certificate;
         this.privateKey = privateKey;
         this.systemName = systemName;
@@ -185,11 +190,26 @@ public abstract class IdCard {
     protected abstract void extractKeystoreOwnerInfo(X509Certificate cert);
 
     /**
-     * Sign this IDCard, i.e., send at request to SOSI STS requesting a signed IDCard.
+     * Sign this IDCard, i.e., send at request to SOSI STS requesting a signed DGWS 1.0.1 IDCard.
      * 
      * @throws Exception
      */
     public void sign() throws Exception {
+        sign(false);
+    }
+
+    /**
+     * <p>Sign this IDCard, i.e., send at request to SOSI STS requesting a signed IDCard using the deprecated
+     * SecurityTokenService rather than the recommended NewSecurityTokenService</p>
+     * <p>Included for test usage - NOT RECOMMENDED FOR PRODUCTION!</p>
+     * 
+     * @throws Exception
+     */
+    public void signUsingLegacySTSService() throws Exception {
+        sign(true);
+    }
+
+    protected void sign(boolean useLegacySTSService) throws Exception {
 
         Instant now = Instant.now();
 
@@ -209,8 +229,10 @@ public abstract class IdCard {
 
         SignatureUtil.sign(idcard, null, new String[] { "#IDCard" }, "OCESSignature", certificate, privateKey, true);
 
+        String endpoint = useLegacySTSService ? LEGACY_SIGN_IDCARD_ENDPOINT : DEFAULT_SIGN_IDCARD_ENDPOINT;
+
         Element response = WSHelper.post(docBuilder, requestBody,
-                env.getStsBaseUrl() + DEFAULT_SIGN_IDCARD_ENDPOINT, "Issue");
+                env.getStsBaseUrl() + endpoint, "Issue");
 
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
@@ -218,7 +240,6 @@ public abstract class IdCard {
         signedIdCard.setIdAttribute("id", true);
 
         extractSamlAttributes(signedIdCard);
-
     }
 
     /**
@@ -372,7 +393,7 @@ public abstract class IdCard {
 
         SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardID", UUID.randomUUID().toString());
 
-        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardVersion", "1.0.1");
+        SamlUtil.addSamlAttribute(idCardData, "sosi:IDCardVersion", useLegacyDGWS_1_0 ? "1.0" : "1.0.1");
 
         SamlUtil.addSamlAttribute(idCardData, "sosi:OCESCertHash", SignatureUtil.getDigestOfCertificate(certificate));
 
@@ -445,20 +466,20 @@ public abstract class IdCard {
 
     /**
      * Get the NotBefore condition (valid from time) of this IDCard
-     * @return The NotBefore condition as a {@link java.time.LocalDateTime}
+     * @return The NotBefore condition as a {@link java.time.ZonedDateTime}
      */
-    public LocalDateTime getNotBefore() {
+    public ZonedDateTime getNotBefore() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
-        return LocalDateTime.parse(cond.getAttribute("NotBefore"), ISO_WITHOUT_MILLIS_FORMATTER);
+        return parseDate(cond.getAttribute("NotBefore"));
     }
 
     /**
      * Get the NotOnOrAfter condition (expiration time) of this IDCard
-     * @return The NotOnOrAftter condition as a {@link java.time.LocalDateTime}
+     * @return The NotOnOrAftter condition as a {@link java.time.ZonedDateTime}
      */
-    public LocalDateTime getNotOnOrAfter() {
+    public ZonedDateTime getNotOnOrAfter() {
         Element cond = getChild(signedIdCard, NsPrefixes.saml, "Conditions");
-        return LocalDateTime.parse(cond.getAttribute("NotOnOrAfter"), ISO_WITHOUT_MILLIS_FORMATTER);
+        return parseDate(cond.getAttribute("NotOnOrAfter"));
     }
 
     /**
@@ -478,6 +499,16 @@ public abstract class IdCard {
         return signedIdCard != null ? signedIdCard : assertion;
     }
 
+    private ZonedDateTime parseDate(String dateTime) {
+        if ("1.0.1".equals(dgwsVersion)) {
+            return ZonedDateTime.parse(dateTime, ISO_WITHOUT_MILLIS_FORMATTER);
+        } else if ("1.0".equals(dgwsVersion)) {
+            return LocalDateTime.parse(dateTime).atZone(ZoneId.systemDefault());
+        } else {
+            throw new IllegalStateException("Unexpected DGWS version \"" + dgwsVersion + "\"");
+        }
+    }
+
     private void validateSignature() throws ValidationException {
         try {
             // STS signs SOSI IdCards rsa-sha1 which is considered unsafe by Java 17..
@@ -487,17 +518,17 @@ public abstract class IdCard {
         }
     }
 
-    private void validateTimes(LocalDateTime now) throws ValidationException {
+    private void validateTimes(ZonedDateTime now) throws ValidationException {
         if (now == null) {
-            now = LocalDateTime.now();
+            now = ZonedDateTime.now();
         }
 
-        LocalDateTime notBefore = getNotBefore();
+        ZonedDateTime notBefore = getNotBefore();
         if (now.isBefore(notBefore)) {
             throw new ValidationException("NotBefore condition not met, NotBefore=" + notBefore + ", now=" + now);
         }
 
-        LocalDateTime notOnOrAfter = getNotOnOrAfter();
+        ZonedDateTime notOnOrAfter = getNotOnOrAfter();
         if (now.isEqual(notOnOrAfter) || now.isAfter(notOnOrAfter)) {
             throw new ValidationException("NotOnOrAfter condition not met, NotOnOrAfter=" + notOnOrAfter + ", now=" + now);
         }

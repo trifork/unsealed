@@ -22,8 +22,8 @@ public class SystemIdCard extends IdCard {
     private static final String ORG_ID = "OID.2.5.4.97";
     private static final Pattern OI_PATTERN = Pattern.compile("NTRDK-(?<Cvr>[0-9]{1,8})");
 
-    protected SystemIdCard(NSPEnv env, X509Certificate certificate, Key privateKey, String systemName) {
-        super(env, certificate, privateKey, systemName);
+    protected SystemIdCard(NSPEnv env, boolean useLegacyDGWS_1_0, X509Certificate certificate, Key privateKey, String systemName) {
+        super(env, useLegacyDGWS_1_0, certificate, privateKey, systemName);
     }
 
     protected SystemIdCard(NSPEnv env, Element signedIdCard) {

@@ -10,12 +10,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -202,8 +200,8 @@ public class BootstrapTokenTest extends AbstractTest {
 
         UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", null, null, "J0184", "FMK-online");
 
-        assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
-        assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
+        assertTrue(userIdCard.getNotBefore().isBefore(ZonedDateTime.now()));
+        assertTrue(userIdCard.getNotOnOrAfter().isAfter(ZonedDateTime.now()));
         assertEquals("Lars", userIdCard.getAttribute("medcom:UserGivenName"));
     }
 
@@ -224,8 +222,8 @@ public class BootstrapTokenTest extends AbstractTest {
 
         UserIdCard userIdCard = bst2.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
 
-        assertTrue(userIdCard.getNotBefore().isBefore(LocalDateTime.now()));
-        assertTrue(userIdCard.getNotOnOrAfter().isAfter(LocalDateTime.now()));
+        assertTrue(userIdCard.getNotBefore().isBefore(ZonedDateTime.now()));
+        assertTrue(userIdCard.getNotOnOrAfter().isAfter(ZonedDateTime.now()));
     }
 
     private String readFromClasspath(String path) throws IOException {

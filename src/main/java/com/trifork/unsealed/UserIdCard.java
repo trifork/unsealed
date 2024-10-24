@@ -37,9 +37,9 @@ public class UserIdCard extends IdCard {
     private String firstName;
     private String lastName;
 
-    protected UserIdCard(NSPEnv env, String cpr, X509Certificate certificate, Key privateKey, String email, String role,
+    protected UserIdCard(NSPEnv env, boolean useLegacyDGWS_1_0, String cpr, X509Certificate certificate, Key privateKey, String email, String role,
             String occupation, String authorizationCode, String systemName) {
-        super(env, certificate, privateKey, systemName);
+        super(env, useLegacyDGWS_1_0, certificate, privateKey, systemName);
 
         this.cpr = cpr;
         this.role = role;

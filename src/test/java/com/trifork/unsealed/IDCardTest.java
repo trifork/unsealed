@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -101,11 +101,11 @@ public class IDCardTest extends AbstractTest {
 
         assertTrue(serialized.contains("Assertion"));
 
-        LocalDateTime notBefore = idCard.getNotBefore();
-        assertTrue(notBefore.isBefore(LocalDateTime.now()));
+        ZonedDateTime notBefore = idCard.getNotBefore();
+        assertTrue(notBefore.isBefore(ZonedDateTime.now()));
 
-        LocalDateTime notOnOrAfter = idCard.getNotOnOrAfter();
-        assertTrue(notOnOrAfter.isAfter(LocalDateTime.now()));
+        ZonedDateTime notOnOrAfter = idCard.getNotOnOrAfter();
+        assertTrue(notOnOrAfter.isAfter(ZonedDateTime.now()));
 
         idCard.validate();
     }
@@ -134,11 +134,48 @@ public class IDCardTest extends AbstractTest {
 
         assertTrue(serialized.contains("Assertion"));
 
-        LocalDateTime notBefore = idCard.getNotBefore();
-        assertTrue(notBefore.isBefore(LocalDateTime.now()));
+        ZonedDateTime notBefore = idCard.getNotBefore();
+        assertTrue(notBefore.isBefore(ZonedDateTime.now()));
 
-        LocalDateTime notOnOrAfter = idCard.getNotOnOrAfter();
-        assertTrue(notOnOrAfter.isAfter(LocalDateTime.now()));
+        ZonedDateTime notOnOrAfter = idCard.getNotOnOrAfter();
+        assertTrue(notOnOrAfter.isAfter(ZonedDateTime.now()));
+
+        idCard.validate();
+    }
+
+    @Test
+    void canSignIdCardUsingLegacySTSService() throws Exception {
+
+        IdCard idCard = new IdCardBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
+
+        idCard.signUsingLegacySTSService();
+
+        idCard.validate();
+    }
+
+    @Test
+    void canSignDGWS_1_0_IdCard() throws Exception {
+
+        IdCard idCard = new IdCardBuilder()
+                .uselegacyDGWS_1_0(true)
+                .env(NSPTestEnv.TEST1_CNSP)
+                .certAndKey(moces3CertAndKey)
+                .cpr("0501792275")
+                .role("role")
+                .occupation("occupation")
+                .authorizationCode("J0184")
+                .systemName("systemname")
+                .buildUserIdCard();
+
+        idCard.sign();
 
         idCard.validate();
     }

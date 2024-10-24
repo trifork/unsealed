@@ -165,6 +165,19 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
     }
 
     /**
+     * If parameter is true, issue a legacy DGWS 1.0 IdCard (default is DGWS 1.0.1). Ignored if used in combination
+     * with {@link IdCardBuilder#fromXml} or {@link IdCardBuilder#assertion}
+     * 
+     * @param useLegacyDGWS_1_0 If true use DGWS 1.0, otherwise DGWS 1.0.1
+     * @return A new immutable builder instance that encapsulates the supplied parameter
+     */
+    public IdCardBuilder uselegacyDGWS_1_0(boolean useLegacyDGWS_1_0) {
+        IdCardBuilderParams params = this.params.copy();
+        params.useLegacyDGWS_1_0 = useLegacyDGWS_1_0;
+        return new IdCardBuilder(params);
+    }
+
+    /**
      * Build IDCard from supplied parameters. If the builder is initialized from an assertion element or XML String, the type of IDCard will be autodetected (user
      * or system).
      * 
@@ -249,7 +262,7 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
             fixIdAttribute(assertion);
             idCard = new UserIdCard(params.env, assertion);
         } else {
-            idCard = new UserIdCard(params.env, params.cpr, params.certAndKey.certificate,
+            idCard = new UserIdCard(params.env, params.useLegacyDGWS_1_0, params.cpr, params.certAndKey.certificate,
                     params.certAndKey.privateKey, params.email, params.role, params.occupation,
                     params.authorizationCode,
                     params.systemName);
@@ -287,7 +300,7 @@ public class IdCardBuilder extends AbstractBuilder<IdCardBuilderParams> {
             idCard = new SystemIdCard(params.env, assertion);
 
         } else {
-            idCard = new SystemIdCard(params.env, params.certAndKey.certificate, params.certAndKey.privateKey, params.systemName);
+            idCard = new SystemIdCard(params.env, params.useLegacyDGWS_1_0, params.certAndKey.certificate, params.certAndKey.privateKey, params.systemName);
         }
 
         return idCard;
