@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
+import java.util.TimeZone;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -164,20 +165,30 @@ public class IDCardTest extends AbstractTest {
     @Test
     void canSignDGWS_1_0_IdCard() throws Exception {
 
-        IdCard idCard = new IdCardBuilder()
-                .uselegacyDGWS_1_0(true)
-                .env(NSPTestEnv.TEST1_CNSP)
-                .certAndKey(moces3CertAndKey)
-                .cpr("0501792275")
-                .role("role")
-                .occupation("occupation")
-                .authorizationCode("J0184")
-                .systemName("systemname")
-                .buildUserIdCard();
-
-        idCard.sign();
-
-        idCard.validate();
+        TimeZone defaultTimeZone = TimeZone.getDefault();
+        try {
+            // Legacy IDWS 1.0 IdCard use date/time with no timezone, and SOSI STS is placed in Denmark. But when building with
+            // GitHup Actions, we are in another timezone. Set timezone to Europe/Copenhagen to align with STS just for this test. 
+            TimeZone.setDefault(TimeZone.getTimeZone("Europe/Copenhagen"));
+            
+            IdCard idCard = new IdCardBuilder()
+            .uselegacyDGWS_1_0(true)
+            .env(NSPTestEnv.TEST1_CNSP)
+            .certAndKey(moces3CertAndKey)
+            .cpr("0501792275")
+            .role("role")
+            .occupation("occupation")
+            .authorizationCode("J0184")
+            .systemName("systemname")
+            .buildUserIdCard();
+            
+            idCard.sign();
+            
+            idCard.validate();
+        } finally {
+            // Switch back to jvm default timezone..
+            TimeZone.setDefault(defaultTimeZone);
+        }
     }
 
     @Disabled
