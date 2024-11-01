@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -9,14 +11,46 @@
     <packaging>jar</packaging>
 
     <name>unsealed</name>
-    <description>This is a description</description>
+    <description>Unsealed is an alternative to the danish seal.java library, but for modern VMs and with no 3rd party dependencies</description>
+    <url>https://github.com/trifork/unsealed</url>
+
+    <developers>
+        <developer>
+            <name>Jeppe Sommer</name>
+            <email>jso@trifork.com</email>
+            <organization>Trifork</organization>
+            <organizationUrl>https://trifork.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/trifork/unsealed/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
+        <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
+        <url>scm:git:git@github.com:trifork/unsealed.git</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
+
+        <sonar.organization>trifork</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.projectKey>trifork_unsealed</sonar.projectKey>
     </properties>
 
-    <repositories>
+    <!-- <repositories>
         <repository>
             <id>mvnrepository.com</id>
             <name>mvnrepository.com</name>
@@ -37,10 +71,78 @@
             <url>https://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
             <layout>default</layout>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement> -->
+
 
     <profiles>
         <profile>
+            <!-- required, used in .github/workflows/sonatype-publish.yml -->
+            <id>sonatypeDeploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.6.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                            <autoPublish>false</autoPublish>
+                            <!-- <waitUntil>published</waitUntil> -->
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>testSigning</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- <profile>
             <id>triforkGithubMavenRepo</id>
             <activation>
                 <property>
@@ -55,21 +157,15 @@
                     <url>https://maven.pkg.github.com/trifork/unsealed</url>
                 </repository>
             </distributionManagement>
-        </profile>
+        </profile> -->
     </profiles>
-
-    <scm>
-        <connection>scm:git:git@github.com:trifork/unsealed.git</connection>
-        <url>scm:git:git@github.com:trifork/unsealed.git</url>
-        <developerConnection>scm:git:git@github.com:trifork/unsealed.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
 
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <!--  https://stackoverflow.com/questions/15166781/mvn-releaseprepare-not-committing-changes-to-pom-xml -->
+                    <!--
+                    https://stackoverflow.com/questions/15166781/mvn-releaseprepare-not-committing-changes-to-pom-xml -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5.3</version>
@@ -88,12 +184,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -101,7 +197,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.10.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -111,14 +207,14 @@
                     </execution>
                 </executions>
             </plugin>
-                <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-            </plugin>
+            </plugin> -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>11</release>
                 </configuration>
@@ -126,7 +222,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.5.1</version>
             </plugin>
         </plugins>
     </build>
@@ -135,7 +231,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.6.1</version>
+            <version>5.11.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,9 +1,7 @@
 name: Build and publish release to GitHub Packages
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   release:

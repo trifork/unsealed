@@ -1,0 +1,63 @@
+name: Maven Library Publish
+
+on:
+    workflow_dispatch:
+      inputs:
+        branch:
+          description: "Branch to release from"
+          required: false
+          default: "master"
+        
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'master' }}
+
+      - name: Set up JDK 11 for deploy to Sonatype
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 11
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Remove snapshot from maven version
+        run: |
+          mvn -B versions:set -DremoveSnapshot -DgenerateBackupPoms=false
+          MAVEN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Committing and tagging version $MAVEN_VERSION"
+          git commit -m "Setting release version to $MAVEN_VERSION" pom.xml
+          git tag -a "v$MAVEN_VERSION" -m "Release version $MAVEN_VERSION"
+          git push origin
+          git push origin "v$MAVEN_VERSION"
+
+    #   - name: Prepare Maven environnement with Java 11 for deployment to Sonatype
+    #     run: export MAVEN_OPTS="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+
+      - name: Publish to Apache Maven Central
+        run: mvn deploy -PsonatypeDeploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.NEXUS_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Set next snapshot version
+        run: | 
+          mvn -B versions:set -DnextSnapshot -DgenerateBackupPoms=false
+          git push origin
+          
+  
+  
