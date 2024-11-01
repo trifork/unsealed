@@ -57,6 +57,7 @@ jobs:
       - name: Set next snapshot version
         run: | 
           mvn -B versions:set -DnextSnapshot -DgenerateBackupPoms=false
+          MAVEN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           git commit -m "Setting next snapshot version to $MAVEN_VERSION" pom.xml
           git push origin
           
