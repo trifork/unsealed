@@ -50,30 +50,6 @@
         <sonar.projectKey>trifork_unsealed</sonar.projectKey>
     </properties>
 
-    <!-- <repositories>
-        <repository>
-            <id>mvnrepository.com</id>
-            <name>mvnrepository.com</name>
-            <url>https://mvnrepository.com/artifact</url>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>trifork.releases</id>
-            <name>Trifork Releases</name>
-            <url>https://ci.fmk.netic.dk/nexus/content/repositories/releases/</url>
-            <layout>default</layout>
-        </repository>
-        <snapshotRepository>
-            <id>trifork.snapshots</id>
-            <name>Trifork Snapshots</name>
-            <url>https://ci.fmk.netic.dk/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-        </snapshotRepository>
-    </distributionManagement> -->
-
-
     <profiles>
         <profile>
             <!-- required, used in .github/workflows/sonatype-publish.yml -->
