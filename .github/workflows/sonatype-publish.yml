@@ -44,9 +44,6 @@ jobs:
           git push origin
           git push origin "v$MAVEN_VERSION"
 
-    #   - name: Prepare Maven environnement with Java 11 for deployment to Sonatype
-    #     run: export MAVEN_OPTS="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
-
       - name: Publish to Apache Maven Central
         run: mvn deploy -PsonatypeDeploy
         env:
