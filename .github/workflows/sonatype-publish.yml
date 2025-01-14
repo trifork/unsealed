@@ -1,16 +1,31 @@
 name: Release & Publish to Maven Central 
 
 on:
-    workflow_dispatch:
-      inputs:
-        branch:
-          description: "Branch to release from"
-          required: false
-          default: "master"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to release from"
+        required: false
+        default: "master"
+      confirm:
+        description: "NOTE: You are publishing an immortal artifact on Maven Central that can never be removed! (type 'yes' to continue)"
+        required: true
+        default: "no"
         
 jobs:
-  publish:
+  confirm-job:
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Confirm input
+        if: ${{ inputs.confirm != 'yes' }}
+        run: |
+          echo "Confirmation not given. Exiting."
+          exit 1
+      - name: Proceed with the workflow
+        run: echo "Proceeding with workflow as confirmation was given."
+
+  publish:
     runs-on: ubuntu-latest
 
     steps:
