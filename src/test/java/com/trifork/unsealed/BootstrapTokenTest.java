@@ -19,8 +19,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class BootstrapTokenTest extends AbstractTest {
+    private static final String KEYSTORE_PASSWORD = "Test1234";
 
-    private BootstrapTokenIssuer issuer;
+    private BootstrapTokenIssuer hokIssuer; // Bootstrap token issuer that issues hok-assertions locked to service provider certificate
+    private BootstrapTokenBuilder bstBuilder;
     private CertAndKey spCertAndKey;
     private CertAndKey idpCertAndKey;
     private CertAndKey idpCertAndKeyForLegacyBootstrapTokens;
@@ -28,17 +30,21 @@ public class BootstrapTokenTest extends AbstractTest {
     @BeforeEach
     void setup0() throws Exception {
         spCertAndKey = new KeyStoreLoader().fromClassPath("NSP_Test_Service_Consumer_sds.p12")
-                .password("Test1234").load();
+                .password(KEYSTORE_PASSWORD).load();
         idpCertAndKey = new KeyStoreLoader().fromClassPath("NSP_Test_Identity_Provider_sds.p12")
-                .password("Test1234").load();
+                .password(KEYSTORE_PASSWORD).load();
 
         idpCertAndKeyForLegacyBootstrapTokens = new KeyStoreLoader()
                 .fromClassPath("TEST whitelisted SP SOSI alias.p12")
-                .password("Test1234").load();
+                .password(KEYSTORE_PASSWORD).load();
 
-        issuer = new BootstrapTokenIssuer()
+        hokIssuer = new BootstrapTokenIssuer()
                 .env(NSPTestEnv.TEST1_CNSP)
                 .idpCertAndKey(idpCertAndKey)
+                .spCert(spCertAndKey.certificate);
+
+        bstBuilder = new BootstrapTokenBuilder()
+                .env(NSPTestEnv.TEST1_CNSP)
                 .spCertAndKey(spCertAndKey);
 
         AbstractTest.setup();
@@ -46,14 +52,14 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canIssueBootstrapTokenForCitizen() throws Exception {
-        BootstrapToken bootstrapToken = issuer.cpr("1102014746").issueForCitizen();
+        BootstrapToken bootstrapToken = hokIssuer.cpr("1102014746").issueForCitizen();
 
         assertNotNull(bootstrapToken);
     }
 
     @Test
     void canIssueBootstrapTokenForPro() throws Exception {
-        BootstrapToken bootstrapToken = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
+        BootstrapToken bootstrapToken = hokIssuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
                 .orgName("Sundhedsdatastyrelsen").issueForProfessional();
 
         assertNotNull(bootstrapToken);
@@ -69,7 +75,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
                 .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                        .password("Test1234").load())
+                        .password(KEYSTORE_PASSWORD).load())
                 .fromXml(xml).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
@@ -83,9 +89,11 @@ public class BootstrapTokenTest extends AbstractTest {
     @Test
     void canExchangeBootstrapTokenToIDWSToken() throws Exception {
 
-        BootstrapToken bst = issuer.cpr("0501792275").issueForCitizen();
+        BootstrapToken bst = hokIssuer.cpr("0501792275").issueForCitizen();
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        IdentityToken idwsToken = bst2.exchangeToIdentityToken("https://fmk", "0501792275");
 
         assertNotNull(idwsToken.assertion);
         assertEquals("https://fmk", idwsToken.audience);
@@ -95,9 +103,12 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canExchangeBootstrapTokenToIDWSTokenWithProcuration() throws Exception {
-        BootstrapToken bst = issuer.cpr("0501792275").issueForCitizen();
+        BootstrapToken bst = hokIssuer.cpr("0501792275").issueForCitizen();
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118", BootstrapToken.OnBehalfOfClaimType.PROCURATION);
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        IdentityToken idwsToken = bst2.exchangeToIdentityToken("https://fmk", "0501792275", "1111111118",
+                BootstrapToken.OnBehalfOfClaimType.PROCURATION);
 
         // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
         Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
@@ -120,9 +131,12 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canExchangeBootstrapTokenToIDWSTokenWithParentAuthority() throws Exception {
-        BootstrapToken bst = issuer.cpr("2811686517").issueForCitizen();  // Karl Bonde
+        BootstrapToken bst = hokIssuer.cpr("2811686517").issueForCitizen(); // Karl Bonde
 
-        IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "2811686517", "0904128090", BootstrapToken.OnBehalfOfClaimType.PARENT_AUTHORITY);
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        IdentityToken idwsToken = bst2.exchangeToIdentityToken("https://fmk", "2811686517", "0904128090",
+                BootstrapToken.OnBehalfOfClaimType.PARENT_AUTHORITY);
 
         // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
         Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
@@ -149,7 +163,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
                 .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                        .password("Test1234").load())
+                        .password(KEYSTORE_PASSWORD).load())
                 .fromXml(xml).build();
 
         assertThrows(STSInvocationException.class, () -> {
@@ -165,7 +179,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
                 .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                        .password("Test1234").load())
+                        .password(KEYSTORE_PASSWORD).load())
                 .fromJwt(jwt).build();
 
         IdentityToken idwsToken = bst.exchangeToIdentityToken("https://fmk", "0501792275");
@@ -183,7 +197,7 @@ public class BootstrapTokenTest extends AbstractTest {
 
         BootstrapToken bst = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_DNSP)
                 .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
-                        .password("Test1234").load())
+                        .password(KEYSTORE_PASSWORD).load())
                 .fromJwt(jwt).build();
 
         STSInvocationException e = assertThrows(STSInvocationException.class, () -> {
@@ -195,10 +209,12 @@ public class BootstrapTokenTest extends AbstractTest {
 
     @Test
     void canExchangeBootstrapTokenToIdCard() throws Exception {
-        BootstrapToken bst = issuer.uuid("92336cc1-b3a4-4742-be54-c723bfa99aba").cvr("20921897")
+        BootstrapToken bst = hokIssuer.uuid("92336cc1-b3a4-4742-be54-c723bfa99aba").cvr("20921897")
                 .orgName("Trifork").issueForProfessional();
 
-        UserIdCard userIdCard = bst.exchangeToUserIdCard("https://fmk", null, null, "J0184", "FMK-online");
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        UserIdCard userIdCard = bst2.exchangeToUserIdCard("https://fmk", null, null, "J0184", "FMK-online");
 
         assertTrue(userIdCard.getNotBefore().isBefore(ZonedDateTime.now()));
         assertTrue(userIdCard.getNotOnOrAfter().isAfter(ZonedDateTime.now()));
@@ -206,8 +222,39 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
+    void canExchangeBootstrapTokenToIdCardToOiosamlToken() throws Exception {
+        BootstrapToken bst = hokIssuer.uuid("92336cc1-b3a4-4742-be54-c723bfa99aba").cvr("20921897")
+                .orgName("Trifork").issueForProfessional();
+
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        UserIdCard userIdCard = bst2.exchangeToUserIdCard("https://fmk", null, null, "J0184", "FMK-online");
+
+        OIOSAMLToken samlToken = userIdCard.exchangeToOIOSAMLToken("https://saml.test1.fmk.netic.dk/fmk/");
+        assertNotNull(samlToken);
+
+        if (samlToken.isEncrypted()) {
+            Element encryptedAssertion = samlToken.getAssertion();
+            assertEquals("EncryptedAssertion", encryptedAssertion.getLocalName());
+            assertEquals(NsPrefixes.saml.namespaceUri, encryptedAssertion.getNamespaceURI());
+
+            OIOSAMLToken samlToken1 = new OIOSAMLTokenBuilder().env(NSPTestEnv.TEST1_CNSP)
+                    .spCertAndKey(new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12")
+                            .password(KEYSTORE_PASSWORD.toCharArray()).load())
+                    .assertion(samlToken.getAssertion()).build();
+
+            samlToken1.decrypt();
+
+            assertEquals("Lars Larsen", samlToken1.getCommonName());
+
+        } else {
+            assertEquals("Lars Larsen", samlToken.getCommonName());
+        }
+    }
+
+    @Test
     void canExchangeBootstrapTokenViaXmlToIdCard() throws Exception {
-        BootstrapToken bst = issuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
+        BootstrapToken bst = hokIssuer.uuid("53767053-0628-4176-b66f-0da3a0b6e868").cvr("33257872")
                 .orgName("Sundhedsdatastyrelsen").issueForProfessional();
 
         var xml = bst.getXml();
@@ -217,8 +264,7 @@ public class BootstrapTokenTest extends AbstractTest {
         assertTrue(notOnOrAfter.isAfter(ZonedDateTime.now()));
 
         // Initialize a new BootstrapToken from xml string:
-        BootstrapToken bst2 = new BootstrapTokenBuilder().env(NSPTestEnv.TEST1_CNSP).spCertAndKey(spCertAndKey)
-                .fromXml(xml).build();
+        BootstrapToken bst2 = bstBuilder.fromXml(xml).build();
 
         UserIdCard userIdCard = bst2.exchangeToUserIdCard("https://fmk", null, null, "MJP84", "FMK-online");
 

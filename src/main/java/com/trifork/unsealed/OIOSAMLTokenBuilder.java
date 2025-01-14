@@ -1,11 +1,19 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.SamlUtil.getSamlAttribute;
+import static com.trifork.unsealed.XmlUtil.getChild;
+
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
@@ -24,7 +32,8 @@ public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderPara
     /**
      * Specify the NSP environment which will be the context for OIOSAML tokens built by this builder
      * 
-     * @param env Either {@link NSPEnv#fromUrl(String)} or one of the enum values of {@link NSPTestEnv}
+     * @param env
+     *            Either {@link NSPEnv#fromUrl(String)} or one of the enum values of {@link NSPTestEnv}
      * @return A new immutable builder instance that encapsulates the supplied parameter
      */
     public OIOSAMLTokenBuilder env(NSPEnv env) {
@@ -85,6 +94,7 @@ public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderPara
 
     /**
      * Build an OIOSAMLToken from the supplied parameters.
+     * 
      * @return the built OIOSAMLToken
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
@@ -93,9 +103,15 @@ public class OIOSAMLTokenBuilder extends AbstractBuilder<OIOSAMLTokenBuilderPara
      * @throws UnrecoverableKeyException
      * @throws ParserConfigurationException
      * @throws SAXException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     * @throws InvalidAlgorithmParameterException
+     * @throws NoSuchPaddingException
+     * @throws InvalidKeyException
      */
     public OIOSAMLToken build() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
-            UnrecoverableKeyException, ParserConfigurationException, SAXException {
+            UnrecoverableKeyException, ParserConfigurationException, SAXException, InvalidKeyException, NoSuchPaddingException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 
         if (params.assertion != null) {
             return new OIOSAMLToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey,

@@ -1,7 +1,8 @@
 package com.trifork.unsealed;
 
+import java.security.cert.X509Certificate;
+
 public class OIOSAMLTokenIssuerParams extends AbstractBuilderParams {
-    String subjectName;
     String recipient;
     String audience;
     String issuer;
@@ -10,11 +11,14 @@ public class OIOSAMLTokenIssuerParams extends AbstractBuilderParams {
     String cvrNumber;
     String ridNumber;
     String cprNumber;
+    String cprUuid;
+    String profUuid;
     String surName;
     String commonName;
     String email;
     String organisationName;
-    public CertAndKey idpCertAndKey;
+    CertAndKey idpCertAndKey;
+    X509Certificate spCert;
 
     OIOSAMLTokenIssuerParams copy() {
         try {

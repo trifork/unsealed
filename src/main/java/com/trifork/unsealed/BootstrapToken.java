@@ -348,7 +348,7 @@ public class BootstrapToken {
                 NsPrefixes.wst13.name() + ":RequestedSecurityToken/" + NsPrefixes.saml.name()
                         + ":Assertion");
 
-        return new IdCardBuilder().assertion(assertion).buildUserIdCard();
+        return new IdCardBuilder().env(env).assertion(assertion).buildUserIdCard();
     }
 
     public String getXml() {

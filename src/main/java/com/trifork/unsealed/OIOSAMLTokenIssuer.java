@@ -3,15 +3,10 @@ package com.trifork.unsealed;
 import static com.trifork.unsealed.SamlUtil.addSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Base64;
@@ -20,7 +15,6 @@ import java.util.UUID;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,9 +35,9 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         return new OIOSAMLTokenIssuer(params);
     }
 
-    public OIOSAMLTokenIssuer subjectName(String subjectName) {
+    public OIOSAMLTokenIssuer spCert(X509Certificate spCert) {
         OIOSAMLTokenIssuerParams params = this.params.copy();
-        params.subjectName = subjectName;
+        params.spCert = spCert;
         return new OIOSAMLTokenIssuer(params);
     }
 
@@ -95,6 +89,18 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         return new OIOSAMLTokenIssuer(params);
     }
 
+    public OIOSAMLTokenIssuer cprUuid(String cprUuid) {
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.cprUuid = cprUuid;
+        return new OIOSAMLTokenIssuer(params);
+    }
+
+    public OIOSAMLTokenIssuer profUuid(String profUuid) {
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.profUuid = profUuid;
+        return new OIOSAMLTokenIssuer(params);
+    }
+
     public OIOSAMLTokenIssuer surName(String surName) {
         OIOSAMLTokenIssuerParams params = this.params.copy();
         params.surName = surName;
@@ -119,20 +125,133 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         return new OIOSAMLTokenIssuer(params);
     }
 
-    public OIOSAMLToken build()
-            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
-            UnrecoverableKeyException, InvalidAlgorithmParameterException, MarshalException,
-            XMLSignatureException,
-            ParserConfigurationException {
+    public OIOSAMLToken issueForProfessional() throws Exception {
 
-        return createSamlToken(params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
+        Element assertion = createSamlToken(params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
+
+        Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.COMMON_NAME, params.commonName,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+
+        if (params.email != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.EMAIL, params.email,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        if (params.cprUuid != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.CPR_UUID, params.cprUuid,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        if (params.ridNumber != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.RID_NUMBER, params.ridNumber,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+        }
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.CVR_NUMBER, params.cvrNumber,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+
+        if (params.organisationName != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.ORGANIZATION_NAME, params.organisationName,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.CPR_NUMBER, params.cprNumber,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+
+        if (params.profUuid != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.PROF_UUID, params.profUuid,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.SPEC_VERSION, "OIOSAML-H-3.0", // or is it OIO-SAML-3.0 ?
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        CertAndKey spCertAndNoKey = new CertAndKey(params.spCert, null);
+        BootstrapTokenIssuer bootstrapTokenIssuer = new BootstrapTokenIssuer()
+                .idpCertAndKey(params.idpCertAndKey)
+                .spCertAndKey(spCertAndNoKey)
+                .cpr(params.cprNumber)
+                .cvr(params.cvrNumber)
+                .uuid(params.profUuid)
+                .orgName(params.organisationName);
+
+        BootstrapToken bootstrapToken = bootstrapTokenIssuer.cvr(params.cvrNumber).orgName(params.organisationName).issueForProfessional();
+
+        String encodedBootstrapToken = Base64.getEncoder()
+                .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        if (params.surName != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.SURNAME, params.surName,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+        }
+
+        sign(assertion, params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
+
+        return new OIOSAMLToken(null, params.spCert, null, assertion, false);
     }
 
-    private OIOSAMLToken createSamlToken(X509Certificate idpCert, Key idpPrivateKey)
-            throws NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, MarshalException, XMLSignatureException,
-            UnsupportedEncodingException,
-            ParserConfigurationException {
+    public OIOSAMLToken issueForCitizen() throws Exception {
+
+        Element assertion = createSamlToken(params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
+
+        Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.CPR_NUMBER, params.cprNumber,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+
+        if (params.pidNumber != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.PID_NUMBER, params.pidNumber,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.COMMON_NAME, params.commonName,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+
+        if (params.cprUuid != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.CPR_UUID, params.cprUuid,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");
+        }
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.SPEC_VERSION, "OIOSAML-H-3.0", // or is it OIO-SAML-3.0 ?
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        CertAndKey spCertAndNoKey = new CertAndKey(params.spCert, null);
+        BootstrapTokenIssuer bootstrapTokenIssuer = new BootstrapTokenIssuer()
+                .idpCertAndKey(params.idpCertAndKey)
+                .spCertAndKey(spCertAndNoKey)
+                .cpr(params.cprNumber);
+
+        BootstrapToken bootstrapToken = bootstrapTokenIssuer.issueForCitizen();
+
+        String encodedBootstrapToken = Base64.getEncoder()
+                .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
+
+        addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
+                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+        if (params.surName != null) {
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.SURNAME, params.surName,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+        }
+
+        sign(assertion, params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey);
+
+        return new OIOSAMLToken(null, params.spCert, null, assertion, false);
+    }
+
+    private Element createSamlToken(X509Certificate idpCert, Key idpPrivateKey)
+            throws Exception {
 
         Instant now = Instant.now();
 
@@ -154,7 +273,8 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         appendChild(assertion, NsPrefixes.saml, "Issuer", params.issuer);
 
         Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
-        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", params.subjectName);
+        String subjectName = "dk:gov:saml:attribute:CprNumberIdentifier:" + params.cprNumber;
+        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", subjectName);
         nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
@@ -171,51 +291,6 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml,
                 "Audience",
                 params.audience);
-        Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
-
-        addSamlAttribute(attributeStatement, OIOSAMLToken.SPEC_VERSION, "DK-SAML-2.0",
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-
-        if (params.ridNumber != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.UID, "CVR:" + params.cvrNumber + "-RID:" + params.ridNumber,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-            addSamlAttribute(attributeStatement, OIOSAMLToken.CVR_NUMBER, params.cvrNumber,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-            addSamlAttribute(attributeStatement, OIOSAMLToken.RID_NUMBER, params.ridNumber,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        } else {
-
-        }
-        addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        addSamlAttribute(attributeStatement, OIOSAMLToken.CPR_NUMBER, params.cprNumber,
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        if (params.surName != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.SURNAME, params.surName,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        }
-        addSamlAttribute(attributeStatement, OIOSAMLToken.COMMON_NAME, params.commonName,
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        if (params.email != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.EMAIL, params.email,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        }
-        if (params.organisationName != null) {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME, params.organisationName,
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        } else {
-            addSamlAttribute(attributeStatement, OIOSAMLToken.ORGANIZATION_NAME,
-                    "Ingen organisatorisk tilknytning",
-                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        }
-
-        String bootstrapToken = createBootstrapToken(idpCert, idpPrivateKey);
-
-        String encodedBootstrapToken = Base64.getEncoder()
-                .encodeToString(bootstrapToken.getBytes(StandardCharsets.UTF_8));
-
-        addSamlAttribute(attributeStatement, OIOSAMLToken.DISCOVERY_EPR, encodedBootstrapToken,
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
 
         Element authnStatement = appendChild(assertion, NsPrefixes.saml, "AuthnStatement");
         Element authnContext = appendChild(authnStatement, NsPrefixes.saml, "AuthnContext");
@@ -224,76 +299,20 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         appendChild(authnContext, NsPrefixes.saml, "AuthnContextClassRef",
                 "urn:oasis:names:tc:SAML:2.0:ac:classes:X509");
 
-        String referenceUri = "#" + assertionId;
-        String signatureId = null;
-
-        doc.normalizeDocument();
-
-        SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert,
-                idpPrivateKey,
-                true);
-
-        return new OIOSAMLToken(assertion);
+        return assertion;
     }
 
-    private String createBootstrapToken(X509Certificate idpCert, Key idpPrivateKey)
-            throws ParserConfigurationException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException,
-            MarshalException, XMLSignatureException, UnsupportedEncodingException {
+    private void sign(Element assertion, X509Certificate idpCert, Key idpPrivateKey)
+            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, MarshalException, XMLSignatureException {
 
-        Instant now = Instant.now();
-
-        System.setProperty("com.sun.org.apache.xml.internal.security.ignoreLineBreaks", "true");
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-
-        Document doc = dbf.newDocumentBuilder().newDocument();
-
-        Element assertion = appendChild(doc, NsPrefixes.saml, "Assertion");
-
-        assertion.setAttribute("IssueInstant", XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now));
-        assertion.setAttribute("Version", "2.0");
-        // String assertionId = "_" + UUID.randomUUID().toString();
-        String assertionId = "bst";
-        assertion.setAttribute("ID", assertionId);
-        assertion.setIdAttribute("ID", true);
-
-        // NOTE: We might have to use a different issuer for the bootstrap token in
-        // test, because
-        // STS trusts a special issuer "TEST trusted IdP" here
-        appendChild(assertion, NsPrefixes.saml, "Issuer", params.issuer);
-
-        Element subject = appendChild(assertion, NsPrefixes.saml, "Subject");
-        Element nameID = appendChild(subject, NsPrefixes.saml, "NameID", params.subjectName);
-        nameID.setAttribute("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
-
-        Element subjectConfirmation = appendChild(subject, NsPrefixes.saml, "SubjectConfirmation");
-        subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
-        Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml,
-                "SubjectConfirmationData");
-        subjectConfirmationData.setAttribute("NotOnOrAfter",
-                XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        subjectConfirmationData.setAttribute("Recipient", "https://sosi");
-        Element conditions = appendChild(assertion, NsPrefixes.saml, "Conditions");
-        conditions.setAttribute("NotOnOrAfter",
-                XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
-        appendChild(appendChild(conditions, NsPrefixes.saml, "AudienceRestriction"), NsPrefixes.saml,
-                "Audience",
-                "https://bootstrap.sts.nspop.dk/");
-        Element attributeStatement = appendChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        Element assurranceLevelAttr = addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
-        assurranceLevelAttr.setAttribute("FriendlyName", "AssuranceLevel");
-
-        String referenceUri = "#" + assertionId;
+        String referenceUri = "#" + assertion.getAttribute("ID");
         String signatureId = null;
+        Element subject = XmlUtil.getChild(assertion, NsPrefixes.saml, "Subject");
+
+        assertion.getOwnerDocument().normalizeDocument();
 
         SignatureUtil.sign(assertion, subject, new String[] { referenceUri }, signatureId, idpCert,
-                idpPrivateKey,
-                true);
+                idpPrivateKey, true);
 
-        return XmlUtil.node2String(assertion, false, false);
     }
-
 }

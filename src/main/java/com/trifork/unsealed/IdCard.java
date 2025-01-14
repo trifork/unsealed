@@ -7,16 +7,26 @@ import static com.trifork.unsealed.XmlUtil.getTextChild;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.parsers.DocumentBuilder;
@@ -28,6 +38,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public abstract class IdCard {
     public static final String DEFAULT_SIGN_IDCARD_ENDPOINT = "/sts/services/NewSecurityTokenService";
@@ -199,9 +210,13 @@ public abstract class IdCard {
     }
 
     /**
-     * <p>Sign this IDCard, i.e., send at request to SOSI STS requesting a signed IDCard using the deprecated
-     * SecurityTokenService rather than the recommended NewSecurityTokenService</p>
-     * <p>Included for test usage - NOT RECOMMENDED FOR PRODUCTION!</p>
+     * <p>
+     * Sign this IDCard, i.e., send at request to SOSI STS requesting a signed IDCard using the deprecated
+     * SecurityTokenService rather than the recommended NewSecurityTokenService
+     * </p>
+     * <p>
+     * Included for test usage - NOT RECOMMENDED FOR PRODUCTION!
+     * </p>
      * 
      * @throws Exception
      */
@@ -243,7 +258,7 @@ public abstract class IdCard {
     }
 
     /**
-     * Exchange this IDCard to an IDWS identity token that can be used for logging in via SBO (Safe Browser Start) on a web application
+     * Exchange this IDCard to an OIOSAML assertion that can be used for logging in via SBO (Safe Browser Start) on a web application
      * 
      * @param audience
      *            The requested audience for the IDWS token, e.g. "https://saml.test1.fmk.netic.dk/fmk/". This equals the SAML EntityID of the target web
@@ -254,9 +269,21 @@ public abstract class IdCard {
      * @throws InterruptedException
      * @throws STSInvocationException
      * @throws XPathExpressionException
+     * @throws SAXException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
+     * @throws BadPaddingException 
+     * @throws IllegalBlockSizeException 
+     * @throws InvalidAlgorithmParameterException 
+     * @throws NoSuchPaddingException 
+     * @throws InvalidKeyException 
      */
-    public OIOSAMLToken exchangeToOIOSAMLToken(String audience) throws ParserConfigurationException, IOException,
-            InterruptedException, STSInvocationException, XPathExpressionException {
+    public OIOSAMLToken exchangeToOIOSAMLToken(String audience)
+            throws ParserConfigurationException, IOException, InterruptedException, STSInvocationException, XPathExpressionException,
+            UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateException, SAXException, InvalidKeyException, 
+            NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         if (signedIdCard == null) {
             throw new IllegalStateException("IdCard must be signed before it can be exchanged");
         }
@@ -271,12 +298,12 @@ public abstract class IdCard {
         Element requestedSecurityToken = xpath.findElement(IDCARD_TO_TOKEN_RESPONSE_XPATH);
 
         assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "Assertion");
-        if (assertion != null) {
-            return new OIOSAMLToken(env, null, null, assertion, false);
+        if (assertion == null) {
+            assertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "EncryptedAssertion");
         }
 
-        encryptedAssertion = XmlUtil.getChild(requestedSecurityToken, NsPrefixes.saml, "EncryptedAssertion");
-        return new OIOSAMLToken(env, null, null, encryptedAssertion, true);
+        CertAndKey spCertAndKey = new CertAndKey(certificate, (PrivateKey) privateKey);
+        return new OIOSAMLTokenBuilder().env(env).spCertAndKey(spCertAndKey).assertion(assertion).build();
     }
 
     /**
@@ -430,7 +457,8 @@ public abstract class IdCard {
     /**
      * Get any SAML attribute of this IDCard by name.
      * 
-     * @param attributeName The name of the attribute
+     * @param attributeName
+     *            The name of the attribute
      * @return
      */
     public String getAttribute(String attributeName) {
@@ -443,7 +471,8 @@ public abstract class IdCard {
     }
 
     /**
-     * The the subject name of the certificate represented by this IDCard. 
+     * The the subject name of the certificate represented by this IDCard.
+     * 
      * @return The subject name
      */
     public String getSubjectName() {
@@ -452,6 +481,7 @@ public abstract class IdCard {
 
     /**
      * Serialise this IDCard to a {@link org.w3c.dom.Document}
+     * 
      * @param doc
      * @return The serialised document
      */
@@ -466,6 +496,7 @@ public abstract class IdCard {
 
     /**
      * Get the NotBefore condition (valid from time) of this IDCard
+     * 
      * @return The NotBefore condition as a {@link java.time.ZonedDateTime}
      */
     public ZonedDateTime getNotBefore() {
@@ -475,6 +506,7 @@ public abstract class IdCard {
 
     /**
      * Get the NotOnOrAfter condition (expiration time) of this IDCard
+     * 
      * @return The NotOnOrAftter condition as a {@link java.time.ZonedDateTime}
      */
     public ZonedDateTime getNotOnOrAfter() {
@@ -483,7 +515,8 @@ public abstract class IdCard {
     }
 
     /**
-     * Validate this IDCard, i.e. validate than NotBefore/NotOnOrAfter is satisfied and that the signature of the assertion/IDCard is valid. 
+     * Validate this IDCard, i.e. validate than NotBefore/NotOnOrAfter is satisfied and that the signature of the assertion/IDCard is valid.
+     * 
      * @throws ValidationException
      */
     public void validate() throws ValidationException {
@@ -492,7 +525,8 @@ public abstract class IdCard {
     }
 
     /**
-     * Get a reference to the {@link org.w3c.dom.Element} representation of this IDCard. 
+     * Get a reference to the {@link org.w3c.dom.Element} representation of this IDCard.
+     * 
      * @return A reference to the assertion
      */
     public Element getAssertion() {

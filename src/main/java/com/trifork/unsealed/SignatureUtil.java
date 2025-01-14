@@ -61,7 +61,7 @@ public class SignatureUtil {
     // Create a DOM XMLSignatureFactory that will be used to generate the enveloped signatures
     static XMLSignatureFactory xmlSignatureFactory = XMLSignatureFactory.getInstance("DOM");
 
-    static void sign(Element rootElement, Element nextSibling, String[] referenceUris, String signatureId,
+    public static void sign(Element rootElement, Element nextSibling, String[] referenceUris, String signatureId,
             Certificate certificate, Key privateKey, boolean enveloped) throws NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, MarshalException, XMLSignatureException {
 

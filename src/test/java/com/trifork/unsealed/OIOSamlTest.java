@@ -4,17 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.time.ZonedDateTime;
-
-import javax.xml.crypto.MarshalException;
-import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,23 +18,45 @@ public class OIOSamlTest extends AbstractTest {
     void setup0() throws Exception {
         AbstractTest.setup();
 
-        samlTokenIssuer = new OIOSAMLTokenIssuer().idpCertAndKey(new KeyStoreLoader().fromClassPath("TEST whitelisted SP SOSI alias.p12").password("Test1234").load());
+        CertAndKey spCertAndKey = new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD).load();
+        CertAndKey idpCertAndKey = new KeyStoreLoader().fromClassPath("TEST whitelisted SP SOSI alias.p12").password(KEYSTORE_PASSWORD).load();
+
+        samlTokenIssuer = new OIOSAMLTokenIssuer()
+                .idpCertAndKey(idpCertAndKey)
+                .spCert(spCertAndKey.certificate);
 
     }
 
     @Test
-    void canIssueOIOSAMLToken() throws Exception {
-        OIOSAMLToken token = issueSamlToken();
+    void canIssueOIOSAMLTokenForProfessional() throws Exception {
+        OIOSAMLToken token = issueSamlTokenForProf();
         assertEquals("Lars Larsen", token.getCommonName());
         assertEquals("3", token.getAssuranceLevel());
         assertEquals("https://fmk", token.getAudienceRestriction());
         assertEquals("0501792275", token.getCpr());
+        assertEquals("5f2d86da-ed21-4593-a324-fa892e552ac1", token.getCprUuid());
+        assertEquals("92336cc1-b3a4-4742-be54-c723bfa99aba", token.getProfUuid());
         assertEquals("20921897", token.getCvrNumberIdentifier());
         assertEquals("fmk-support@trifork.com", token.getEmail());
         assertTrue(ZonedDateTime.now().isAfter(token.getNotBefore()));
         assertTrue(ZonedDateTime.now().isBefore(token.getNotOnOrAfter()));
         assertEquals("TRIFORK A/S", token.getOrganizationName());
-        assertEquals("DK-SAML-2.0", token.getSpecVersion());
+        assertEquals("OIOSAML-H-3.0", token.getSpecVersion());
+        assertEquals("Larsen", token.getSurName());
+        assertTrue(ZonedDateTime.now().isAfter(token.getUserAuthenticationInstant()));
+    }
+
+    @Test
+    void canIssueOIOSAMLTokenForCitizen() throws Exception {
+        OIOSAMLToken token = issueSamlTokenForCitizen();
+        assertEquals("Lars Larsen", token.getCommonName());
+        assertEquals("3", token.getAssuranceLevel());
+        assertEquals("https://fmk", token.getAudienceRestriction());
+        assertEquals("0501792275", token.getCpr());
+        assertEquals("5f2d86da-ed21-4593-a324-fa892e552ac1", token.getCprUuid());
+        assertTrue(ZonedDateTime.now().isAfter(token.getNotBefore()));
+        assertTrue(ZonedDateTime.now().isBefore(token.getNotOnOrAfter()));
+        assertEquals("OIOSAML-H-3.0", token.getSpecVersion());
         assertEquals("Larsen", token.getSurName());
         assertTrue(ZonedDateTime.now().isAfter(token.getUserAuthenticationInstant()));
     }
@@ -52,7 +64,7 @@ public class OIOSamlTest extends AbstractTest {
     @Disabled
     @Test
     void canExchangeOIOSAMLTokenToIdCard() throws Exception {
-        OIOSAMLToken token = issueSamlToken();
+        OIOSAMLToken token = issueSamlTokenForProf();
 
         String assertion = XmlUtil.node2String(token.getAssertion(), false, false);
 
@@ -71,25 +83,37 @@ public class OIOSamlTest extends AbstractTest {
         assertTrue(asString.contains("Larsen"));
     }
 
-    private OIOSAMLToken issueSamlToken() throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            IOException, UnrecoverableKeyException, InvalidAlgorithmParameterException, MarshalException,
-            XMLSignatureException, ParserConfigurationException {
-                
+    private OIOSAMLToken issueSamlTokenForProf() throws Exception {
+
         OIOSAMLToken token = samlTokenIssuer
                 .audience("https://fmk")
                 .commonName("Lars Larsen")
                 .cprNumber("0501792275")
                 .cvrNumber("20921897")
+                .cprUuid("5f2d86da-ed21-4593-a324-fa892e552ac1")
+                .profUuid("92336cc1-b3a4-4742-be54-c723bfa99aba")
                 .email("fmk-support@trifork.com")
                 .issuer("https://saml.nemlog-in.dk")
                 .organisationName("TRIFORK A/S")
                 .recipient("https://test1.fmk.netic.dk/fmk/saml/SAMLAssertionConsumer")
                 .ridNumber("52723247")
-                .subjectName("C=DK,O=TRIFORK A/S // CVR:20921897,CN=Lars Larsen,Serial=CVR:20921897-RID:52723247")
                 .surName("Larsen")
                 .uid("CVR:20921897-RID:52723247")
-                .build();
+                .issueForProfessional();
         return token;
     }
 
+    private OIOSAMLToken issueSamlTokenForCitizen() throws Exception {
+
+        OIOSAMLToken token = samlTokenIssuer
+                .audience("https://fmk")
+                .commonName("Lars Larsen")
+                .cprNumber("0501792275")
+                .cprUuid("5f2d86da-ed21-4593-a324-fa892e552ac1")
+                .issuer("https://saml.nemlog-in.dk")
+                .recipient("https://test1.fmk.netic.dk/fmk/saml/SAMLAssertionConsumer")
+                .surName("Larsen")
+                .issueForCitizen();
+        return token;
+    }
 }

@@ -35,39 +35,13 @@ import org.xml.sax.SAXException;
 public class OIOSAMLToken {
     public static final String DEFAULT_TOKEN_TO_IDCARD_ENDPOINT = "/sts/services/OIOSaml2Sosi";
 
-    public static final String COMMON_NAME = "urn:oid:2.5.4.3";
-    public static final String SURNAME = "urn:oid:2.5.4.4";
-    public static final String CPR_NUMBER = "dk:gov:saml:attribute:CprNumberIdentifier";
-    public static final String CVR_NUMBER = "dk:gov:saml:attribute:CvrNumberIdentifier";
-    public static final String RID_NUMBER = "dk:gov:saml:attribute:RidNumberIdentifier";
-    public static final String PID_NUMBER = "dk:gov:saml:attribute:PidNumberIdentifier";
-
-    public static final String PRIVILEGES_INTERMEDIATE = "dk:gov:saml:attribute:Privileges_intermediate";
-    public static final String THROUGH_PROCURATION_BY = "urn:dk:gov:saml:actThroughProcurationBy:cprNumberIdentifier";
-
-    public static final String EMAIL = "urn:oid:0.9.2342.19200300.100.1.3";
-    public static final String ORGANIZATION_NAME = "urn:oid:2.5.4.10";
-    public static final String USER_CERTIFICATE = "urn:oid:1.3.6.1.4.1.1466.115.121.1.8";
-    public static final String CERTIFICATE_ISSUER = "urn:oid:2.5.29.29";
-    public static final String IS_YOUTH_CERT = "dk:gov:saml:attribute:IsYouthCert";
     public static final String ASSURANCE_LEVEL = "dk:gov:saml:attribute:AssuranceLevel";
-    public static final String SPEC_VERSION = "dk:gov:saml:attribute:SpecVer";
-    public static final String CERTIFICATE_SERIAL = "urn:oid:2.5.4.5";
-    public static final String UID = "urn:oid:0.9.2342.19200300.100.1.1";
-    public static final String DISCOVERY_EPR = "urn:liberty:disco:2006-08:DiscoveryEPR";
 
-    public static final String SURNAME_FRIENDLY = "surName";
-    public static final String COMMON_NAME_FRIENDLY = "CommonName";
-    public static final String EMAIL_FRIENDLY = "email";
-    public static final String ORGANIZATION_NAME_FRIENDLY = "organizationName";
-    public static final String CERTIFICATE_SERIAL_FRIENDLY = "serialNumber";
-    public static final String UID_FRIENDLY = "Uid";
-
-    private Element assertion;
-    private NSPEnv env;
-    private Key privateKey;
-    private X509Certificate certificate;
-    private boolean encrypted;
+    protected Element assertion;
+    protected NSPEnv env;
+    protected Key privateKey;
+    protected X509Certificate certificate;
+    protected boolean encrypted;
 
     public OIOSAMLToken(NSPEnv env, X509Certificate certificate, Key privateKey,
             boolean encrypted, String xml) throws ParserConfigurationException, SAXException, IOException {
@@ -82,10 +56,6 @@ public class OIOSAMLToken {
         this.certificate = certificate;
         this.assertion = assertion;
         this.encrypted = encrypted;
-    }
-
-    public OIOSAMLToken(Element assertion) {
-        this.assertion = assertion;
     }
 
     private static Element parseAssertion(String xml) throws ParserConfigurationException, SAXException, IOException {
@@ -159,76 +129,6 @@ public class OIOSAMLToken {
         return encrypted;
     }
 
-    public String getCommonName() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String commonName = getSamlAttribute(attributeStatement, COMMON_NAME);
-
-        return commonName;
-    }
-
-    /**
-     * Extract the <code>dk:gov:saml:attribute:CprNumberIdentifier</code> value from
-     * the DOM.<br>
-     *
-     * <pre>
-     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
-     *       Name="dk:gov:saml:attribute:CprNumberIdentifier"&gt;
-     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;2702681273&lt;/saml:AttributeValue&gt;
-     *     &lt;/saml:Attribute&gt;
-     * </pre>
-     *
-     * @return The value of the
-     *         <code>dk:gov:saml:attribute:CprNumberIdentifier</code> tag.
-     */
-    public String getCpr() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String cpr = getSamlAttribute(attributeStatement, CPR_NUMBER);
-
-        return cpr;
-    }
-
-    /**
-     * Extract the <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> value from
-     * the DOM.<br>
-     *
-     * <pre>
-     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
-     *         Name="dk:gov:saml:attribute:CvrNumberIdentifier"&gt;
-     *         &lt;saml:AttributeValue xsi:type="xs:string"&gt;20688092&lt;/saml:AttributeValue&gt;
-     *       &lt;/saml:Attribute&gt;
-     * </pre>
-     *
-     * @return The value of the
-     *         <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> tag.
-     */
-    public String getCvrNumberIdentifier() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String cvr = getSamlAttribute(attributeStatement, CVR_NUMBER);
-
-        return cvr;
-    }
-
-    /**
-     * Extract the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email value from
-     * the DOM.<br>
-     *
-     * <pre>
-     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
-     *       Name="urn:oid:0.9.2342.19200300.100.1.3" FriendlyName="email"&gt;
-     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;jens@email.dk&lt;/saml:AttributeValue&gt;
-     *     &lt;/saml:Attribute&gt;
-     * </pre>
-     *
-     * @return The value of the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email
-     *         tag.
-     */
-    public String getEmail() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String email = getSamlAttribute(attributeStatement, EMAIL);
-
-        return email;
-    }
-
     /**
      * Extract the <code>saml:Conditions#NotBefore</code> value from the DOM.<br>
      *
@@ -267,6 +167,68 @@ public class OIOSAMLToken {
         return date;
     }
 
+    public String getCommonName() {
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.COMMON_NAME : OIOSAML3Constants.COMMON_NAME);
+    }
+
+    private Element getAttributeStatement() {
+        return getChild(assertion, NsPrefixes.saml, "AttributeStatement");
+    }
+
+    /**
+     * Extract the <code>dk:gov:saml:attribute:CprNumberIdentifier</code> value from
+     * the DOM.<br>
+     *
+     * <pre>
+     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
+     *       Name="dk:gov:saml:attribute:CprNumberIdentifier"&gt;
+     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;2702681273&lt;/saml:AttributeValue&gt;
+     *     &lt;/saml:Attribute&gt;
+     * </pre>
+     *
+     * @return The value of the
+     *         <code>dk:gov:saml:attribute:CprNumberIdentifier</code> tag.
+     */
+    public String getCpr() {
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.CPR_NUMBER : OIOSAML3Constants.CPR_NUMBER);
+    }
+
+    /**
+     * Extract the <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> value from
+     * the DOM.<br>
+     *
+     * <pre>
+     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
+     *         Name="dk:gov:saml:attribute:CvrNumberIdentifier"&gt;
+     *         &lt;saml:AttributeValue xsi:type="xs:string"&gt;20688092&lt;/saml:AttributeValue&gt;
+     *       &lt;/saml:Attribute&gt;
+     * </pre>
+     *
+     * @return The value of the
+     *         <code>dk:gov:saml:attribute:CvrNumberIdentifier</code> tag.
+     */
+    public String getCvrNumberIdentifier() {
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.CVR_NUMBER : OIOSAML3Constants.CVR_NUMBER);
+    }
+
+    /**
+     * Extract the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email value from
+     * the DOM.<br>
+     *
+     * <pre>
+     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"
+     *       Name="urn:oid:0.9.2342.19200300.100.1.3" FriendlyName="email"&gt;
+     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;jens@email.dk&lt;/saml:AttributeValue&gt;
+     *     &lt;/saml:Attribute&gt;
+     * </pre>
+     *
+     * @return The value of the <code>urn:oid:0.9.2342.19200300.100.1.3</code>/email
+     *         tag.
+     */
+    public String getEmail() {
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.EMAIL : OIOSAML3Constants.EMAIL);
+    }
+
     /**
      * Extract the <code>urn:oid:2.5.4.10</code>/organizationName value from the
      * token.<br>
@@ -281,10 +243,7 @@ public class OIOSAMLToken {
      * @return The value of the <code>urn:oid:2.5.4.10</code>/organizationName tag.
      */
     public String getOrganizationName() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String organizationName = getSamlAttribute(attributeStatement, ORGANIZATION_NAME);
-
-        return organizationName;
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.ORGANIZATION_NAME : OIOSAML3Constants.ORGANIZATION_NAME);
     }
 
     /**
@@ -300,10 +259,70 @@ public class OIOSAMLToken {
      * @return The value of the <code>urn:oid:2.5.4.4</code>/surName tag.
      */
     public String getSurName() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String surname = getSamlAttribute(attributeStatement, SURNAME);
+        return getSamlAttribute(getAttributeStatement(), isOiosaml2() ? OIOSAML2Constants.SURNAME : OIOSAML3Constants.SURNAME);
+    }
 
-        return surname;
+    /**
+     * Extract the <code>dk:gov:saml:attribute:SpecVer</code> value from the
+     * DOM.<br>
+     *
+     * <pre>
+     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="dk:gov:saml:attribute:SpecVer"&gt;
+     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;DK-SAML-2.0&lt;/saml:AttributeValue&gt;
+     *     &lt;/saml:Attribute&gt;
+     * </pre>
+     *
+     * @return The value of the <code>dk:gov:saml:attribute:SpecVer</code> tag.
+     */
+    public String getSpecVersion() {
+        boolean encrypted = "EncryptedAssertion".equals(assertion.getLocalName());
+
+        if (encrypted) {
+            throw new IllegalStateException("EncryptedAssertion not yet decrypted - unable to determine spec version");
+        }
+
+        Element attributeStatement = getAttributeStatement();
+
+        String oiosaml2SpecVersion = getSamlAttribute(attributeStatement, OIOSAML2Constants.SPEC_VERSION);
+
+        if (oiosaml2SpecVersion != null) {
+            if (OIOSAML2Constants.OIOSAML2_VERSION_NAME.equals(oiosaml2SpecVersion)) {
+                // We guessed right above, so just return the OIOSAML2Token we created above
+                return oiosaml2SpecVersion;
+            }
+            throw new IllegalArgumentException("Unexpected spec version, " + OIOSAML2Constants.SPEC_VERSION + "=" + oiosaml2SpecVersion);
+        }
+
+        String oiosaml3SpecVersion = getSamlAttribute(attributeStatement, OIOSAML3Constants.SPEC_VERSION);
+        if (oiosaml3SpecVersion != null) {
+            if (OIOSAML3Constants.OIOSAML_H_3_VERSION_NAME.equals(oiosaml3SpecVersion) || OIOSAML3Constants.OIOSAML3_VERSION_NAME.equals(oiosaml3SpecVersion)) {
+                return oiosaml3SpecVersion;
+            }
+            throw new IllegalArgumentException("Unexpected spec version, " + OIOSAML3Constants.SPEC_VERSION + "=" + oiosaml3SpecVersion);
+        }
+
+        throw new IllegalStateException("Unable to determine spec version, found neither OIOSAML2 nor OIOSAML3 spec version attribute");
+    }
+
+    public String getUID() {
+        if (isOiosaml2()) {
+            return getSamlAttribute(getAttributeStatement(), OIOSAML2Constants.UID);
+        }
+        throw new UnsupportedOperationException("Not supported for OIOSAML3 assertions");
+    }
+
+    protected Object getCprUuid() {
+        if (isOiosaml2()) {
+            throw new UnsupportedOperationException("Not supported for OIOSAML2 assertions");
+        }
+        return getSamlAttribute(getAttributeStatement(), OIOSAML3Constants.CPR_UUID);
+    }
+
+    protected Object getProfUuid() {
+        if (isOiosaml2()) {
+            throw new UnsupportedOperationException("Not supported for OIOSAML2 assertions");
+        }
+        return getSamlAttribute(getAttributeStatement(), OIOSAML3Constants.PROF_UUID);
     }
 
     /**
@@ -320,29 +339,9 @@ public class OIOSAMLToken {
      *         tag.
      */
     public String getAssuranceLevel() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String assuranceLevel = getSamlAttribute(attributeStatement, ASSURANCE_LEVEL);
+        String assuranceLevel = getSamlAttribute(getAttributeStatement(), ASSURANCE_LEVEL);
 
         return assuranceLevel;
-    }
-
-    /**
-     * Extract the <code>dk:gov:saml:attribute:SpecVer</code> value from the
-     * DOM.<br>
-     *
-     * <pre>
-     *     &lt;saml:Attribute NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic" Name="dk:gov:saml:attribute:SpecVer"&gt;
-     *       &lt;saml:AttributeValue xsi:type="xs:string"&gt;DK-SAML-2.0&lt;/saml:AttributeValue&gt;
-     *     &lt;/saml:Attribute&gt;
-     * </pre>
-     *
-     * @return The value of the <code>dk:gov:saml:attribute:SpecVer</code> tag.
-     */
-    public String getSpecVersion() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String specVersion = getSamlAttribute(attributeStatement, SPEC_VERSION);
-
-        return specVersion;
     }
 
     /**
@@ -387,13 +386,6 @@ public class OIOSAMLToken {
         return date;
     }
 
-    public String getUID() {
-        Element attributeStatement = getChild(assertion, NsPrefixes.saml, "AttributeStatement");
-        String uid = getSamlAttribute(attributeStatement, UID);
-
-        return uid;
-    }
-
     /**
      * Invoke this method to verify the validity of the
      * <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and
@@ -411,8 +403,9 @@ public class OIOSAMLToken {
      * <code>AbstractOIOSamlToken</code> against the {@link #getNotBefore()} and
      * {@link #getNotOnOrAfter()} values.<br>
      *
-     * @param allowedDriftInSeconds the amount of clock drift to allow in
-     *                              milliseconds
+     * @param allowedDriftInSeconds
+     *            the amount of clock drift to allow in
+     *            milliseconds
      * @throws ValidationException
      *
      */
@@ -429,7 +422,7 @@ public class OIOSAMLToken {
     }
 
     public void decrypt() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, SAXException, IOException, 
+            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, SAXException, IOException,
             ParserConfigurationException {
 
         if (!encrypted) {
@@ -449,6 +442,10 @@ public class OIOSAMLToken {
         String decrypted = XmlUtil.decrypt(decryptedKey, encryptedData, encryptionAlgo);
 
         assertion = XmlUtil.getDocBuilder().parse(new ByteArrayInputStream(decrypted.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
+    }
+
+    private boolean isOiosaml2() {
+        return OIOSAML2Constants.OIOSAML2_VERSION_NAME.equals(getSpecVersion());
     }
 
     private Element createSAMLTokenToIdCardRequest(Element samlToken, String itSystemName, String nameIdValue,

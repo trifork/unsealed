@@ -103,8 +103,9 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
     }
 
     /**
-     * Specify the SP (Service Provider) {@link CertAndKey} (certificate keypair). This is used if the issued bootstrap token is exchanged to an IDWS IdentityToken or a DGWS
-     * Idcard.
+     * Specify the SP (Service Provider) {@link CertAndKey} (certificate keypair). This is used if the issued bootstrap token is exchanged to an IDWS
+     * IdentityToken or a DGWS Idcard.
+     * 
      * @see BootstrapToken#exchangeToIdentityToken(String, String)
      * @see BootstrapToken#exchangeToIdentityToken(String, String, String)
      * @see BootstrapToken#exchangeToUserIdCard(String, String, String, String, String)
@@ -115,6 +116,12 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
     public BootstrapTokenIssuer spCertAndKey(CertAndKey spCertAndKey) {
         var params = this.params.copy();
         params.spCertAndKey = spCertAndKey;
+        return new BootstrapTokenIssuer(params);
+    }
+
+    public BootstrapTokenIssuer spCert(X509Certificate spCert) {
+        var params = this.params.copy();
+        params.spCert = spCert;
         return new BootstrapTokenIssuer(params);
     }
 
@@ -131,7 +138,8 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
     }
 
     /**
-     * Issue a bootstrap token for a citizen. 
+     * Issue a bootstrap token for a citizen.
+     * 
      * @return The issued bootstrap token
      * @throws Exception
      */
@@ -155,12 +163,15 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
 
         String xml = XmlUtil.node2String(assertion, false, false);
 
-        return new BootstrapToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey,
+        return new BootstrapToken(params.env,
+                params.spCertAndKey != null ? params.spCertAndKey.certificate : null,
+                params.spCertAndKey != null ? params.spCertAndKey.privateKey : null,
                 xml, null);
     }
 
     /**
      * Issue a bootstrap token for a healthcare professional
+     * 
      * @return The issued bootstrap token
      * @throws Exception
      */
@@ -187,7 +198,9 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
 
         String xml = XmlUtil.node2String(assertion, false, false);
 
-        return new BootstrapToken(params.env, params.spCertAndKey.certificate, params.spCertAndKey.privateKey,
+        return new BootstrapToken(params.env,
+                params.spCertAndKey != null ? params.spCertAndKey.certificate : null,
+                params.spCertAndKey != null ? params.spCertAndKey.privateKey : null,
                 xml, null);
     }
 
@@ -224,17 +237,30 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
         nameID.setAttribute("Format", nameIdFormat);
 
         Element subjectConfirmation = appendChild(subject, NsPrefixes.saml.namespaceUri, "SubjectConfirmation");
-        subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
         Element subjectConfirmationData = appendChild(subjectConfirmation, NsPrefixes.saml.namespaceUri,
                 "SubjectConfirmationData");
-        subjectConfirmationData.setAttributeNS(NsPrefixes.xsi.namespaceUri, "type",
-                "KeyInfoConfirmationDataType");
 
-        Element keyInfo = appendChild(subjectConfirmationData, NsPrefixes.ds, "KeyInfo");
+        X509Certificate spCert = params.spCert;
+        if (spCert == null && params.spCertAndKey != null) {
+            spCert = params.spCertAndKey.certificate;
+        }
+        if (spCert != null) {
+            // Service provider certificate is known, so issue a holder-of-key assertion
+            subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
+            subjectConfirmationData.setAttributeNS(NsPrefixes.xsi.namespaceUri, "type",
+                    "KeyInfoConfirmationDataType");
 
-        Element x509Data = appendChild(keyInfo, NsPrefixes.ds, "X509Data");
-        appendChild(x509Data, NsPrefixes.ds, "X509Certificate",
-                Base64.getEncoder().encodeToString(params.spCertAndKey.certificate.getEncoded()));
+            Element keyInfo = appendChild(subjectConfirmationData, NsPrefixes.ds, "KeyInfo");
+
+            Element x509Data = appendChild(keyInfo, NsPrefixes.ds, "X509Data");
+            appendChild(x509Data, NsPrefixes.ds, "X509Certificate",
+                    Base64.getEncoder().encodeToString(spCert.getEncoded()));
+        } else {
+            subjectConfirmation.setAttribute("Method", "urn:oasis:names:tc:SAML:2.0:cm:bearer");
+            subjectConfirmationData.setAttribute("NotOnOrAfter",
+                    XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
+            subjectConfirmationData.setAttribute("Recipient", "https://sosi");
+        }
 
         Element conditions = appendChild(assertion, NsPrefixes.saml.namespaceUri, "Conditions");
         conditions.setAttribute("NotOnOrAfter",
