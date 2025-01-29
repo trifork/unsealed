@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 public class OIOSamlTest extends AbstractTest {
     private static final String KEYSTORE_PASSWORD = "Test1234";
     private OIOSAMLTokenIssuer samlTokenIssuer;
+    private BootstrapTokenIssuer bootstrapTokenIssuer;
 
     @BeforeEach
     void setup0() throws Exception {
@@ -21,9 +22,14 @@ public class OIOSamlTest extends AbstractTest {
         CertAndKey spCertAndKey = new KeyStoreLoader().fromClassPath("FMKOnlineBilletOmv-T_OCES3.p12").password(KEYSTORE_PASSWORD).load();
         CertAndKey idpCertAndKey = new KeyStoreLoader().fromClassPath("TEST whitelisted SP SOSI alias.p12").password(KEYSTORE_PASSWORD).load();
 
+        bootstrapTokenIssuer = new BootstrapTokenIssuer()
+                .idpCertAndKey(idpCertAndKey);
+
+        // Note that bootstrapTokenIssuer could be using a different CertAndKey than samlTokenIssuer
         samlTokenIssuer = new OIOSAMLTokenIssuer()
                 .idpCertAndKey(idpCertAndKey)
-                .spCert(spCertAndKey.certificate);
+                .spCert(spCertAndKey.certificate)
+                .bootstrapTokenIssuer(bootstrapTokenIssuer);
 
     }
 

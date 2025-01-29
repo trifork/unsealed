@@ -41,6 +41,12 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         return new OIOSAMLTokenIssuer(params);
     }
 
+    public OIOSAMLTokenIssuer bootstrapTokenIssuer(BootstrapTokenIssuer bootstrapTokenIssuer) {
+        OIOSAMLTokenIssuerParams params = this.params.copy();
+        params.bootstrapTokenIssuer = bootstrapTokenIssuer;
+        return new OIOSAMLTokenIssuer(params);
+    }
+
     public OIOSAMLTokenIssuer recipient(String recipient) {
         OIOSAMLTokenIssuerParams params = this.params.copy();
         params.recipient = recipient;
@@ -171,22 +177,22 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
 
-        CertAndKey spCertAndNoKey = new CertAndKey(params.spCert, null);
-        BootstrapTokenIssuer bootstrapTokenIssuer = new BootstrapTokenIssuer()
-                .idpCertAndKey(params.idpCertAndKey)
-                .spCertAndKey(spCertAndNoKey)
-                .cpr(params.cprNumber)
-                .cvr(params.cvrNumber)
-                .uuid(params.profUuid)
-                .orgName(params.organisationName);
+        BootstrapTokenIssuer bootstrapTokenIssuer = params.bootstrapTokenIssuer;
+        if (bootstrapTokenIssuer != null) {
+            BootstrapToken bootstrapToken = bootstrapTokenIssuer
+                    .spCert(params.spCert)
+                    .cpr(params.cprNumber)
+                    .cvr(params.cvrNumber)
+                    .uuid(params.profUuid)
+                    .orgName(params.organisationName)
+                    .issueForProfessional();
 
-        BootstrapToken bootstrapToken = bootstrapTokenIssuer.cvr(params.cvrNumber).orgName(params.organisationName).issueForProfessional();
+            String encodedBootstrapToken = Base64.getEncoder()
+                    .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
 
-        String encodedBootstrapToken = Base64.getEncoder()
-                .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
-
-        addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+        }
 
         if (params.surName != null) {
             addSamlAttribute(attributeStatement, OIOSAML3Constants.SURNAME, params.surName,
@@ -226,19 +232,19 @@ public class OIOSAMLTokenIssuer extends AbstractBuilder<OIOSAMLTokenIssuerParams
         addSamlAttribute(attributeStatement, OIOSAMLToken.ASSURANCE_LEVEL, "3",
                 "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
 
-        CertAndKey spCertAndNoKey = new CertAndKey(params.spCert, null);
-        BootstrapTokenIssuer bootstrapTokenIssuer = new BootstrapTokenIssuer()
-                .idpCertAndKey(params.idpCertAndKey)
-                .spCertAndKey(spCertAndNoKey)
-                .cpr(params.cprNumber);
+        BootstrapTokenIssuer bootstrapTokenIssuer = params.bootstrapTokenIssuer;
+        if (bootstrapTokenIssuer != null) {
+            BootstrapToken bootstrapToken = bootstrapTokenIssuer
+                    .spCert(params.spCert)
+                    .cpr(params.cprNumber)
+                    .issueForCitizen();
 
-        BootstrapToken bootstrapToken = bootstrapTokenIssuer.issueForCitizen();
+            String encodedBootstrapToken = Base64.getEncoder()
+                    .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
 
-        String encodedBootstrapToken = Base64.getEncoder()
-                .encodeToString(bootstrapToken.getXml().getBytes(StandardCharsets.UTF_8));
-
-        addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
-                "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+            addSamlAttribute(attributeStatement, OIOSAML3Constants.BOOTSTRAP_TOKEN, encodedBootstrapToken,
+                    "urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+        }
 
         if (params.surName != null) {
             addSamlAttribute(attributeStatement, OIOSAML3Constants.SURNAME, params.surName,

@@ -19,6 +19,7 @@ public class OIOSAMLTokenIssuerParams extends AbstractBuilderParams {
     String organisationName;
     CertAndKey idpCertAndKey;
     X509Certificate spCert;
+    BootstrapTokenIssuer bootstrapTokenIssuer;
 
     OIOSAMLTokenIssuerParams copy() {
         try {
