@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 public class OIDC {
      static final Logger log = Logger.getLogger(OIDC.class.getName());
 
-    private static String AUTHORIZATION_ENDPOINT = "https://oidc-test.hosted.trifork.com/auth/realms/sds/protocol/openid-connect/auth";
-    private static String TOKEN_ENDPOINT = "https://oidc-test.hosted.trifork.com/auth/realms/sds/protocol/openid-connect/token";
+    private static String AUTHORIZATION_ENDPOINT = "https://oidc-test.sundhedsdatastyrelsen.dk/auth/realms/sds/protocol/openid-connect/auth";
+    private static String TOKEN_ENDPOINT = "https://oidc-test.sundhedsdatastyrelsen.dk/auth/realms/sds/protocol/openid-connect/token";
 
     private static String CLIENT_ID = "fmk_mock";
     private static String REDIRECT_URL = "medicinkortetapp://fmk-test1";
