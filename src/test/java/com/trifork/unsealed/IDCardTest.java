@@ -236,6 +236,7 @@ public class IDCardTest extends AbstractTest {
                 .certAndKey(moces3CertAndKey)
                 .cpr("0501792275")
                 .role("role")
+                .authorizationCode("J0184")
                 .occupation("occupation")
                 .systemName("systemname")
                 .buildUserIdCard();

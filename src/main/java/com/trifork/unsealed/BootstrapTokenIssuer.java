@@ -1,5 +1,6 @@
 package com.trifork.unsealed;
 
+import static com.trifork.unsealed.SamlUtil.addSamlAttribute;
 import static com.trifork.unsealed.SamlUtil.addUriTypeSamlAttribute;
 import static com.trifork.unsealed.XmlUtil.appendChild;
 import static com.trifork.unsealed.XmlUtil.declareNamespaces;
@@ -204,6 +205,73 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
                 xml, null);
     }
 
+    /**
+     * Issue an eHDSI IDWS XUA bootstrap token for a citizen
+     * 
+     * @return The issued bootstrap token
+     * @throws Exception
+     */
+    public BootstrapToken issueEhdsiForCitizen()
+            throws Exception {
+
+        // Not this audience: "https://audience.nspop.dk/ehdsi"?
+
+        Element assertion = createBootstrapToken("https://fmk", "BstSubjectNameTest",
+                "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
+
+        // declareNamespaces(assertion, NsPrefixes.hl7v3, NsPrefixes.saml);
+        declareNamespaces(assertion, NsPrefixes.saml);
+
+        Element attributeStatement = appendChild(assertion, NsPrefixes.saml.namespaceUri, "AttributeStatement");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:dk:healthcare:saml:SpecVersion",
+                "eHDSI-IDWS-XUA-1.0");
+
+        addUriTypeSamlAttribute(attributeStatement, "dk:gov:saml:attribute:AssuranceLevel", "3");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:oasis:names:tc:xacml:2.0:resource:resource-id",
+                params.cpr + "^^^&1.2.208.176.1.2&ISO");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:oasis:names:tc:xspa:1.0:subject:subject-id", "Alfonso Gonzalez");
+
+        Element roleAttribute = addSamlAttribute(attributeStatement, "urn:oasis:names:tc:xacml:2.0:subject:role", null);
+
+        // STS doesn't like when Role has a prefix, but fails with "Error validating DkncpBootstrapSamlAssertion: cvc-elt.4.2: Cannot resolve 'CE' to a type definition for element 'hl7v3:Role'"
+        // Element roleElement = appendChild((Element)roleAttribute.getFirstChild(), NsPrefixes.hl7v3, "Role");
+        Element roleElement = appendChild((Element) roleAttribute.getFirstChild(), NsPrefixes.hl7v3.namespaceUri, "Role");
+        roleElement.setAttribute("code", "2221");
+        roleElement.setAttribute("codeSystem", "2.16.840.1.113883.2.9.6.2.7");
+        roleElement.setAttribute("codeSystemName", "ISCO");
+        roleElement.setAttribute("displayName", "Nursing professionals");
+        roleElement.setAttributeNS(NsPrefixes.xsi.namespaceUri, "type", "CE");
+        // roleElement.setAttributeNS(NsPrefixes.xsi.namespaceUri, "type", NsPrefixes.hl7v3.name() + ":CE");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:oasis:names:tc:xspa:1.0:subject:organization-id", "urn:oid:1.3.6.1.4.1.44938");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:ehdsi:names:subject:healthcare-facility-type", "Hospital");
+
+        Element purposeOfUseAttribute = addSamlAttribute(attributeStatement, "urn:oasis:names:tc:xspa:1.0:subject:purposeofuse", null);
+        Element purposeOfUseElement = appendChild((Element) purposeOfUseAttribute.getFirstChild(), NsPrefixes.hl7v3.namespaceUri, "PurposeOfUse");
+        purposeOfUseElement.setAttribute("code", "TREATMENT");
+        purposeOfUseElement.setAttribute("codeSystem", "urn:oasis:names:tc:xspa:1.0");
+        purposeOfUseElement.setAttributeNS(NsPrefixes.xsi.namespaceUri, "type", "CE");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:oasis:names:tc:xspa:1.0:environment:locality", "Klinik am Berg, 83242 Reit im Winkl");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:dk:healthcare:saml:IssuancePolicy", "urn:dk:ncp:eHDSI-default");
+
+        addUriTypeSamlAttribute(attributeStatement, "urn:dk:healthcare:saml:CountryOfTreatment", "DE");
+
+        signAssertion(params.idpCertAndKey.certificate, params.idpCertAndKey.privateKey, assertion);
+
+        String xml = XmlUtil.node2String(assertion, false, false);
+
+        return new BootstrapToken(params.env,
+                params.spCertAndKey != null ? params.spCertAndKey.certificate : null,
+                params.spCertAndKey != null ? params.spCertAndKey.privateKey : null,
+                xml, null);
+    }
+
     private Element createBootstrapToken(String audience, String nameId, String nameIdFormat)
             throws Exception {
         Instant now = Instant.now();
@@ -265,6 +333,9 @@ public class BootstrapTokenIssuer extends AbstractBuilder<BootstrapTokenIssuerPa
         Element conditions = appendChild(assertion, NsPrefixes.saml.namespaceUri, "Conditions");
         conditions.setAttribute("NotOnOrAfter",
                 XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.plusSeconds(3600)));
+        conditions.setAttribute("NotBefore",
+                XmlUtil.ISO_WITHOUT_MILLIS_FORMATTER.format(now.minusSeconds(5)));
+
         appendChild(appendChild(conditions, NsPrefixes.saml.namespaceUri, "AudienceRestriction"),
                 NsPrefixes.saml.namespaceUri, "Audience", audience);
         return assertion;

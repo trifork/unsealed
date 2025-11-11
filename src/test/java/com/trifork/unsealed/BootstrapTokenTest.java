@@ -13,7 +13,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 
+import javax.xml.parsers.DocumentBuilder;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -102,6 +105,22 @@ public class BootstrapTokenTest extends AbstractTest {
     }
 
     @Test
+    void canIssueBootstrapToken() throws Exception {
+
+        BootstrapToken bst = hokIssuer.cpr("0501792275").issueForCitizen();
+
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
+
+        Element bootstrapToken = docBuilder
+                .parse(new ByteArrayInputStream(bst.getXml().getBytes(StandardCharsets.UTF_8)))
+                .getDocumentElement();
+
+        bootstrapToken.setIdAttribute("ID", true);
+
+        SignatureUtil.validate(bootstrapToken, false);
+    }
+
+    @Test
     void canExchangeBootstrapTokenToIDWSTokenWithProcuration() throws Exception {
         BootstrapToken bst = hokIssuer.cpr("0501792275").issueForCitizen();
 
@@ -154,6 +173,34 @@ public class BootstrapTokenTest extends AbstractTest {
                         + NsPrefixes.srp.name() + ":VerifiedRelation");
 
         assertEquals("0904128090", verifiedRelation.getAttribute("relatedPersonID"));
+    }
+
+    @Test
+    @Disabled
+    void canExchangeBootstrapTokenToIDWSTokenAsGuardian() throws Exception {
+        BootstrapToken bst = hokIssuer.cpr("2811686517").issueForCitizen(); // Karl Bonde
+
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        IdentityToken idwsToken = bst2.exchangeToIdentityToken("https://fmk", "2811686517", "2308573446",
+                BootstrapToken.OnBehalfOfClaimType.WARD);
+
+        // Extract priviledge attribibute, base64 decode it, and verify that our procuration cpr is there
+        Element attributeStatement = XmlUtil.getChild(idwsToken.assertion, NsPrefixes.saml,
+                "AttributeStatement");
+        String subjectRelationsBase64 = SamlUtil.getSamlAttribute(attributeStatement,
+                "urn:dk:healthcare:saml:attribute:SubjectRelations");
+        String privs = new String(Base64.getDecoder().decode(subjectRelationsBase64), StandardCharsets.UTF_8);
+
+        Document doc = XmlUtil.getDocBuilder()
+                .parse(new ByteArrayInputStream(privs.getBytes(StandardCharsets.UTF_8)));
+
+        XPathContext xpath = new XPathContext(doc);
+        Element verifiedRelation = xpath.findElement(doc.getDocumentElement(),
+                "/" + NsPrefixes.srp.name() + ":SubjectRelations/"
+                        + NsPrefixes.srp.name() + ":VerifiedRelation");
+
+        assertEquals("2308573446", verifiedRelation.getAttribute("relatedPersonID"));
     }
 
     @Test
@@ -282,6 +329,55 @@ public class BootstrapTokenTest extends AbstractTest {
         }
 
         return os.toString(StandardCharsets.UTF_8.name());
+    }
+
+    @Test
+    void canIssueEhdsiBootstrapToken() throws Exception {
+        BootstrapToken bst = hokIssuer.cpr("0501792275").issueEhdsiForCitizen();
+
+        DocumentBuilder docBuilder = XmlUtil.getDocBuilder();
+
+        Element bootstrapToken = docBuilder
+                .parse(new ByteArrayInputStream(bst.getXml().getBytes(StandardCharsets.UTF_8)))
+                .getDocumentElement();
+
+        bootstrapToken.setIdAttribute("ID", true);
+
+        SignatureUtil.validate(bootstrapToken, false);
+    }
+
+    @Test
+    void canExchangeEhdsiBootstrapTokenToEhdsiIdentityToken() throws Exception {
+        BootstrapTokenIssuer hokIssuer; // Bootstrap token issuer that issues hok-assertions locked to service provider certificate
+        BootstrapTokenBuilder bstBuilder;
+        CertAndKey spCertAndKey;
+        CertAndKey idpCertAndKey;
+
+        spCertAndKey = new KeyStoreLoader().fromClassPath("DRG_Funktionscertifikatet.jks")
+                .password(KEYSTORE_PASSWORD).load();
+        idpCertAndKey = new KeyStoreLoader().fromClassPath("DRG_IdP_certifikatet.jks")
+                .password(KEYSTORE_PASSWORD).load();
+
+        hokIssuer = new BootstrapTokenIssuer()
+                .env(NSPTestEnv.TEST1_DNSP)
+                .idpCertAndKey(idpCertAndKey)
+                .spCert(spCertAndKey.certificate);
+
+        bstBuilder = new BootstrapTokenBuilder()
+                .env(NSPTestEnv.TEST1_DNSP)
+                .spCertAndKey(spCertAndKey);
+
+        BootstrapToken bst = hokIssuer.cpr("0501792275").issueEhdsiForCitizen();
+
+        BootstrapToken bst2 = bstBuilder.fromXml(bst.getXml()).build();
+
+        IdentityToken idwsToken = bst2.exchangeToIdentityToken("https://fmk", null);
+
+        assertNotNull(idwsToken.assertion);
+        assertEquals("https://fmk", idwsToken.audience);
+        assertTrue(idwsToken.created.isBefore(ZonedDateTime.now()));
+        assertTrue(idwsToken.expires.isAfter(idwsToken.created.plusSeconds(5)));
+
     }
 
 }

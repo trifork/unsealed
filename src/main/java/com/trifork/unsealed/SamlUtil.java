@@ -6,8 +6,8 @@ import org.w3c.dom.Element;
 
 public class SamlUtil {
 
-    public static void addSamlAttribute(Element parent, String name, String value) {
-        SamlUtil.addSamlAttribute(parent, name, value, null);
+    public static Element addSamlAttribute(Element parent, String name, String value) {
+        return SamlUtil.addSamlAttribute(parent, name, value, null);
     }
 
     public static Element addSamlAttribute(Element parent, String name, String value, String nameFormat) {

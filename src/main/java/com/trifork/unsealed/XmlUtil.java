@@ -67,6 +67,7 @@ public class XmlUtil {
 	public static final String XENC = "http://www.w3.org/2001/04/xmlenc#";
 	public static final String BPP = "http://itst.dk/oiosaml/basic_privilege_profile";
 	public static final String SRP = "urn:dk:healthcare:saml:subject_relations_profile:1.1";
+	public static final String HL7V3 = "urn:hl7-org:v3";
 
 	public static final String NS_SAML = "saml";
 	public static final String NS_SAMLP = "samlp";
@@ -91,6 +92,7 @@ public class XmlUtil {
 	public static final String NS_LIB_SEC = "sec";
 	public static final String NS_WSF_AUTH = "auth";
 	public static final String NS_BPP = "bpp";
+	public static final String NS_HL7V3 = "hl7";
 
 	@Deprecated
 	public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";

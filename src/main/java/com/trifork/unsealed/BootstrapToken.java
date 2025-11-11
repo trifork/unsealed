@@ -184,6 +184,11 @@ public class BootstrapToken {
 
         String stsEndpoint = xml != null ? DEFAULT_BST_TO_ID_ENDPOINT : DEFAULT_JWT_TO_ID_ENDPOINT;
 
+        if (xml != null && xml.indexOf("eHDSI-IDWS-XUA-1.0") > 0) {
+            // Temp hack
+            stsEndpoint = "/sts/services/DKNCPBST2EHDSIIdws";
+        }
+
         Element response = WSHelper.post(request,
                 env.getStsBaseUrl() + stsEndpoint, "Issue");
 
@@ -268,13 +273,15 @@ public class BootstrapToken {
         appendChild(appendChild(appendChild(requestSecurityToken, NsPrefixes.wsp, "AppliesTo"), NsPrefixes.wsa,
                 "EndpointReference"), NsPrefixes.wsa, "Address", audience);
 
-        Element claims = appendChild(requestSecurityToken, NsPrefixes.wst13, "Claims");
-        claims.setAttribute("Dialect", "http://docs.oasis-open.org/wsfed/authorization/200706/authclaims");
-
-        for (Claim claim : claimsList) {
-            Element claimType = appendChild(claims, NsPrefixes.auth, "ClaimType");
-            claimType.setAttribute("Uri", claim.uri);
-            appendChild(claimType, NsPrefixes.auth, "Value", claim.value);
+        if (claimsList != null && claimsList.size() > 0) {
+            Element claims = appendChild(requestSecurityToken, NsPrefixes.wst13, "Claims");
+            claims.setAttribute("Dialect", "http://docs.oasis-open.org/wsfed/authorization/200706/authclaims");
+    
+            for (Claim claim : claimsList) {
+                Element claimType = appendChild(claims, NsPrefixes.auth, "ClaimType");
+                claimType.setAttribute("Uri", claim.uri);
+                appendChild(claimType, NsPrefixes.auth, "Value", claim.value);
+            }
         }
 
         return envelope;
